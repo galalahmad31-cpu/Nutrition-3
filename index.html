@@ -5,16 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NICU Nutrition - Dr. Ahmed Galal</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts for Arabic -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase JS Client -->
+    <!-- استدعاء مكتبة Supabase بشكل صحيح -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div id="app" class="app-container">
-        <!-- Header -->
         <header class="main-header">
             <button id="homeBtn" class="home-icon"><i class="fas fa-house"></i></button>
             <div class="header-text">
@@ -24,17 +21,16 @@
             </div>
         </header>
 
-        <!-- Main Content Area -->
         <main id="viewContainer">
-            <!-- Dashboard View (Default) -->
+            <!-- Dashboard -->
             <section id="dashboardView" class="view">
                 <div class="dashboard-grid">
-                    <button class="dash-card blue" onclick="showView('addPatientView')">
+                    <button id="navToAddPatient" class="dash-card blue">
                         <i class="fas fa-user-plus"></i>
                         <span>Add New Patient</span>
                         <small>تسجيل مريض جديد</small>
                     </button>
-                    <button class="dash-card purple" onclick="showView('patientListView')">
+                    <button id="navToPatientList" class="dash-card purple">
                         <i class="fas fa-users"></i>
                         <span>View Patients</span>
                         <small>استعراض قائمة المرضى</small>
@@ -42,11 +38,11 @@
                 </div>
             </section>
 
-            <!-- Add Patient View -->
+            <!-- Add Patient -->
             <section id="addPatientView" class="view hidden">
                 <div class="form-container">
                     <div class="view-header">
-                        <button onclick="showView('dashboardView')" class="back-btn"><i class="fas fa-arrow-right"></i> Cancel</button>
+                        <button class="back-to-dash back-btn"><i class="fas fa-arrow-right"></i> Cancel</button>
                         <h2>Register New Patient</h2>
                     </div>
                     <form id="patientForm" class="card shadow">
@@ -54,52 +50,38 @@
                             <label>Patient Full Name</label>
                             <input type="text" id="p_name" required placeholder="Full Name">
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Medical ID</label>
-                                <input type="text" id="p_id" required placeholder="ID#">
-                            </div>
-                            <div class="form-group">
-                                <label>Birth Date</label>
-                                <input type="date" id="p_dob" required>
-                            </div>
-                        </div>
                         <button type="submit" class="btn-primary">Register Patient</button>
                     </form>
                 </div>
             </section>
 
-            <!-- Patient List View -->
+            <!-- Patient List -->
             <section id="patientListView" class="view hidden">
                 <div class="view-header">
-                    <button onclick="showView('dashboardView')" class="back-btn"><i class="fas fa-arrow-right"></i> Back</button>
+                    <button class="back-to-dash back-btn"><i class="fas fa-arrow-right"></i> Back</button>
                     <h2>Patients Directory</h2>
                 </div>
                 <div id="patientsGrid" class="list-grid">
-                    <!-- Dynamic Content -->
+                    <p class="loading-text">Loading patients...</p>
                 </div>
             </section>
 
-            <!-- Patient Profile View -->
+            <!-- Patient Profile -->
             <section id="patientProfileView" class="view hidden">
                 <div class="view-header">
-                    <button onclick="showView('patientListView')" class="back-btn"><i class="fas fa-arrow-right"></i> Back</button>
+                    <button id="backToList" class="back-btn"><i class="fas fa-arrow-right"></i> Back</button>
                     <button id="addVisitBtn" class="btn-success"><i class="fas fa-plus"></i> Add Visit</button>
                 </div>
-                <div id="patientInfoBanner" class="card shadow banner">
-                    <!-- Dynamic Header -->
-                </div>
+                <div id="patientInfoBanner" class="card shadow banner"></div>
                 <h3 class="section-title">History & Visits</h3>
-                <div id="visitsGrid" class="visits-grid">
-                    <!-- Dynamic Visits -->
-                </div>
+                <div id="visitsGrid" class="visits-grid"></div>
             </section>
 
-            <!-- Visit Editor View -->
+            <!-- Visit Editor -->
             <section id="visitEditorView" class="view hidden">
                 <div class="editor-toolbar shadow">
                     <div class="toolbar-info">
-                        <button onclick="showView('patientProfileView')" class="back-btn"><i class="fas fa-arrow-right"></i></button>
+                        <button id="backToProfile" class="back-btn"><i class="fas fa-arrow-right"></i></button>
                         <div id="editorTitle">
                             <h4 id="currentPatientName">Patient Name</h4>
                             <span id="visitStatus">New Visit</span>
@@ -113,7 +95,6 @@
                         <button class="tab-btn active" data-tab="en_sec">Enteral (EN)</button>
                         <button class="tab-btn" data-tab="pn_sec">Parenteral (PN)</button>
                     </div>
-
                     <div id="en_sec" class="tab-content active">
                         <div class="calc-section purple">
                             <h3><i class="fas fa-utensils"></i> Enteral Nutrition</h3>
@@ -127,7 +108,6 @@
                                     <select class="en-input" data-key="option">
                                         <option>Breast milk</option>
                                         <option>Term formula</option>
-                                        <option>Preterm formula</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -135,12 +115,9 @@
                                     <input type="number" class="en-input" data-key="hours">
                                 </div>
                             </div>
-                            <div id="enResults" class="results-box">
-                                <!-- Results appear here -->
-                            </div>
+                            <div id="enResults" class="results-box"></div>
                         </div>
                     </div>
-
                     <div id="pn_sec" class="tab-content">
                         <div class="calc-section blue">
                             <h3><i class="fas fa-vial"></i> Parenteral Nutrition</h3>
@@ -153,14 +130,8 @@
                                     <label>Fluid (ml/kg)</label>
                                     <input type="number" class="pn-input" data-key="fluidKg">
                                 </div>
-                                <div class="form-group">
-                                    <label>GIR</label>
-                                    <input type="number" step="0.1" class="pn-input" data-key="gir">
-                                </div>
                             </div>
-                            <div id="pnResults" class="results-box">
-                                <!-- Results appear here -->
-                            </div>
+                            <div id="pnResults" class="results-box"></div>
                         </div>
                     </div>
                 </div>
