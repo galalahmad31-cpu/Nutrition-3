@@ -155,4 +155,4 @@ body {
 
 @media (max-width: 600px) {
     .dashboard-grid, .grid-3 { grid-template-columns: 1fr; }
-        }
+}
