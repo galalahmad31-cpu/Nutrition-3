@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - NICU Nutrition Pro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #f1f5f9; }
+        .header-bg { background-color: #1e3a8a; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <div class="header-bg text-white p-6 shadow-lg">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">NICU Nutrition Pro</h1>
+                <p class="text-xs opacity-75">Patient Management System</p>
+            </div>
+            <button id="logoutBtn" class="text-sm bg-blue-800 px-4 py-2 rounded-lg hover:bg-red-700 transition">Logout</button>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto p-4 mt-6">
+        <!-- Quick Actions -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-slate-800">Patients List</h2>
+            <a href="add-patient.html" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold shadow-md transition transform active:scale-95">
+                + Add Patient
+            </a>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="mb-6">
+            <input type="text" id="searchInput" placeholder="Search by name or Medical ID..." 
+                class="w-full px-5 py-3 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+
+        <!-- Patients List Container -->
+        <div id="patientsContainer" class="grid gap-4">
+            <!-- Loading State -->
+            <div class="text-center py-10 text-slate-500">Loading patients...</div>
+        </div>
+    </div>
+
+    <!-- Script Section -->
+    <script src="supabase-config.js"></script>
+    <script>
+        const patientsContainer = document.getElementById('patientsContainer');
+        const searchInput = document.getElementById('searchInput');
+
+        // Function to fetch and display patients
+        async function fetchPatients() {
+            const { data: patients, error } = await window.supabaseClient
+                .from('patients')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                patientsContainer.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded-xl text-center">${error.message}</div>`;
+                return;
+            }
+
+            displayPatients(patients);
+        }
+
+        function displayPatients(patients) {
+            if (patients.length === 0) {
+                patientsContainer.innerHTML = `<div class="text-center py-10 text-slate-400">No patients found. Click "Add Patient" to start.</div>`;
+                return;
+            }
+
+            patientsContainer.innerHTML = patients.map(patient => `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center hover:shadow-md transition">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-lg">${patient.full_name}</h3>
+                        <p class="text-sm text-slate-500">ID: ${patient.medical_id} | DOB: ${new Date(patient.birth_date).toLocaleDateString()}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="addVisit('${patient.id}')" class="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition">
+                            Add Visit
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Navigate to visit/calculation page with Patient ID
+        function addVisit(patientId) {
+            window.location.href = `nutrition-calc.html?patient_id=${patientId}`;
+        }
+
+        // Search logic
+        searchInput.addEventListener('input', async (e) => {
+            const term = e.target.value.toLowerCase();
+            const { data: filteredPatients } = await window.supabaseClient
+                .from('patients')
+                .select('*')
+                .or(`full_name.ilike.%${term}%,medical_id.ilike.%${term}%`);
+            displayPatients(filteredPatients);
+        });
+
+        // Logout logic
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await window.supabaseClient.auth.signOut();
+            window.location.href = 'login.html';
+        });
+
+        // Initial fetch
+        fetchPatients();
+    </script>
+</body>
+</html>
+
+```
+
