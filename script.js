@@ -1,6 +1,6 @@
 // ==================== CONFIG ====================
-const SUPABASE_URL = "https://svnqppvwptbhxcurxipa.supabase.co";
-const SUPABASE_KEY = "sb_publishable_wXN6nc7ug20Zuh89H-k6DQ_gyIZVsfD";
+const SUPABASE_URL = "pjcposbbgaqbljrsamax";
+const SUPABASE_KEY = "sb_publishable_xxZtrsyB46at2eaowuuKhQ_q_1GLHxF";
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
