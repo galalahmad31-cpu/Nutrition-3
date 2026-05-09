@@ -20,7 +20,7 @@ googleBtn.addEventListener("click", async () => {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: "http://127.0.0.1:5500/dashboard.html"
+      redirectTo: "https://galalahmad31-cpu.github.io/Nutrition-3/"
     }
   })
 
