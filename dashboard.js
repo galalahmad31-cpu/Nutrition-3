@@ -47,7 +47,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     window.location.href =
       window.location.origin +
       basePath +
-      "/login.html"
+      "/index.html"
   }
 
   if (event === "SIGNED_IN" && session) {
