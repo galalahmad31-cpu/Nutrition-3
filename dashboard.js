@@ -1,5 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
+// =========================================
+// SUPABASE CONFIG
+// =========================================
+
 const SUPABASE_URL = "https://pjcposbbgaqbljrsamax.supabase.co"
 const SUPABASE_ANON_KEY = "sb_publishable_xxZtrsyB46at2eaowuuKhQ_q_1GLHxF"
 
@@ -10,15 +14,23 @@ const supabase = createClient(
 
 
 // =========================================
-// CHECK SESSION
+// BASE PATH
 // =========================================
 
-const {
-  data: { session }
-} = await supabase.auth.getSession()
+const basePath = "/Nutrition-3"
+
+
+// =========================================
+// SESSION CHECK
+// =========================================
+
+const { data: { session } } = await supabase.auth.getSession()
 
 if (!session) {
-  window.location.href = "/login.html"
+  window.location.href =
+    window.location.origin +
+    basePath +
+    "/login.html"
 }
 
 const user = session.user
@@ -34,20 +46,20 @@ const dashboardView = document.getElementById("dashboard-view")
 const userEmail = document.getElementById("user-email")
 const dashboardEmail = document.getElementById("dashboard-email")
 
+const organizationInput = document.getElementById("organization-name")
 const createOrganizationBtn = document.getElementById("create-organization-btn")
+
+const organizationBadge = document.getElementById("organization-badge")
+
 const logoutBtn = document.getElementById("logout-btn")
 const dashboardLogoutBtn = document.getElementById("dashboard-logout-btn")
 
-const organizationInput = document.getElementById("organization-name")
-const organizationBadge = document.getElementById("organization-badge")
-
 
 // =========================================
-// USER EMAIL
+// USER INFO
 // =========================================
 
 userEmail.textContent = user.email
-
 dashboardEmail.textContent = user.email
 
 
@@ -55,7 +67,7 @@ dashboardEmail.textContent = user.email
 // CHECK MEMBERSHIP
 // =========================================
 
-const { data: memberData, error: memberError } = await supabase
+const { data: memberData } = await supabase
   .from("organization_members")
   .select(`
     id,
@@ -78,8 +90,8 @@ if (memberData) {
   onboardingCard.style.display = "none"
   dashboardView.style.display = "block"
 
-  organizationBadge.textContent = `Organization: ${memberData.organizations.name}`
-
+  organizationBadge.textContent =
+    "Organization: " + memberData.organizations.name
 }
 
 
@@ -89,56 +101,45 @@ if (memberData) {
 
 createOrganizationBtn.addEventListener("click", async () => {
 
-  const organizationName = organizationInput.value.trim()
+  const name = organizationInput.value.trim()
 
-  if (!organizationName) {
-    alert("Please enter organization name")
+  if (!name) {
+    alert("Enter organization name")
     return
   }
 
-
-  // CREATE ORGANIZATION
-
-  const { data: organizationData, error: organizationError } = await supabase
+  const { data: org, error: orgError } = await supabase
     .from("organizations")
     .insert({
-      name: organizationName,
+      name,
       created_by: user.id
     })
     .select()
     .single()
 
-
-  if (organizationError) {
-    console.error(organizationError)
-    alert(organizationError.message)
+  if (orgError) {
+    console.error(orgError)
+    alert(orgError.message)
     return
   }
 
-
-  // ADD MEMBER
-
-  const { error: memberInsertError } = await supabase
+  const { error: memberError } = await supabase
     .from("organization_members")
     .insert({
-      organization_id: organizationData.id,
+      organization_id: org.id,
       user_id: user.id,
       role: "admin",
       invited_email: user.email
     })
 
-
-  if (memberInsertError) {
-    console.error(memberInsertError)
-    alert(memberInsertError.message)
+  if (memberError) {
+    console.error(memberError)
+    alert(memberError.message)
     return
   }
 
-
-  alert("Organization created successfully")
-
+  alert("Organization created")
   window.location.reload()
-
 })
 
 
@@ -147,11 +148,11 @@ createOrganizationBtn.addEventListener("click", async () => {
 // =========================================
 
 async function logout() {
-
   await supabase.auth.signOut()
-
-  window.location.href = "/login.html"
-
+  window.location.href =
+    window.location.origin +
+    basePath +
+    "/login.html"
 }
 
 logoutBtn.addEventListener("click", logout)
