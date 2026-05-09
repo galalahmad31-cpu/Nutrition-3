@@ -152,7 +152,7 @@ async function logout() {
   window.location.href =
     window.location.origin +
     basePath +
-    "/login.html"
+    "/index.html"
 }
 
 logoutBtn.addEventListener("click", logout)
