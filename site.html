@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NiCU Nutrition</title>
+
+  <script type="module" src="./site.js"></script>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial;
+    }
+
+    body{
+      display:flex;
+      min-height:100vh;
+      background:#f4f7fb;
+    }
+
+    /* SIDEBAR */
+    .sidebar{
+      width:250px;
+      background:#16325B;
+      color:white;
+      padding:20px;
+    }
+
+    .sidebar h2{
+      margin-bottom:20px;
+      font-size:20px;
+    }
+
+    .nav-item{
+      padding:12px;
+      margin-bottom:10px;
+      background:rgba(255,255,255,0.1);
+      border-radius:10px;
+      cursor:pointer;
+    }
+
+    .nav-item:hover{
+      background:rgba(255,255,255,0.2);
+    }
+
+    /* MAIN */
+    .main{
+      flex:1;
+      padding:30px;
+    }
+
+    .card{
+      background:white;
+      padding:20px;
+      border-radius:15px;
+      box-shadow:0 4px 15px rgba(0,0,0,0.05);
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <h2>NiCU Nutrition</h2>
+
+    <div class="nav-item" id="home-btn">Home</div>
+    <div class="nav-item" id="patients-btn">Patients</div>
+    <div class="nav-item" id="reference-btn">Information & Reference</div>
+    <div class="nav-item" id="profile-btn">Profile</div>
+    <div class="nav-item" id="logout-btn">Logout</div>
+
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <div class="card" id="content-area">
+      Welcome to NiCU Nutrition System
+    </div>
+
+  </div>
+
+</body>
+</html>
