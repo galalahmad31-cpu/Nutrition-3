@@ -6,7 +6,7 @@
 // ============================================================
 //  1. SUPABASE CONFIG
 // ============================================================
-const SUPABASE_URL = "pjcposbbgaqbljrsamax";
+const SUPABASE_URL = "https://pjcposbbgaqbljrsamax.supabase.co";
 const SUPABASE_KEY = "sb_publishable_xxZtrsyB46at2eaowuuKhQ_q_1GLHxF";
 
 const { createClient } = supabase;
