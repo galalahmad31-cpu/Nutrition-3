@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NiCU Nutrition</title>
 
-  <script type="module" src="./dashboard.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>NiCU Nutrition</title>
 
   <style>
 
@@ -19,61 +19,66 @@
     body{
       background:#f4f7fb;
       min-height:100vh;
+      color:#16325B;
     }
 
     .container{
       width:100%;
-      max-width:450px;
+      max-width:500px;
       margin:auto;
       padding:40px 20px;
     }
 
     .card{
       background:white;
-      border-radius:16px;
+      border-radius:20px;
       padding:30px;
       box-shadow:0 4px 20px rgba(0,0,0,0.08);
     }
 
     h1{
-      font-size:28px;
+      font-size:30px;
       margin-bottom:10px;
-      color:#16325B;
     }
 
-    p{
-      color:#555;
-      margin-bottom:20px;
-      line-height:1.5;
+    .subtitle{
+      color:#666;
+      margin-bottom:25px;
+      line-height:1.6;
     }
 
     input{
       width:100%;
       padding:14px;
-      border:1px solid #d0d7e2;
-      border-radius:10px;
+      border:1px solid #d6dce5;
+      border-radius:12px;
       margin-bottom:15px;
       font-size:15px;
     }
 
     button{
       width:100%;
-      padding:14px;
       border:none;
-      border-radius:10px;
-      background:#16325B;
-      color:white;
+      border-radius:12px;
+      padding:14px;
       font-size:15px;
       cursor:pointer;
-      margin-bottom:10px;
+      transition:0.2s;
     }
 
     button:hover{
       opacity:0.95;
     }
 
-    .logout{
+    .primary-btn{
+      background:#16325B;
+      color:white;
+      margin-bottom:10px;
+    }
+
+    .logout-btn{
       background:#dc3545;
+      color:white;
     }
 
     .dashboard{
@@ -82,40 +87,64 @@
 
     .badge{
       display:inline-block;
-      background:#e8eef8;
-      color:#16325B;
-      padding:8px 12px;
+      padding:8px 14px;
       border-radius:10px;
+      background:#e8eef8;
       margin-bottom:20px;
       font-weight:bold;
     }
 
+    .section{
+      margin-top:25px;
+    }
+
+    .section h3{
+      margin-bottom:10px;
+    }
+
+    .invite-box{
+      display:flex;
+      gap:10px;
+    }
+
+    .invite-box input{
+      margin-bottom:0;
+    }
+
   </style>
+
 </head>
+
 <body>
 
   <div class="container">
 
-    <!-- CREATE ORGANIZATION -->
+    <!-- ONBOARDING -->
     <div class="card" id="onboarding-card">
 
       <h1>Create Organization</h1>
 
-      <p>
-        Create your NICU department organization and invite your clinical nutrition team.
+      <p class="subtitle">
+        Create your NICU clinical nutrition organization and invite your team.
       </p>
 
       <input
         type="text"
         id="organization-name"
-        placeholder="NICU Department Name"
+        placeholder="Organization Name"
       />
 
-      <button id="create-organization-btn">
+      <button
+        class="primary-btn"
+        id="create-organization-btn"
+      >
         Create Organization
       </button>
 
-      <button class="logout" id="logout-btn">
+      <button
+        class="logout-btn"
+        id="logout-btn"
+      >
         Logout
       </button>
 
@@ -127,17 +156,66 @@
 
       <h1>NiCU Nutrition</h1>
 
-      <div class="badge" id="organization-badge"></div>
+      <div
+        class="badge"
+        id="organization-badge"
+      ></div>
 
       <p id="user-email"></p>
 
-      <button class="logout" id="dashboard-logout-btn">
-        Logout
-      </button>
+
+      <!-- TEAM INVITE -->
+      <div class="section">
+
+        <h3>Invite Team Member</h3>
+
+        <div class="invite-box">
+
+          <input
+            type="email"
+            id="invite-email"
+            placeholder="doctor@email.com"
+          />
+
+        </div>
+
+        <button
+          class="primary-btn"
+          id="invite-btn"
+          style="margin-top:10px;"
+        >
+          Send Invitation
+        </button>
+
+      </div>
+
+
+      <!-- TEAM LIST -->
+      <div class="section">
+
+        <h3>Team Members</h3>
+
+        <div id="members-list"></div>
+
+      </div>
+
+
+      <div class="section">
+
+        <button
+          class="logout-btn"
+          id="dashboard-logout-btn"
+        >
+          Logout
+        </button>
+
+      </div>
 
     </div>
 
   </div>
 
+  <script type="module" src="./dashboard.js"></script>
+
 </body>
-</html>
+  </html>
