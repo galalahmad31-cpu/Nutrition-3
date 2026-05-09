@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NICU Nutrition Dashboard</title>
+  <title>NiCU Nutrition</title>
+
+  <script type="module" src="./dashboard.js"></script>
 
   <style>
 
@@ -21,58 +23,35 @@
 
     .container{
       width:100%;
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      padding:20px;
+      max-width:450px;
+      margin:auto;
+      padding:40px 20px;
     }
 
     .card{
-      width:100%;
-      max-width:500px;
       background:white;
-      padding:40px;
-      border-radius:18px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.08);
+      border-radius:16px;
+      padding:30px;
+      box-shadow:0 4px 20px rgba(0,0,0,0.08);
     }
 
-    .title{
+    h1{
       font-size:28px;
-      font-weight:bold;
-      color:#1e3a8a;
       margin-bottom:10px;
+      color:#16325B;
     }
 
-    .subtitle{
-      color:#666;
-      margin-bottom:30px;
+    p{
+      color:#555;
+      margin-bottom:20px;
       line-height:1.5;
-    }
-
-    .user-box{
-      background:#eff6ff;
-      padding:15px;
-      border-radius:12px;
-      margin-bottom:25px;
-    }
-
-    .user-label{
-      font-size:13px;
-      color:#666;
-      margin-bottom:5px;
-    }
-
-    .user-email{
-      font-weight:bold;
-      color:#111827;
     }
 
     input{
       width:100%;
       padding:14px;
+      border:1px solid #d0d7e2;
       border-radius:10px;
-      border:1px solid #d1d5db;
       margin-bottom:15px;
       font-size:15px;
     }
@@ -82,47 +61,33 @@
       padding:14px;
       border:none;
       border-radius:10px;
-      background:#2563eb;
+      background:#16325B;
       color:white;
-      font-size:16px;
+      font-size:15px;
       cursor:pointer;
-      transition:0.3s;
+      margin-bottom:10px;
     }
 
     button:hover{
-      background:#1d4ed8;
+      opacity:0.95;
     }
 
-    .logout-btn{
-      margin-top:15px;
-      background:#dc2626;
-    }
-
-    .logout-btn:hover{
-      background:#b91c1c;
+    .logout{
+      background:#dc3545;
     }
 
     .dashboard{
       display:none;
     }
 
-    .dashboard-card{
-      background:white;
-      padding:40px;
-      border-radius:18px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.08);
-      width:100%;
-      max-width:700px;
-    }
-
     .badge{
       display:inline-block;
-      padding:8px 14px;
-      border-radius:999px;
-      background:#dbeafe;
-      color:#1e40af;
-      margin-top:15px;
-      font-size:14px;
+      background:#e8eef8;
+      color:#16325B;
+      padding:8px 12px;
+      border-radius:10px;
+      margin-bottom:20px;
+      font-weight:bold;
     }
 
   </style>
@@ -131,36 +96,26 @@
 
   <div class="container">
 
-    <!-- ONBOARDING -->
+    <!-- CREATE ORGANIZATION -->
     <div class="card" id="onboarding-card">
 
-      <div class="title">
-        Welcome to NICU Nutrition
-      </div>
+      <h1>Create Organization</h1>
 
-      <div class="subtitle">
-        Create your NICU organization to start managing neonatal nutrition workflows.
-      </div>
-
-      <div class="user-box">
-        <div class="user-label">
-          Signed in as
-        </div>
-
-        <div class="user-email" id="user-email"></div>
-      </div>
+      <p>
+        Create your NICU department organization and invite your clinical nutrition team.
+      </p>
 
       <input
         type="text"
         id="organization-name"
-        placeholder="NICU Organization Name"
+        placeholder="NICU Department Name"
       />
 
       <button id="create-organization-btn">
         Create Organization
       </button>
 
-      <button class="logout-btn" id="logout-btn">
+      <button class="logout" id="logout-btn">
         Logout
       </button>
 
@@ -168,33 +123,21 @@
 
 
     <!-- DASHBOARD -->
-    <div class="dashboard" id="dashboard-view">
+    <div class="card dashboard" id="dashboard-view">
 
-      <div class="dashboard-card">
+      <h1>NiCU Nutrition</h1>
 
-        <div class="title">
-          NICU Nutrition Dashboard
-        </div>
+      <div class="badge" id="organization-badge"></div>
 
-        <div class="subtitle">
-          Authentication and organization system initialized successfully.
-        </div>
+      <p id="user-email"></p>
 
-        <div id="dashboard-email"></div>
-
-        <div class="badge" id="organization-badge"></div>
-
-        <button class="logout-btn" id="dashboard-logout-btn">
-          Logout
-        </button>
-
-      </div>
+      <button class="logout" id="dashboard-logout-btn">
+        Logout
+      </button>
 
     </div>
 
   </div>
 
-  <script type="module" src="dashboard.js"></script>
-
 </body>
-  </html>
+</html>
