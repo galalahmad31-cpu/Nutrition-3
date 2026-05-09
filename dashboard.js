@@ -30,7 +30,7 @@ if (!session) {
   window.location.href =
     window.location.origin +
     basePath +
-    "/login.html"
+    "/index.html"
 }
 
 const user = session.user
