@@ -47,8 +47,7 @@ googleBtn.addEventListener("click", async () => {
     options: {
       redirectTo:
         window.location.origin +
-        basePath +
-        "/dashboard.html"
+        "/Nutrition-3/dashboard.html"
     }
   })
 
