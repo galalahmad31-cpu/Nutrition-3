@@ -1,15 +1,15 @@
-<!DOCTYPE html>
+<DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diet Tracker - د. أحمد جلال</title>
+    <title>Diet Tracker Pro - د. أحمد جلال</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Cairo -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -58,8 +58,11 @@
                 background-color: #ffffff !important;
                 color: #000000 !important;
             }
-            .no-print, header, footer, button, label, input[type="file"], .action-buttons, #toastContainer {
+            .no-print, header, footer, button, label, input[type="file"], .action-buttons, #toastContainer, .tab-nav {
                 display: none !important;
+            }
+            .tab-content {
+                display: block !important;
             }
             .print-header {
                 display: block !important;
@@ -67,10 +70,2266 @@
             .collapsible-body {
                 display: block !important;
             }
-            .shadow-sm, .shadow-md, .shadow-xl {
+            .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl {
                 box-shadow: none !important;
             }
             .border {
+                border-color: #cbd5e1 !important;
+            }
+            .page-break {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 bg-slate-50 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
+
+    <!-- Header Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-700 to-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-100 font-bold text-xl">
+                    <i class="fa-solid fa-notes-medical"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-lg text-slate-800 leading-tight">Diet Tracker Pro</h1>
+                    <p class="text-xs font-bold text-emerald-700" id="headerDocNameDisplay">د. أحمد جلال - استشاري التغذية العلاجية</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Print Button -->
+                <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-print text-amber-400"></i>
+                    <span class="hidden sm:inline">طباعة التقرير</span>
+                </button>
+
+                <label for="csvFileInput" class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 border border-slate-200">
+                    <i class="fa-solid fa-file-csv text-emerald-600 text-base"></i>
+                    <span class="hidden md:inline">استيراد CSV</span>
+                </label>
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+
+                <button onclick="addNewDay()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-sm hover:shadow transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>إضافة يوم</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs Bar -->
+        <div class="bg-slate-100 border-t border-slate-200/80 tab-nav">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 space-x-reverse overflow-x-auto custom-scrollbar">
+                <button onclick="switchTab('planTab')" id="tabBtn-planTab" class="px-5 py-2.5 font-bold text-xs sm:text-sm border-b-2 border-emerald-600 text-emerald-700 flex items-center gap-2 transition whitespace-nowrap cursor-pointer">
+                    <i class="fa-solid fa-utensils"></i>
+                    <span>الخطة التغذوية والوجبات</span>
+                </button>
+                <button onclick="switchTab('weightTab')" id="tabBtn-weightTab" class="px-5 py-2.5 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-600 hover:text-emerald-700 flex items-center gap-2 transition whitespace-nowrap cursor-pointer">
+                    <i class="fa-solid fa-weight-scale"></i>
+                    <span>تتبع الوزن والتقدم</span>
+                </button>
+                <button onclick="switchTab('calculatorTab')" id="tabBtn-calculatorTab" class="px-5 py-2.5 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-600 hover:text-emerald-700 flex items-center gap-2 transition whitespace-nowrap cursor-pointer">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span>حاسبة السعرات (BMR & TDEE)</span>
+                </button>
+                <button onclick="switchTab('dbTab')" id="tabBtn-dbTab" class="px-5 py-2.5 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-600 hover:text-emerald-700 flex items-center gap-2 transition whitespace-nowrap cursor-pointer">
+                    <i class="fa-solid fa-book-medical"></i>
+                    <span>مكتبة الأغذية والأنواع</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Print Header -->
+    <div class="hidden print-header p-6 border-b-2 border-emerald-600 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900" id="printDocName">د. أحمد جلال</h1>
+                <p class="text-sm font-bold text-emerald-700 mt-1" id="printDocTitle">استشاري التغذية العلاجية</p>
+                <p class="text-xs text-slate-500 mt-1" id="printClinicInfo">Diet Tracker - الخطة الغذائية العلاجية</p>
+            </div>
+            <div class="text-left text-xs text-slate-500" id="printDateStamp">
+                تاريخ الطباعة: 
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow space-y-6">
+
+        <!-- ==================== TAB 1: MEAL PLAN & DIET ==================== -->
+        <div id="planTab" class="tab-content space-y-6">
+            
+            <!-- Doctor & Patient Info Card -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-user-doctor"></i>
+                        </div>
+                        <h2 class="font-bold text-base text-slate-800">بيانات الطبيب والمريض والخطة التغذوية</h2>
+                    </div>
+                    <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-medium no-print">عيادة التغذية العلاجية</span>
+                </div>
+
+                <!-- Doctor Info Inputs -->
+                <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 space-y-2 no-print">
+                    <span class="text-xs font-bold text-emerald-800 block flex items-center gap-1.5">
+                        <i class="fa-solid fa-pen-to-square"></i> بيانات الطبيب والعيادة (تظهر بالواجهة والتقرير المطبوع):
+                    </span>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">اسم الطبيب</label>
+                            <input type="text" id="doctorNameInput" value="د. أحمد جلال" oninput="saveDoctorData()"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold text-slate-800">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">اللقب واللقب العلمي</label>
+                            <input type="text" id="doctorTitleInput" value="استشاري التغذية العلاجية والسمنة والنحافة" oninput="saveDoctorData()"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-800">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">اسم العيادة / رقم التواصل</label>
+                            <input type="text" id="doctorClinicInput" value="مركز التغذية العلاجية والنمط الصحي" oninput="saveDoctorData()"
+                                   class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-800">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Information Inputs -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">اسم المريض</label>
+                        <input type="text" id="patientName" placeholder="أدخل اسم المريض..." oninput="savePatientData()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">العمر (سنة)</label>
+                        <input type="number" id="patientAge" placeholder="مثال: 32" oninput="savePatientData()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">الطول (سم)</label>
+                        <input type="number" id="patientHeight" placeholder="مثال: 175" oninput="savePatientData()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">الجنس</label>
+                        <select id="patientGender" onchange="savePatientData()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                            <option value="ذكر">ذكر</option>
+                            <option value="أنثى">أنثى</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">الوزن الحالي (كجم)</label>
+                        <input type="number" id="patientWeight" placeholder="مثال: 75" oninput="savePatientData()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">الهدف السعري / اليومي (kcal)</label>
+                        <input type="number" id="patientTargetCal" placeholder="مثال: 2000" oninput="savePatientData()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-bold text-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">توصيات وملاحظات طبيب التغذية</label>
+                        <input type="text" id="patientNotes" placeholder="مثال: التقليل من الصوديوم، شرب 3 لتر ماء يومياً..." oninput="savePatientData()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Info Banner -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm font-bold text-slate-700">قاعدة الأغذية الموسعة والمحلية</div>
+                        <div class="text-xs text-slate-500" id="dbStatusText">جاري تحميل الأصناف...</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                    <i class="fa-solid fa-circle-info text-blue-500"></i>
+                    <span>جميع الحسابات مبنية على المعيار القياسي <b>(100 جرام)</b>.</span>
+                </div>
+            </div>
+
+            <!-- Days Stack Area -->
+            <div id="daysContainer" class="space-y-6">
+                <!-- Days rendered dynamically -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center max-w-lg mx-auto my-12">
+                <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fa-regular fa-calendar-plus"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-700 mb-1">لا توجد أيام مضافة حتى الآن</h3>
+                <p class="text-slate-500 text-sm mb-6">ابدأ بإنشاء يومك الأول لإضافة الوجبات ومتابعة القيم الغذائية بدقة.</p>
+                <button onclick="addNewDay()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow transition inline-flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>إضافة يوم جديد</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 2: WEIGHT TRACKER ==================== -->
+        <div id="weightTab" class="tab-content hidden space-y-6">
+            
+            <!-- Weight Overview KPI Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-center">
+                    <span class="block text-xs font-semibold text-slate-400 mb-1">الوزن الحالي</span>
+                    <span class="text-2xl font-black text-slate-800" id="kpiCurrentWeight">--</span>
+                    <span class="text-xs text-slate-500">كجم</span>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-center">
+                    <span class="block text-xs font-semibold text-slate-400 mb-1">الوزن المبدئي</span>
+                    <span class="text-2xl font-black text-slate-700" id="kpiStartWeight">--</span>
+                    <span class="text-xs text-slate-500">كجم</span>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-center">
+                    <span class="block text-xs font-semibold text-slate-400 mb-1">إجمالي التغير</span>
+                    <span class="text-2xl font-black text-emerald-600" id="kpiTotalDiff">--</span>
+                    <span class="text-xs text-slate-500">كجم</span>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-center">
+                    <span class="block text-xs font-semibold text-slate-400 mb-1">مؤشر كتلة الجسم (BMI)</span>
+                    <span class="text-2xl font-black text-indigo-600" id="kpiBMI">--</span>
+                    <span class="text-xs block text-slate-500 mt-0.5" id="kpiBMIStatus">غير محدد</span>
+                </div>
+            </div>
+
+            <!-- Add Weight Record Form & Chart Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Record Form -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+                        <i class="fa-solid fa-pen-to-square text-emerald-600 text-lg"></i>
+                        <h3 class="font-bold text-slate-800 text-base">تسجيل وزن جديد</h3>
+                    </div>
+                    
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="block font-bold text-slate-600 mb-1">تاريخ القياس</label>
+                            <input type="date" id="weightLogDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 mb-1">الوزن (كجم)</label>
+                            <input type="number" step="0.1" id="weightLogValue" placeholder="مثال: 78.5" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-bold">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 mb-1">نسبة الدهون % (اختياري)</label>
+                            <input type="number" step="0.1" id="weightLogFat" placeholder="مثال: 22.5" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 mb-1">ملاحظات القياس</label>
+                            <input type="text" id="weightLogNotes" placeholder="مثال: قياس صباحي بعد الاستيقاظ..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                        </div>
+
+                        <button onclick="addWeightEntry()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow-sm transition flex items-center justify-center gap-2 cursor-pointer mt-2">
+                            <i class="fa-solid fa-plus-circle"></i>
+                            <span>حفظ القياس بالسجل</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Weight Progress Visualizer Chart -->
+                <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-emerald-600 text-lg"></i>
+                            <h3 class="font-bold text-slate-800 text-base">منحنى التغير البياني في الوزن</h3>
+                        </div>
+                        <span class="text-xs text-slate-400 font-semibold">تتبع زمني</span>
+                    </div>
+
+                    <!-- SVG Interactive Chart Container -->
+                    <div id="weightChartContainer" class="w-full h-56 flex items-center justify-center relative border border-slate-100 bg-slate-50/50 rounded-xl p-4">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weight Logs Table -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-emerald-600"></i>
+                        <span>سجل قياسات الوزن المعتمدة</span>
+                    </h3>
+                    <button onclick="requestClearAllWeightLogs()" class="text-xs text-rose-600 hover:text-rose-800 font-bold hover:bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100 transition cursor-pointer">
+                        <i class="fa-solid fa-trash"></i> مسح كافة السجلات
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="text-slate-400 border-b border-slate-100 font-bold">
+                                <th class="py-2.5 px-3">تاريخ القياس</th>
+                                <th class="py-2.5 px-3 text-center">الوزن (كجم)</th>
+                                <th class="py-2.5 px-3 text-center">التغير عن السابق</th>
+                                <th class="py-2.5 px-3 text-center">نسبة الدهون %</th>
+                                <th class="py-2.5 px-3">ملاحظات</th>
+                                <th class="py-2.5 px-2 text-center">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weightTableBody" class="divide-y divide-slate-100 text-slate-700 font-medium">
+                            <!-- Rendered dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== TAB 3: BMR & TDEE CALCULATOR ==================== -->
+        <div id="calculatorTab" class="tab-content hidden space-y-6">
+            
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="font-extrabold text-lg text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-calculator text-emerald-600"></i>
+                        <span>حاسبة السعرات ومعدل الأيض اليومي (Mifflin-St Jeor)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">احسب السعرات الحرارية الدقيقة بناءً على أحدث المعادلات الطبية المعتمدة في التغذية العلاجية.</p>
+                </div>
+
+                <!-- Calculator Form -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1.5">الجنس</label>
+                        <select id="calcGender" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                            <option value="male">ذكر (Male)</option>
+                            <option value="female">أنثى (Female)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1.5">العمر (سنوات)</label>
+                        <input type="number" id="calcAge" value="30" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1.5">الوزن الحالي (كجم)</label>
+                        <input type="number" step="0.5" id="calcWeight" value="80" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1.5">الطول (سم)</label>
+                        <input type="number" id="calcHeight" value="175" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-semibold">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-bold text-slate-700 mb-1.5">مستوى النشاط البدني اليومي</label>
+                        <select id="calcActivity" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                            <option value="1.2">خامل / قليل الحركة جداً (مكتب، بدون تمارين)</option>
+                            <option value="1.375" selected>نشاط خفيف (تمارين 1-3 أيام بالأسبوع)</option>
+                            <option value="1.55">نشاط متوسط (تمارين 3-5 أيام بالأسبوع)</option>
+                            <option value="1.725">نشاط عالي (تمارين شاقة 6-7 أيام بالأسبوع)</option>
+                            <option value="1.9">نشاط رياضي مكثف جداً / عمل بدني شاق</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="calculateCaloricNeeds()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>حساب الاحتياجات والسعرات التنازلية</span>
+                </button>
+
+                <!-- Calculation Results Output -->
+                <div id="calcResultsCard" class="hidden bg-slate-900 text-white rounded-2xl p-6 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-800 pb-6">
+                        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60">
+                            <span class="text-xs text-slate-400 block mb-1">معدل الأيض الأساسي (BMR)</span>
+                            <span class="text-3xl font-black text-emerald-400" id="resBMR">0</span>
+                            <span class="text-xs text-slate-400 font-bold">سعرة / يومياً (للبقاء حياً)</span>
+                        </div>
+                        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/60">
+                            <span class="text-xs text-slate-400 block mb-1">احتياج حرق الطاقة اليومي (TDEE)</span>
+                            <span class="text-3xl font-black text-amber-400" id="resTDEE">0</span>
+                            <span class="text-xs text-slate-400 font-bold">سعرة / لتثبيت الوزن</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-sm text-slate-200 mb-3">السعرات المستهدفة حسب الهدف التغذوي:</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                            
+                            <div class="bg-slate-800 p-3.5 rounded-xl border border-slate-700 space-y-2">
+                                <span class="text-emerald-400 font-bold block">تخسيس متوازن (-20%)</span>
+                                <div class="text-xl font-extrabold text-white"><span id="targetWeightLoss">0</span> kcal</div>
+                                <p class="text-[11px] text-slate-400">نزول آمن ومستدام ~ 0.5 كجم/أسبوع</p>
+                                <button onclick="applyCalorieToPatient('targetWeightLoss')" class="w-full bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white font-bold py-1.5 rounded-lg transition text-[11px] cursor-pointer">
+                                    اعتماد للمريض
+                                </button>
+                            </div>
+
+                            <div class="bg-slate-800 p-3.5 rounded-xl border border-slate-700 space-y-2">
+                                <span class="text-rose-400 font-bold block">تخسيس سريع (-30%)</span>
+                                <div class="text-xl font-extrabold text-white"><span id="targetExtremeLoss">0</span> kcal</div>
+                                <p class="text-[11px] text-slate-400">نزول مكثف ~ 0.8-1 كجم/أسبوع</p>
+                                <button onclick="applyCalorieToPatient('targetExtremeLoss')" class="w-full bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white font-bold py-1.5 rounded-lg transition text-[11px] cursor-pointer">
+                                    اعتماد للمريض
+                                </button>
+                            </div>
+
+                            <div class="bg-slate-800 p-3.5 rounded-xl border border-slate-700 space-y-2">
+                                <span class="text-amber-400 font-bold block">تثبيت الوزن الحالي</span>
+                                <div class="text-xl font-extrabold text-white"><span id="targetMaintain">0</span> kcal</div>
+                                <p class="text-[11px] text-slate-400">للحفاظ على نفس قياس الوزن</p>
+                                <button onclick="applyCalorieToPatient('targetMaintain')" class="w-full bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white font-bold py-1.5 rounded-lg transition text-[11px] cursor-pointer">
+                                    اعتماد للمريض
+                                </button>
+                            </div>
+
+                            <div class="bg-slate-800 p-3.5 rounded-xl border border-slate-700 space-y-2">
+                                <span class="text-sky-400 font-bold block">زيادة عضلية (+15%)</span>
+                                <div class="text-xl font-extrabold text-white"><span id="targetGain">0</span> kcal</div>
+                                <p class="text-[11px] text-slate-400">فائض سعري لبناء الكتلة</p>
+                                <button onclick="applyCalorieToPatient('targetGain')" class="w-full bg-sky-600/30 hover:bg-sky-600 text-sky-300 hover:text-white font-bold py-1.5 rounded-lg transition text-[11px] cursor-pointer">
+                                    اعتماد للمريض
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== TAB 4: FOOD DATABASE BROWSER ==================== -->
+        <div id="dbTab" class="tab-content hidden space-y-6">
+            
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 gap-3">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-book-open-reader text-emerald-600"></i>
+                            <span>مكتبة الأغذية والقيم الغذائية (لكل 100 جرام)</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">استعرض وشاهد كافة المكونات المتاحة أو أضف أصناف جديدة لقاعدتك.</p>
+                    </div>
+
+                    <button onclick="openAddCustomFoodModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>إضافة صنف مخصص جديد</span>
+                    </button>
+                </div>
+
+                <!-- Database Search Input -->
+                <div class="relative">
+                    <input type="text" id="dbTabSearchInput" placeholder="ابحث باسم المادة الغذائية أو الأكلة..." oninput="renderDatabaseTabTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="text-slate-400 border-b border-slate-100 font-bold">
+                                <th class="py-2.5 px-3">اسم المادة / الأكلة</th>
+                                <th class="py-2.5 px-3 text-center">سعرات (kcal)</th>
+                                <th class="py-2.5 px-3 text-center">بروتين (g)</th>
+                                <th class="py-2.5 px-3 text-center">كارب (g)</th>
+                                <th class="py-2.5 px-3 text-center">دهون (g)</th>
+                                <th class="py-2.5 px-3 text-center">صوديوم (mg)</th>
+                                <th class="py-2.5 px-3 text-center">بوتاسيوم (mg)</th>
+                                <th class="py-2.5 px-3 text-center">فسفور (mg)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fullDbTableBody" class="divide-y divide-slate-100 text-slate-700 font-medium">
+                            <!-- Rendered dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- GLOBAL POP-UP CONFIRMATION MODAL -->
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all p-6 text-center space-y-4">
+            <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            
+            <div>
+                <h3 class="font-black text-slate-800 text-base" id="confirmModalTitle">تأكيد عملية المسح</h3>
+                <p class="text-xs text-slate-500 mt-1" id="confirmModalText">هل أنت تأكد من رغبتك في الحذف؟ لن يمكنك التراجع بعد التأكيد.</p>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+                <button onclick="closeConfirmModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                    إلغاء
+                </button>
+                <button id="confirmModalBtn" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
+                    تأكيد الحذف
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Custom Food Item to DB -->
+    <div id="addCustomFoodModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-base">إضافة صنف غذائي جديد للقاعدة</h3>
+                <button onclick="closeAddCustomFoodModal()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">اسم الصنف الغذائي</label>
+                    <input type="text" id="custFoodName" placeholder="مثال: طاجن عكاوي..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">سعرات (لكل 100g)</label>
+                        <input type="number" id="custFoodCal" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">بروتين (g)</label>
+                        <input type="number" step="0.1" id="custFoodPro" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">كارب (g)</label>
+                        <input type="number" step="0.1" id="custFoodCarb" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">دهون (g)</label>
+                        <input type="number" step="0.1" id="custFoodFat" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">صوديوم (mg)</label>
+                        <input type="number" id="custFoodSod" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">بوتاسيوم (mg)</label>
+                        <input type="number" id="custFoodPot" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAddCustomFoodModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer">إلغاء</button>
+                <button onclick="saveCustomFoodToDb()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-semibold shadow-sm transition cursor-pointer">حفظ للقاعدة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Custom Meal -->
+    <div id="addMealModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-base">إضافة وجبة جديدة</h3>
+                <button onclick="closeAddMealModal()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">اسم الوجبة</label>
+                <input type="text" id="newMealNameInput" placeholder="مثال: وجبة خفيفة، قبل التمرين..." 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+            </div>
+
+            <div>
+                <span class="block text-xs font-semibold text-slate-500 mb-2">اقتراحات سريعة:</span>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="setMealNameSuggestion('وجبة الإفطار 🌅')" class="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs px-2.5 py-1 rounded-lg border border-slate-200 transition cursor-pointer">🌅 إفطار</button>
+                    <button type="button" onclick="setMealNameSuggestion('وجبة الغداء ☀️')" class="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs px-2.5 py-1 rounded-lg border border-slate-200 transition cursor-pointer">☀️ غداء</button>
+                    <button type="button" onclick="setMealNameSuggestion('وجبة العشاء 🌙')" class="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs px-2.5 py-1 rounded-lg border border-slate-200 transition cursor-pointer">🌙 عشاء</button>
+                    <button type="button" onclick="setMealNameSuggestion('وجبة خفيفة / سناك 🍎')" class="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs px-2.5 py-1 rounded-lg border border-slate-200 transition cursor-pointer">🍎 سناك</button>
+                    <button type="button" onclick="setMealNameSuggestion('قبل التمرين 🏋️‍♂️')" class="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs px-2.5 py-1 rounded-lg border border-slate-200 transition cursor-pointer">🏋️‍♂️ قبل التمرين</button>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAddMealModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer">إلغاء</button>
+                <button onclick="confirmCreateMeal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-semibold shadow-sm transition cursor-pointer">إضافة الوجبة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Food Item to Meal -->
+    <div id="foodModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-base" id="modalMealTitle">إضافة صنف للوجبة</h3>
+                    <p class="text-xs text-slate-500">اختر المكون وحدد الوزن بالجرام</p>
+                </div>
+                <button onclick="closeFoodModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-200/60 transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-grow">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">ابحث واختر المادة الغذائية</label>
+                    <div class="relative">
+                        <input type="text" id="foodSearchInput" placeholder="اكتب اسم الطعام للبحث..." 
+                               oninput="filterFoodList()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                    </div>
+
+                    <div id="foodDropdownList" class="mt-2 border border-slate-200 rounded-xl max-h-48 overflow-y-auto custom-scrollbar divide-y divide-slate-100 bg-white">
+                        <!-- Dynamically filled -->
+                    </div>
+                    <input type="hidden" id="selectedFoodId">
+                </div>
+
+                <div id="selectedFoodPreview" class="hidden bg-emerald-50/60 border border-emerald-100 rounded-xl p-3.5 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-sm text-emerald-900" id="previewFoodName">-</span>
+                        <span class="text-xs bg-emerald-200/60 text-emerald-800 px-2 py-0.5 rounded-md font-medium">لكل 100 جرام</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2 text-center text-xs pt-1">
+                        <div class="bg-white p-1.5 rounded-lg border border-emerald-100/50">
+                            <span class="block text-slate-400 text-[10px]">سعرة</span>
+                            <span class="font-bold text-slate-700" id="prevCal">0</span>
+                        </div>
+                        <div class="bg-white p-1.5 rounded-lg border border-emerald-100/50">
+                            <span class="block text-slate-400 text-[10px]">بروتين</span>
+                            <span class="font-bold text-slate-700" id="prevPro">0g</span>
+                        </div>
+                        <div class="bg-white p-1.5 rounded-lg border border-emerald-100/50">
+                            <span class="block text-slate-400 text-[10px]">كاربو</span>
+                            <span class="font-bold text-slate-700" id="prevCarb">0g</span>
+                        </div>
+                        <div class="bg-white p-1.5 rounded-lg border border-emerald-100/50">
+                            <span class="block text-slate-400 text-[10px]">دهون</span>
+                            <span class="font-bold text-slate-700" id="prevFat">0g</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">الكمية المطلوبة (بالجرام)</label>
+                    <div class="relative">
+                        <input type="number" id="foodGramsInput" min="1" step="1" value="100" oninput="updateLiveCalculations()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+                        <span class="absolute left-3.5 top-2.5 text-xs font-bold text-slate-400">جرام</span>
+                    </div>
+                </div>
+
+                <div id="computedPreview" class="hidden bg-slate-50 rounded-xl p-3 border border-slate-200">
+                    <div class="text-xs font-bold text-slate-600 mb-2">المجموع المحسوب للوزن المحدد:</div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🔥 <span id="calcCal">0</span> سعرة</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🥩 <span id="calcPro">0</span>g بروتين</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🌾 <span id="calcCarb">0</span>g كارب</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🥑 <span id="calcFat">0</span>g دهون</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🧂 <span id="calcSod">0</span>mg صوديوم</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🍌 <span id="calcPot">0</span>mg بوتاسيوم</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🦴 <span id="calcPho">0</span>mg فسفور</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+                <button onclick="closeFoodModal()" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-600 hover:bg-slate-200/70 transition cursor-pointer">إلغاء</button>
+                <button onclick="confirmAddFoodItem()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition cursor-pointer">إضافة للوجبة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 no-print"></div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-12 no-print">
+        Diet Tracker Pro &copy; 2026 - إشراف <b>د. أحمد جلال</b> - نظام التغذية وتتبع الأوزان المتقدم
+    </footer>
+
+    <script>
+        let daysData = [];
+        let foodDatabase = [];
+        let weightLogs = [];
+        let currentModalContext = { dayId: null, mealId: null };
+        let targetMealDayId = null;
+        let confirmCallbackAction = null;
+
+        const defaultFoods = [
+            // --- اللحوم والدواجن الطازجة والمطبوخة ---
+            { id: '1', name: 'صدر دجاج مشوي / مطبوخ بدون جلد', calories: 165, protein: 31, carbs: 0, fat: 3.6, sodium: 74, potassium: 256, phosphorus: 228 },
+            { id: '2', name: 'فخذ دجاج مطبوخ بدون جلد', calories: 209, protein: 26, carbs: 0, fat: 10.9, sodium: 86, potassium: 220, phosphorus: 190 },
+            { id: '3', name: 'شاورما دجاج مطبوخة', calories: 220, protein: 24, carbs: 2.5, fat: 12, sodium: 380, potassium: 240, phosphorus: 210 },
+            { id: '4', name: 'لحم بقر كنداك بدون دهن (مشوي)', calories: 217, protein: 26.1, carbs: 0, fat: 11.8, sodium: 72, potassium: 318, phosphorus: 210 },
+            { id: '5', name: 'لحم ضأن / خروف بدون دهن (مطبوخ)', calories: 234, protein: 25, carbs: 0, fat: 14.5, sodium: 70, potassium: 290, phosphorus: 200 },
+            { id: '6', name: 'كبدة بقر مشوية', calories: 175, protein: 26.5, carbs: 5.2, fat: 4.7, sodium: 71, potassium: 330, phosphorus: 387 },
+            { id: '7', name: 'كبدة إسكندراني بالثوم والفلفل', calories: 210, protein: 22, carbs: 6, fat: 11, sodium: 450, potassium: 310, phosphorus: 340 },
+            { id: '8', name: 'كفتة لحم مشوية', calories: 260, protein: 18, carbs: 4.5, fat: 18.5, sodium: 480, potassium: 270, phosphorus: 180 },
+            { id: '9', name: 'حواوشي بلدي (لحم بعجين)', calories: 310, protein: 15, carbs: 28, fat: 16, sodium: 590, potassium: 220, phosphorus: 190 },
+            { id: '10', name: 'ديك رومي (صدر مطبوخ)', calories: 135, protein: 30, carbs: 0, fat: 1.5, sodium: 60, potassium: 290, phosphorus: 220 },
+            { id: '11', name: 'لحم أرانب مطبوخ', calories: 173, protein: 33, carbs: 0, fat: 3.5, sodium: 45, potassium: 340, phosphorus: 230 },
+            { id: '12', name: 'حمام محشي فريك / أرز', calories: 245, protein: 21, carbs: 18, fat: 11, sodium: 320, potassium: 280, phosphorus: 210 },
+            { id: '13', name: 'بط مطبوخ بدون جلد', calories: 201, protein: 23.5, carbs: 0, fat: 11.2, sodium: 65, potassium: 252, phosphorus: 203 },
+
+            // --- الأسماك والمأكولات البحرية ---
+            { id: '14', name: 'سمك سلمون مشوي', calories: 206, protein: 22, carbs: 0, fat: 12.3, sodium: 61, potassium: 384, phosphorus: 252 },
+            { id: '15', name: 'سمك بلطي مشوي', calories: 128, protein: 26, carbs: 0, fat: 2.6, sodium: 56, potassium: 380, phosphorus: 204 },
+            { id: '16', name: 'سمك بلطي مقلي', calories: 215, protein: 22, carbs: 5, fat: 12, sodium: 180, potassium: 320, phosphorus: 190 },
+            { id: '17', name: 'سمك بوري مشوي', calories: 150, protein: 20, carbs: 0, fat: 7.5, sodium: 65, potassium: 350, phosphorus: 220 },
+            { id: '18', name: 'تونة معلبة بالماء (مصفاة)', calories: 116, protein: 26, carbs: 0, fat: 1, sodium: 320, potassium: 237, phosphorus: 210 },
+            { id: '19', name: 'تونة معلبة بالزيت (مصفاة)', calories: 198, protein: 29, carbs: 0, fat: 8.2, sodium: 350, potassium: 250, phosphorus: 220 },
+            { id: '20', name: 'جمبري / روبيان مسلوق', calories: 99, protein: 24, carbs: 0.2, fat: 0.3, sodium: 111, potassium: 259, phosphorus: 237 },
+            { id: '21', name: 'سبيط / كاليماري مطبوخ', calories: 92, protein: 15.6, carbs: 3.1, fat: 1.4, sodium: 44, potassium: 260, phosphorus: 220 },
+            { id: '22', name: 'سمك دنيس مشوي', calories: 135, protein: 21, carbs: 0, fat: 5.2, sodium: 68, potassium: 360, phosphorus: 215 },
+
+            // --- أطباق مطبوخة ومحلية شائعة (الأكلات المصرية والعربية) ---
+            { id: '23', name: 'كشري مصري بصلصة وطماطم', calories: 160, protein: 5.5, carbs: 29, fat: 2.8, sodium: 320, potassium: 180, phosphorus: 95 },
+            { id: '24', name: 'طعمية / فلافل مصرية', calories: 333, protein: 13.3, carbs: 31.8, fat: 17.8, sodium: 290, potassium: 585, phosphorus: 230 },
+            { id: '25', name: 'محشي كرنب / ملفوف', calories: 115, protein: 2.8, carbs: 17.5, fat: 4.2, sodium: 310, potassium: 210, phosphorus: 65 },
+            { id: '26', name: 'محشي ورق عنب', calories: 140, protein: 3.2, carbs: 20, fat: 5.5, sodium: 380, potassium: 240, phosphorus: 75 },
+            { id: '27', name: 'محشي كوسة', calories: 95, protein: 2.1, carbs: 14, fat: 3.5, sodium: 280, potassium: 220, phosphorus: 55 },
+            { id: '28', name: 'مسقعة بالباذنجان واللحم المفروم', calories: 185, protein: 8, carbs: 11, fat: 12.5, sodium: 420, potassium: 310, phosphorus: 110 },
+            { id: '29', name: 'فتة مصرية بالأرز والثوم', calories: 210, protein: 7.5, carbs: 26, fat: 8.5, sodium: 450, potassium: 190, phosphorus: 105 },
+            { id: '30', name: 'طاجن بامية باللحم', calories: 130, protein: 9, carbs: 8.5, fat: 6.5, sodium: 390, potassium: 260, phosphorus: 120 },
+            { id: '31', name: 'رقاق باللحمة المفرومة', calories: 275, protein: 11, carbs: 24, fat: 15, sodium: 490, potassium: 180, phosphorus: 130 },
+
+            // --- النشويات والحبوب والخبز ---
+            { id: '32', name: 'أرز أبيض مطبوخ', calories: 130, protein: 2.7, carbs: 28, fat: 0.3, sodium: 1, potassium: 35, phosphorus: 43 },
+            { id: '33', name: 'أرز بني مطبوخ', calories: 112, protein: 2.6, carbs: 23.5, fat: 0.9, sodium: 2, potassium: 79, phosphorus: 83 },
+            { id: '34', name: 'مكرونة مسلوقة', calories: 131, protein: 5, carbs: 25, fat: 1.1, sodium: 1, potassium: 44, phosphorus: 58 },
+            { id: '35', name: 'خبز بلدي مصري', calories: 247, protein: 11.5, carbs: 50, fat: 1.2, sodium: 480, potassium: 180, phosphorus: 160 },
+            { id: '36', name: 'خبز أسمر / توست بني', calories: 240, protein: 12, carbs: 43, fat: 3.5, sodium: 450, potassium: 230, phosphorus: 200 },
+            { id: '37', name: 'خبز توست أبيض', calories: 265, protein: 9, carbs: 49, fat: 3.2, sodium: 490, potassium: 110, phosphorus: 100 },
+            { id: '38', name: 'شوفان خام', calories: 389, protein: 16.9, carbs: 66.3, fat: 6.9, sodium: 2, potassium: 429, phosphorus: 523 },
+            { id: '39', name: 'بطاطس مسلوقة', calories: 87, protein: 1.9, carbs: 20.1, fat: 0.1, sodium: 6, potassium: 379, phosphorus: 44 },
+            { id: '40', name: 'بطاطس مشوية بالفرن', calories: 93, protein: 2.5, carbs: 21, fat: 0.1, sodium: 10, potassium: 535, phosphorus: 70 },
+            { id: '41', name: 'بطاطس مقلية (شيبس/مقرمشة)', calories: 312, protein: 3.4, carbs: 41, fat: 15, sodium: 210, potassium: 580, phosphorus: 95 },
+            { id: '42', name: 'بطاطا حلوة مشوية', calories: 90, protein: 2, carbs: 20.7, fat: 0.1, sodium: 36, potassium: 475, phosphorus: 54 },
+            { id: '43', name: 'فريك مطبوخ', calories: 125, protein: 4.5, carbs: 24, fat: 0.8, sodium: 5, potassium: 160, phosphorus: 110 },
+            { id: '44', name: 'برغل مطبوخ', calories: 83, protein: 3.1, carbs: 18.6, fat: 0.2, sodium: 6, potassium: 68, phosphorus: 40 },
+            { id: '45', name: 'كينوا مطبوخة', calories: 120, protein: 4.4, carbs: 21.3, fat: 1.9, sodium: 7, potassium: 172, phosphorus: 152 },
+
+            // --- البقوليات ---
+            { id: '46', name: 'فول مدمس (بدون زيت)', calories: 110, protein: 7.6, carbs: 19.8, fat: 0.4, sodium: 220, potassium: 330, phosphorus: 125 },
+            { id: '47', name: 'عدس أصفر / أسود مطبوخ', calories: 116, protein: 9, carbs: 20, fat: 0.4, sodium: 2, potassium: 369, phosphorus: 180 },
+            { id: '48', name: 'حمص مسلوق', calories: 164, protein: 8.9, carbs: 27.4, fat: 2.6, sodium: 7, potassium: 291, phosphorus: 168 },
+            { id: '49', name: 'فاصوليا بيضاء مطبوخة', calories: 127, protein: 8.7, carbs: 22.8, fat: 0.5, sodium: 2, potassium: 395, phosphorus: 140 },
+            { id: '50', name: 'ترمس مسلوق', calories: 119, protein: 15.6, carbs: 9.9, fat: 2.9, sodium: 4, potassium: 240, phosphorus: 190 },
+
+            // --- البيض والألبان والمنتجات اللبنية ---
+            { id: '51', name: 'بيض مسلوق كامل', calories: 155, protein: 12.6, carbs: 1.1, fat: 10.6, sodium: 124, potassium: 126, phosphorus: 172 },
+            { id: '52', name: 'بياض بيض مسلوق', calories: 52, protein: 11, carbs: 0.7, fat: 0.2, sodium: 166, potassium: 163, phosphorus: 15 },
+            { id: '53', name: 'صفار بيض مسلوق', calories: 322, protein: 16, carbs: 3.6, fat: 26.5, sodium: 50, potassium: 110, phosphorus: 390 },
+            { id: '54', name: 'جبن قريش (Cottage)', calories: 98, protein: 11.1, carbs: 3.4, fat: 4.3, sodium: 364, potassium: 104, phosphorus: 159 },
+            { id: '55', name: 'جبن بيضاء قليلة الدسم', calories: 160, protein: 14, carbs: 2, fat: 10, sodium: 600, potassium: 90, phosphorus: 210 },
+            { id: '56', name: 'جبن شيدر', calories: 403, protein: 25, carbs: 1.3, fat: 33, sodium: 621, potassium: 98, phosphorus: 512 },
+            { id: '57', name: 'جبن موزاريللا', calories: 280, protein: 28, carbs: 3.1, fat: 17, sodium: 620, potassium: 95, phosphorus: 450 },
+            { id: '58', name: 'زبادي طبيعي كامل الدسم', calories: 61, protein: 3.5, carbs: 4.7, fat: 3.3, sodium: 46, potassium: 155, phosphorus: 95 },
+            { id: '59', name: 'زبادي يوناني سادة (خالي الدسم)', calories: 59, protein: 10, carbs: 3.6, fat: 0.4, sodium: 36, potassium: 141, phosphorus: 135 },
+            { id: '60', name: 'حليب كامل الدسم', calories: 61, protein: 3.2, carbs: 4.8, fat: 3.3, sodium: 43, potassium: 132, phosphorus: 84 },
+            { id: '61', name: 'حليب خالي الدسم', calories: 35, protein: 3.4, carbs: 5, fat: 0.1, sodium: 50, potassium: 150, phosphorus: 95 },
+
+            // --- الخضروات والفواكه ---
+            { id: '62', name: 'خيار طازج مع القشر', calories: 15, protein: 0.7, carbs: 3.6, fat: 0.1, sodium: 2, potassium: 147, phosphorus: 24 },
+            { id: '63', name: 'طماطم طازجة', calories: 18, protein: 0.9, carbs: 3.9, fat: 0.2, sodium: 5, potassium: 237, phosphorus: 24 },
+            { id: '64', name: 'سبانخ مطبوخة', calories: 23, protein: 2.9, carbs: 3.6, fat: 0.4, sodium: 79, potassium: 558, phosphorus: 49 },
+            { id: '65', name: 'ملوخية مطبوخة بدون زيت', calories: 34, protein: 2.8, carbs: 5.5, fat: 0.3, sodium: 40, potassium: 280, phosphorus: 55 },
+            { id: '66', name: 'تفاح طازج بالقشر', calories: 52, protein: 0.3, carbs: 13.8, fat: 0.2, sodium: 1, potassium: 107, phosphorus: 11 },
+            { id: '67', name: 'موز طازج', calories: 89, protein: 1.1, carbs: 22.8, fat: 0.3, sodium: 1, potassium: 358, phosphorus: 22 },
+            { id: '68', name: 'برتقال طازج', calories: 47, protein: 0.9, carbs: 11.8, fat: 0.1, sodium: 0, potassium: 181, phosphorus: 14 },
+            { id: '69', name: 'بلح / تمر طازج (جاف)', calories: 282, protein: 2.5, carbs: 75, fat: 0.4, sodium: 2, potassium: 656, phosphorus: 62 },
+
+            // --- الحلويات الشرقية والمشروبات ---
+            { id: '70', name: 'بسبوسة بالسمن البلدي', calories: 380, protein: 4.5, carbs: 58, fat: 15, sodium: 120, potassium: 95, phosphorus: 70 },
+            { id: '71', name: 'كنافة بالقشطة', calories: 360, protein: 5, carbs: 52, fat: 16, sodium: 140, potassium: 110, phosphorus: 85 },
+            { id: '72', name: 'أم علي بالحليب والقشطة', calories: 290, protein: 6.2, carbs: 38, fat: 13, sodium: 110, potassium: 190, phosphorus: 140 },
+            { id: '73', name: 'أرز باللبن', calories: 145, protein: 3.8, carbs: 24, fat: 3.8, sodium: 55, potassium: 145, phosphorus: 98 },
+            { id: '74', name: 'عسل نحل طبيعي', calories: 304, protein: 0.3, carbs: 82.4, fat: 0, sodium: 4, potassium: 52, phosphorus: 6 },
+            { id: '75', name: 'عسل أسود (قصب السكر)', calories: 290, protein: 0, carbs: 75, fat: 0, sodium: 37, potassium: 1464, phosphorus: 30 },
+            { id: '76', name: 'زيت زيتون بكر', calories: 884, protein: 0, carbs: 0, fat: 100, sodium: 2, potassium: 1, phosphorus: 0 }
+        ];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSavedData();
+            loadPatientDataUI();
+            loadDoctorDataUI();
+
+            if (foodDatabase.length === 0) {
+                foodDatabase = [...defaultFoods];
+            }
+            updateDatabaseStatusText();
+
+            if (daysData.length === 0) {
+                addNewDay("اليوم الأول");
+            } else {
+                renderDays();
+            }
+
+            renderWeightTabUI();
+            renderDatabaseTabTable();
+
+            const printEl = document.getElementById('printDateStamp');
+            if(printEl) {
+                printEl.textContent = 'تاريخ التقرير: ' + new Date().toLocaleDateString('ar-EG');
+            }
+
+            // Set default date for weight log input
+            document.getElementById('weightLogDate').valueAsDate = new Date();
+        });
+
+        function switchTab(tabId) {
+            const tabs = ['planTab', 'weightTab', 'calculatorTab', 'dbTab'];
+            tabs.forEach(t => {
+                const el = document.getElementById(t);
+                const btn = document.getElementById('tabBtn-' + t);
+                if (t === tabId) {
+                    el.classList.remove('hidden');
+                    btn.classList.add('border-emerald-600', 'text-emerald-700');
+                    btn.classList.remove('border-transparent', 'text-slate-600');
+                } else {
+                    el.classList.add('hidden');
+                    btn.classList.remove('border-emerald-600', 'text-emerald-700');
+                    btn.classList.add('border-transparent', 'text-slate-600');
+                }
+            });
+
+            if (tabId === 'weightTab') renderWeightTabUI();
+            if (tabId === 'dbTab') renderDatabaseTabTable();
+        }
+
+        function openConfirmModal(title, text, onConfirm) {
+            document.getElementById('confirmModalTitle').textContent = title || 'تأكيد الحذف';
+            document.getElementById('confirmModalText').textContent = text || 'هل أنت متأكد من تنفيذ هذا الإجراء؟';
+            
+            confirmCallbackAction = onConfirm;
+            document.getElementById('confirmModalBtn').onclick = () => {
+                if (confirmCallbackAction) confirmCallbackAction();
+                closeConfirmModal();
+            };
+
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            confirmCallbackAction = null;
+        }
+
+        function saveData() {
+            localStorage.setItem('nutrition_days_data', JSON.stringify(daysData));
+            localStorage.setItem('nutrition_food_db', JSON.stringify(foodDatabase));
+            localStorage.setItem('diet_tracker_weight_logs', JSON.stringify(weightLogs));
+        }
+
+        function loadSavedData() {
+            try {
+                const savedDays = localStorage.getItem('nutrition_days_data');
+                const savedDb = localStorage.getItem('nutrition_food_db');
+                const savedWeights = localStorage.getItem('diet_tracker_weight_logs');
+                
+                if (savedDays) daysData = JSON.parse(savedDays);
+                if (savedDb) foodDatabase = JSON.parse(savedDb);
+                if (savedWeights) weightLogs = JSON.parse(savedWeights);
+            } catch (e) {
+                console.error("Error loading saved data:", e);
+            }
+        }
+
+        function saveDoctorData() {
+            const docObj = {
+                name: document.getElementById('doctorNameInput').value,
+                title: document.getElementById('doctorTitleInput').value,
+                clinic: document.getElementById('doctorClinicInput').value
+            };
+            localStorage.setItem('diet_tracker_doctor_data', JSON.stringify(docObj));
+            updateDoctorDisplays(docObj);
+        }
+
+        function loadDoctorDataUI() {
+            try {
+                const saved = localStorage.getItem('diet_tracker_doctor_data');
+                if (saved) {
+                    const docObj = JSON.parse(saved);
+                    if (docObj.name) document.getElementById('doctorNameInput').value = docObj.name;
+                    if (docObj.title) document.getElementById('doctorTitleInput').value = docObj.title;
+                    if (docObj.clinic) document.getElementById('doctorClinicInput').value = docObj.clinic;
+                    updateDoctorDisplays(docObj);
+                } else {
+                    updateDoctorDisplays({
+                        name: 'د. أحمد جلال',
+                        title: 'استشاري التغذية العلاجية والسمنة والنحافة',
+                        clinic: 'مركز التغذية العلاجية والنمط الصحي'
+                    });
+                }
+            } catch(e) {
+                console.error("Error loading doctor data:", e);
+            }
+        }
+
+        function updateDoctorDisplays(docObj) {
+            const name = docObj.name || 'د. أحمد جلال';
+            const title = docObj.title || 'استشاري التغذية العلاجية';
+            const clinic = docObj.clinic || 'Diet Tracker - الخطة الغذائية العلاجية';
+
+            const headerEl = document.getElementById('headerDocNameDisplay');
+            if (headerEl) headerEl.textContent = `${name} - ${title}`;
+
+            const printName = document.getElementById('printDocName');
+            if (printName) printName.textContent = name;
+
+            const printTitle = document.getElementById('printDocTitle');
+            if (printTitle) printTitle.textContent = title;
+
+            const printClinic = document.getElementById('printClinicInfo');
+            if (printClinic) printClinic.textContent = clinic;
+        }
+
+        function savePatientData() {
+            const patientObj = {
+                name: document.getElementById('patientName').value,
+                age: document.getElementById('patientAge').value,
+                height: document.getElementById('patientHeight').value,
+                gender: document.getElementById('patientGender').value,
+                weight: document.getElementById('patientWeight').value,
+                targetCal: document.getElementById('patientTargetCal').value,
+                notes: document.getElementById('patientNotes').value,
+            };
+            localStorage.setItem('diet_tracker_patient_data', JSON.stringify(patientObj));
+
+            // Sync with calculator inputs if present
+            if(patientObj.age) document.getElementById('calcAge').value = patientObj.age;
+            if(patientObj.height) document.getElementById('calcHeight').value = patientObj.height;
+            if(patientObj.weight) document.getElementById('calcWeight').value = patientObj.weight;
+            if(patientObj.gender) document.getElementById('calcGender').value = patientObj.gender === 'أنثى' ? 'female' : 'male';
+        }
+
+        function loadPatientDataUI() {
+            try {
+                const saved = localStorage.getItem('diet_tracker_patient_data');
+                if (saved) {
+                    const obj = JSON.parse(saved);
+                    if(obj.name) document.getElementById('patientName').value = obj.name;
+                    if(obj.age) document.getElementById('patientAge').value = obj.age;
+                    if(obj.height) document.getElementById('patientHeight').value = obj.height;
+                    if(obj.gender) document.getElementById('patientGender').value = obj.gender;
+                    if(obj.weight) document.getElementById('patientWeight').value = obj.weight;
+                    if(obj.targetCal) document.getElementById('patientTargetCal').value = obj.targetCal;
+                    if(obj.notes) document.getElementById('patientNotes').value = obj.notes;
+
+                    if(obj.age) document.getElementById('calcAge').value = obj.age;
+                    if(obj.height) document.getElementById('calcHeight').value = obj.height;
+                    if(obj.weight) document.getElementById('calcWeight').value = obj.weight;
+                    if(obj.gender) document.getElementById('calcGender').value = obj.gender === 'أنثى' ? 'female' : 'male';
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = type === 'error' ? 'bg-rose-600' : (type === 'info' ? 'bg-slate-800' : 'bg-emerald-600');
+            
+            toast.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-lg text-xs font-bold flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0`;
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'error' ? 'fa-circle-xmark' : 'fa-circle-check'} text-base"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function updateDatabaseStatusText() {
+            const statusEl = document.getElementById('dbStatusText');
+            if (statusEl) {
+                statusEl.textContent = `تحتوي قاعدة البيانات الحالية على (${foodDatabase.length}) صنف ونوع غذائي جاهز.`;
+            }
+        }
+
+        function addWeightEntry() {
+            const dateVal = document.getElementById('weightLogDate').value;
+            const weightVal = parseFloat(document.getElementById('weightLogValue').value);
+            const fatVal = parseFloat(document.getElementById('weightLogFat').value) || null;
+            const notesVal = document.getElementById('weightLogNotes').value.trim();
+
+            if (!dateVal || isNaN(weightVal) || weightVal <= 0) {
+                showToast('يرجى تحديد التاريخ وإدخال قيمة وزن صحيحة', 'error');
+                return;
+            }
+
+            weightLogs.push({
+                id: 'w_' + Date.now(),
+                date: dateVal,
+                weight: weightVal,
+                fat: fatVal,
+                notes: notesVal
+            });
+
+            // Sort weight logs chronologically
+            weightLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            saveData();
+            renderWeightTabUI();
+
+            // Clear inputs
+            document.getElementById('weightLogValue').value = '';
+            document.getElementById('weightLogFat').value = '';
+            document.getElementById('weightLogNotes').value = '';
+
+            showToast('تمت إضافة قياس الوزن لسجل المريض بنجاح');
+        }
+
+        function deleteWeightEntry(logId) {
+            openConfirmModal('حذف قياس وزن', 'هل أنت متأكد من مسح هذا القياس من السجل الزمني؟', () => {
+                weightLogs = weightLogs.filter(w => w.id !== logId);
+                saveData();
+                renderWeightTabUI();
+                showToast('تم حذف السجل المحدد', 'info');
+            });
+        }
+
+        function requestClearAllWeightLogs() {
+            if (weightLogs.length === 0) return;
+            openConfirmModal('مسح كافة سجلات الوزن', 'تحذير: سيتم مسح كافة سجلات الوزن التاريخية الخاصة بالمريض. هل تريد المتابعة؟', () => {
+                weightLogs = [];
+                saveData();
+                renderWeightTabUI();
+                showToast('تم مسح جميع قياسات الوزن', 'info');
+            });
+        }
+
+        function renderWeightTabUI() {
+            const tbody = document.getElementById('weightTableBody');
+            const heightCm = parseFloat(document.getElementById('patientHeight').value) || 170;
+            const heightM = heightCm / 100;
+
+            if (weightLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">لا توجد قياسات مسجلة حتى الآن. أضف أول قياس بالأعلى.</td></tr>`;
+                document.getElementById('kpiCurrentWeight').textContent = '--';
+                document.getElementById('kpiStartWeight').textContent = '--';
+                document.getElementById('kpiTotalDiff').textContent = '--';
+                document.getElementById('kpiBMI').textContent = '--';
+                document.getElementById('kpiBMIStatus').textContent = 'غير محدد';
+                renderWeightChart([]);
+                return;
+            }
+
+            // KPIs
+            const startW = weightLogs[0].weight;
+            const currentW = weightLogs[weightLogs.length - 1].weight;
+            const diff = (currentW - startW).toFixed(1);
+            const bmi = (currentW / (heightM * heightM)).toFixed(1);
+
+            document.getElementById('kpiCurrentWeight').textContent = currentW;
+            document.getElementById('kpiStartWeight').textContent = startW;
+            
+            const diffEl = document.getElementById('kpiTotalDiff');
+            diffEl.textContent = (diff > 0 ? '+' : '') + diff;
+            diffEl.className = diff <= 0 ? 'text-2xl font-black text-emerald-600' : 'text-2xl font-black text-rose-600';
+
+            document.getElementById('kpiBMI').textContent = bmi;
+            let bmiText = 'وزن طبيعي';
+            if (bmi < 18.5) bmiText = 'نقص وزن';
+            else if (bmi >= 25 && bmi < 30) bmiText = 'زيادة وزن';
+            else if (bmi >= 30) bmiText = 'سمنة';
+            document.getElementById('kpiBMIStatus').textContent = bmiText;
+
+            // Render Table Rows (Reverse chronologically for view)
+            const reversed = [...weightLogs].reverse();
+            tbody.innerHTML = reversed.map((item, index) => {
+                const originalIndex = weightLogs.length - 1 - index;
+                let prevDiffText = '--';
+                if (originalIndex > 0) {
+                    const prevWeight = weightLogs[originalIndex - 1].weight;
+                    const d = (item.weight - prevWeight).toFixed(1);
+                    prevDiffText = (d > 0 ? `+${d}` : d) + ' كجم';
+                }
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-3 px-3 font-bold text-slate-800">${item.date}</td>
+                        <td class="py-3 px-3 text-center font-black text-emerald-700 bg-emerald-50/50 rounded-lg">${item.weight} كجم</td>
+                        <td class="py-3 px-3 text-center font-bold ${prevDiffText.includes('+') ? 'text-rose-600' : (prevDiffText === '--' ? 'text-slate-400' : 'text-emerald-600')}">${prevDiffText}</td>
+                        <td class="py-3 px-3 text-center font-mono">${item.fat ? item.fat + '%' : '-'}</td>
+                        <td class="py-3 px-3 text-slate-500">${item.notes || '-'}</td>
+                        <td class="py-3 px-2 text-center">
+                            <button onclick="deleteWeightEntry('${item.id}')" class="text-slate-300 hover:text-rose-600 transition px-2 cursor-pointer">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            renderWeightChart(weightLogs);
+        }
+
+        function renderWeightChart(logs) {
+            const container = document.getElementById('weightChartContainer');
+            if (logs.length < 2) {
+                container.innerHTML = `<div class="text-xs text-slate-400 font-semibold flex flex-col items-center gap-2">
+                    <i class="fa-solid fa-chart-area text-slate-300 text-3xl"></i>
+                    <span>يلزم وجود قياسين على الأقل لإظهار منحنى التغير البياني.</span>
+                </div>`;
+                return;
+            }
+
+            const weights = logs.map(l => l.weight);
+            const minW = Math.min(...weights) - 2;
+            const maxW = Math.max(...weights) + 2;
+            const width = 600;
+            const height = 180;
+            const padding = 30;
+
+            const points = logs.map((l, i) => {
+                const x = padding + (i / (logs.length - 1)) * (width - 2 * padding);
+                const y = height - padding - ((l.weight - minW) / (maxW - minW)) * (height - 2 * padding);
+                return { x, y, weight: l.weight, date: l.date };
+            });
+
+            const pathD = points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(' ');
+            const areaD = `${pathD} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`;
+
+            container.innerHTML = `
+                <svg viewBox="0 0 ${width} ${height}" class="w-full h-full overflow-visible">
+                    <defs>
+                        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#22c55e" stop-opacity="0.3"/>
+                            <stop offset="100%" stop-color="#22c55e" stop-opacity="0.0"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="${areaD}" fill="url(#chartGrad)" />
+                    <path d="${pathD}" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" />
+                    ${points.map(p => `
+                        <circle cx="${p.x}" cy="${p.y}" r="5" fill="#ffffff" stroke="#15803d" stroke-width="2.5" class="hover:r-7 transition-all cursor-pointer">
+                            <title>${p.date}: ${p.weight} kg</title>
+                        </circle>
+                        <text x="${p.x}" y="${p.y - 10}" text-anchor="middle" fill="#1e293b" font-size="10 font-weight="bold">${p.weight}</text>
+                    `).join('')}
+                </svg>
+            `;
+        }
+
+        function calculateCaloricNeeds() {
+            const gender = document.getElementById('calcGender').value;
+            const age = parseFloat(document.getElementById('calcAge').value) || 30;
+            const weight = parseFloat(document.getElementById('calcWeight').value) || 70;
+            const height = parseFloat(document.getElementById('calcHeight').value) || 170;
+            const activity = parseFloat(document.getElementById('calcActivity').value) || 1.375;
+
+            let bmr = 0;
+            if (gender === 'male') {
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+            } else {
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+            }
+
+            const tdee = bmr * activity;
+
+            document.getElementById('resBMR').textContent = Math.round(bmr);
+            document.getElementById('resTDEE').textContent = Math.round(tdee);
+
+            document.getElementById('targetWeightLoss').textContent = Math.round(tdee * 0.80);
+            document.getElementById('targetExtremeLoss').textContent = Math.round(tdee * 0.70);
+            document.getElementById('targetMaintain').textContent = Math.round(tdee);
+            document.getElementById('targetGain').textContent = Math.round(tdee * 1.15);
+
+            document.getElementById('calcResultsCard').classList.remove('hidden');
+            showToast('تم حساب السعرات بنجاح وفق معادلة Mifflin-St Jeor');
+        }
+
+        function applyCalorieToPatient(elementId) {
+            const val = document.getElementById(elementId).textContent;
+            document.getElementById('patientTargetCal').value = val;
+            savePatientData();
+            showToast(`تم اعتماد السعرات (${val} kcal) في ملف المريض`);
+            switchTab('planTab');
+        }
+
+        function renderDatabaseTabTable() {
+            const tbody = document.getElementById('fullDbTableBody');
+            const query = (document.getElementById('dbTabSearchInput').value || '').toLowerCase().trim();
+
+            const filtered = foodDatabase.filter(f => f.name.toLowerCase().includes(query));
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400">لا توجد نتائج مطابقة للبحث.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-2.5 px-3 font-bold text-slate-800">${item.name}</td>
+                    <td class="py-2.5 px-3 text-center font-mono font-bold text-amber-700">${item.calories}</td>
+                    <td class="py-2.5 px-3 text-center font-mono">${item.protein}g</td>
+                    <td class="py-2.5 px-3 text-center font-mono">${item.carbs}g</td>
+                    <td class="py-2.5 px-3 text-center font-mono">${item.fat}g</td>
+                    <td class="py-2.5 px-3 text-center font-mono text-slate-500">${item.sodium || 0}mg</td>
+                    <td class="py-2.5 px-3 text-center font-mono text-slate-500">${item.potassium || 0}mg</td>
+                    <td class="py-2.5 px-3 text-center font-mono text-slate-500">${item.phosphorus || 0}mg</td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddCustomFoodModal() {
+            document.getElementById('custFoodName').value = '';
+            document.getElementById('custFoodCal').value = '';
+            document.getElementById('custFoodPro').value = '';
+            document.getElementById('custFoodCarb').value = '';
+            document.getElementById('custFoodFat').value = '';
+            document.getElementById('custFoodSod').value = '';
+            document.getElementById('custFoodPot').value = '';
+            document.getElementById('addCustomFoodModal').classList.remove('hidden');
+        }
+
+        function closeAddCustomFoodModal() {
+            document.getElementById('addCustomFoodModal').classList.add('hidden');
+        }
+
+        function saveCustomFoodToDb() {
+            const name = document.getElementById('custFoodName').value.trim();
+            const cal = parseFloat(document.getElementById('custFoodCal').value) || 0;
+            const pro = parseFloat(document.getElementById('custFoodPro').value) || 0;
+            const carb = parseFloat(document.getElementById('custFoodCarb').value) || 0;
+            const fat = parseFloat(document.getElementById('custFoodFat').value) || 0;
+            const sod = parseFloat(document.getElementById('custFoodSod').value) || 0;
+            const pot = parseFloat(document.getElementById('custFoodPot').value) || 0;
+
+            if (!name) {
+                showToast('يرجى إدخال اسم الصنف الغذائي', 'error');
+                return;
+            }
+
+            foodDatabase.unshift({
+                id: 'custom_' + Date.now(),
+                name: name,
+                calories: cal,
+                protein: pro,
+                carbs: carb,
+                fat: fat,
+                sodium: sod,
+                potassium: pot,
+                phosphorus: 0
+            });
+
+            saveData();
+            updateDatabaseStatusText();
+            renderDatabaseTabTable();
+            closeAddCustomFoodModal();
+            showToast(`تم حفظ صنف (${name}) بنجاح لقاعدة البيانات`);
+        }
+
+        function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                parseCSVData(e.target.result);
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function parseCSVData(csvText) {
+            const lines = csvText.split(/\r\n|\n/);
+            if (lines.length < 2) return;
+
+            const newDatabase = [];
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+            const findIdx = (keywords) => headers.findIndex(h => keywords.some(k => h.includes(k)));
+
+            const nameIdx = findIdx(['name', 'food', 'اسم', 'صنف', 'مكون', 'item']);
+            const calIdx = findIdx(['calori', 'kcal', 'سعرة', 'سعرات']);
+            const proIdx = findIdx(['protein', 'بروتين']);
+            const carbIdx = findIdx(['carb', 'كربوهيدرات', 'كاربو']);
+            const fatIdx = findIdx(['fat', 'دهون']);
+            const sodIdx = findIdx(['sodium', 'صوديوم']);
+            const potIdx = findIdx(['potassium', 'بوتاسيوم']);
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const row = lines[i].split(',').map(item => item.trim().replace(/^"|"$/g, ''));
+                if (row.length <= nameIdx) continue;
+
+                const name = row[nameIdx !== -1 ? nameIdx : 0];
+                if (!name) continue;
+
+                const parseNum = (idx) => idx !== -1 && row[idx] ? parseFloat(row[idx]) || 0 : 0;
+
+                newDatabase.push({
+                    id: 'csv_' + Date.now() + '_' + i,
+                    name: name,
+                    calories: parseNum(calIdx),
+                    protein: parseNum(proIdx),
+                    carbs: parseNum(carbIdx),
+                    fat: parseNum(fatIdx),
+                    sodium: parseNum(sodIdx),
+                    potassium: parseNum(potIdx),
+                    phosphorus: 0
+                });
+            }
+
+            if (newDatabase.length > 0) {
+                foodDatabase = [...newDatabase, ...foodDatabase];
+                saveData();
+                updateDatabaseStatusText();
+                renderDatabaseTabTable();
+                showToast(`تم استيراد ${newDatabase.length} صنف بنجاح!`);
+            }
+        }
+
+        function addNewDay(customName = null) {
+            const dayNum = daysData.length + 1;
+            const newDay = {
+                id: 'day_' + Date.now(),
+                name: customName || `اليوم ${dayNum}`,
+                date: new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' }),
+                isCollapsed: false,
+                meals: [
+                    { id: 'meal_' + Date.now() + '_1', name: 'وجبة الإفطار 🌅', items: [] },
+                    { id: 'meal_' + Date.now() + '_2', name: 'وجبة الغداء ☀️', items: [] },
+                    { id: 'meal_' + Date.now() + '_3', name: 'وجبة العشاء 🌙', items: [] }
+                ]
+            };
+
+            daysData.push(newDay);
+            saveData();
+            renderDays();
+            showToast(`تم إضافة ${newDay.name} بنجاح`);
+        }
+
+        function toggleDayCollapse(dayId) {
+            const day = daysData.find(d => d.id === dayId);
+            if (day) {
+                day.isCollapsed = !day.isCollapsed;
+                saveData();
+                renderDays();
+            }
+        }
+
+        function deleteDay(dayId) {
+            const day = daysData.find(d => d.id === dayId);
+            const name = day ? day.name : 'اليوم';
+            
+            openConfirmModal('تأكيد حذف اليوم', `هل أنت متأكد من حذف (${name}) بكافة وجباته وأصنافه؟`, () => {
+                daysData = daysData.filter(d => d.id !== dayId);
+                saveData();
+                renderDays();
+                showToast(`تم حذف ${name}`, 'info');
+            });
+        }
+
+        function openAddMealModal(dayId) {
+            targetMealDayId = dayId;
+            document.getElementById('newMealNameInput').value = '';
+            document.getElementById('addMealModal').classList.remove('hidden');
+        }
+
+        function closeAddMealModal() {
+            document.getElementById('addMealModal').classList.add('hidden');
+            targetMealDayId = null;
+        }
+
+        function setMealNameSuggestion(name) {
+            document.getElementById('newMealNameInput').value = name;
+        }
+
+        function confirmCreateMeal() {
+            const mealName = document.getElementById('newMealNameInput').value.trim();
+            if (!mealName) {
+                showToast('يرجى كتابة اسم الوجبة أولاً', 'error');
+                return;
+            }
+
+            const day = daysData.find(d => d.id === targetMealDayId);
+            if (day) {
+                day.meals.push({
+                    id: 'meal_' + Date.now(),
+                    name: mealName,
+                    items: []
+                });
+                saveData();
+                renderDays();
+                closeAddMealModal();
+                showToast(`تمت إضافة ${mealName}`);
+            }
+        }
+
+        function deleteMeal(dayId, mealId) {
+            openConfirmModal('حذف الوجبة', 'هل أنت متأكد من حذف هذه الوجبة ومكوناتها؟', () => {
+                const day = daysData.find(d => d.id === dayId);
+                if (day) {
+                    day.meals = day.meals.filter(m => m.id !== mealId);
+                    saveData();
+                    renderDays();
+                    showToast('تم حذف الوجبة بنجاح', 'info');
+                }
+            });
+        }
+
+        function removeFoodFromMeal(dayId, mealId, itemIndex) {
+            openConfirmModal('حذف الصنف الغذائي', 'هل تريد حذف هذا المكون من الوجبة؟', () => {
+                const day = daysData.find(d => d.id === dayId);
+                if (day) {
+                    const meal = day.meals.find(m => m.id === mealId);
+                    if (meal) {
+                        meal.items.splice(itemIndex, 1);
+                        saveData();
+                        renderDays();
+                        showToast('تم حذف الصنف من الوجبة', 'info');
+                    }
+                }
+            });
+        }
+
+        function calculateItemNutrients(item) {
+            const ratio = (item.grams || 0) / 100;
+            return {
+                calories: (item.calories || 0) * ratio,
+                protein: (item.protein || 0) * ratio,
+                carbs: (item.carbs || 0) * ratio,
+                fat: (item.fat || 0) * ratio,
+                sodium: (item.sodium || 0) * ratio,
+                potassium: (item.potassium || 0) * ratio,
+                phosphorus: (item.phosphorus || 0) * ratio,
+            };
+        }
+
+        function sumNutrients(items) {
+            return items.reduce((acc, item) => {
+                const n = calculateItemNutrients(item);
+                acc.calories += n.calories;
+                acc.protein += n.protein;
+                acc.carbs += n.carbs;
+                acc.fat += n.fat;
+                acc.sodium += n.sodium;
+                acc.potassium += n.potassium;
+                acc.phosphorus += n.phosphorus;
+                return acc;
+            }, { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0, potassium: 0, phosphorus: 0 });
+        }
+
+        function openFoodModal(dayId, mealId, mealName) {
+            currentModalContext = { dayId, mealId };
+            document.getElementById('modalMealTitle').textContent = `إضافة صنف إلى (${mealName})`;
+            document.getElementById('foodSearchInput').value = '';
+            document.getElementById('foodGramsInput').value = 100;
+            document.getElementById('selectedFoodId').value = '';
+            document.getElementById('selectedFoodPreview').classList.add('hidden');
+            document.getElementById('computedPreview').classList.add('hidden');
+
+            filterFoodList();
+            document.getElementById('foodModal').classList.remove('hidden');
+        }
+
+        function closeFoodModal() {
+            document.getElementById('foodModal').classList.add('hidden');
+        }
+
+        function filterFoodList() {
+            const query = document.getElementById('foodSearchInput').value.toLowerCase().trim();
+            const listEl = document.getElementById('foodDropdownList');
+            listEl.innerHTML = '';
+
+            const filtered = foodDatabase.filter(f => f.name.toLowerCase().includes(query));
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<div class="p-3 text-center text-xs text-slate-400">لم يتم العثور على نتائج للبحث.</div>`;
+                return;
+            }
+
+            filtered.slice(0, 50).forEach(food => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'p-2.5 hover:bg-slate-50 cursor-pointer flex justify-between items-center text-xs transition border-b border-slate-50 last:border-b-0';
+                itemEl.onclick = () => selectFoodForModal(food);
+                itemEl.innerHTML = `
+                    <span class="font-bold text-slate-700">${food.name}</span>
+                    <span class="text-slate-400 font-mono">${food.calories} kcal / 100g</span>
+                `;
+                listEl.appendChild(itemEl);
+            });
+        }
+
+        function selectFoodForModal(food) {
+            document.getElementById('selectedFoodId').value = food.id;
+            document.getElementById('foodSearchInput').value = food.name;
+            
+            document.getElementById('previewFoodName').textContent = food.name;
+            document.getElementById('prevCal').textContent = food.calories;
+            document.getElementById('prevPro').textContent = food.protein + 'g';
+            document.getElementById('prevCarb').textContent = food.carbs + 'g';
+            document.getElementById('prevFat').textContent = food.fat + 'g';
+            document.getElementById('selectedFoodPreview').classList.remove('hidden');
+
+            updateLiveCalculations();
+        }
+
+        function updateLiveCalculations() {
+            const foodId = document.getElementById('selectedFoodId').value;
+            const grams = parseFloat(document.getElementById('foodGramsInput').value) || 0;
+            
+            if (!foodId || grams <= 0) {
+                document.getElementById('computedPreview').classList.add('hidden');
+                return;
+            }
+
+            const food = foodDatabase.find(f => f.id === foodId);
+            if (!food) return;
+
+            const computed = calculateItemNutrients({ ...food, grams });
+
+            document.getElementById('calcCal').textContent = Math.round(computed.calories);
+            document.getElementById('calcPro').textContent = computed.protein.toFixed(1);
+            document.getElementById('calcCarb').textContent = computed.carbs.toFixed(1);
+            document.getElementById('calcFat').textContent = computed.fat.toFixed(1);
+            document.getElementById('calcSod').textContent = Math.round(computed.sodium);
+            document.getElementById('calcPot').textContent = Math.round(computed.potassium);
+            document.getElementById('calcPho').textContent = Math.round(computed.phosphorus);
+
+            document.getElementById('computedPreview').classList.remove('hidden');
+        }
+
+        function confirmAddFoodItem() {
+            const foodId = document.getElementById('selectedFoodId').value;
+            const grams = parseFloat(document.getElementById('foodGramsInput').value) || 0;
+
+            if (!foodId) {
+                showToast('يرجى اختيار مادة غذائية من القائمة أولاً', 'error');
+                return;
+            }
+            if (grams <= 0) {
+                showToast('يرجى إدخال كمية صحيحة بالجرام', 'error');
+                return;
+            }
+
+            const food = foodDatabase.find(f => f.id === foodId);
+            if (!food) return;
+
+            const day = daysData.find(d => d.id === currentModalContext.dayId);
+            if (day) {
+                const meal = day.meals.find(m => m.id === currentModalContext.mealId);
+                if (meal) {
+                    meal.items.push({
+                        id: 'item_' + Date.now(),
+                        foodId: food.id,
+                        name: food.name,
+                        grams: grams,
+                        calories: food.calories,
+                        protein: food.protein,
+                        carbs: food.carbs,
+                        fat: food.fat,
+                        sodium: food.sodium,
+                        potassium: food.potassium,
+                        phosphorus: food.phosphorus
+                    });
+
+                    saveData();
+                    renderDays();
+                    closeFoodModal();
+                    showToast(`تمت إضافة (${food.name}) للوجبة`);
+                }
+            }
+        }
+
+        function renderDays() {
+            const container = document.getElementById('daysContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            if (daysData.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.innerHTML = daysData.map(day => renderDayCard(day)).join('');
+        }
+
+        function renderDayCard(day) {
+            const allDayItems = day.meals.flatMap(m => m.items);
+            const dayTotals = sumNutrients(allDayItems);
+            const isCollapsed = day.isCollapsed !== undefined ? day.isCollapsed : false;
+
+            return `
+                <div class="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden transition-all duration-200 page-break">
+                    
+                    <div class="p-4 sm:p-5 bg-slate-900 text-white flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 cursor-pointer hover:bg-slate-800/95 transition select-none"
+                         onclick="toggleDayCollapse('${day.id}')">
+                        
+                        <div class="flex items-center justify-between w-full lg:w-auto gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-base">
+                                    <i class="fa-regular fa-calendar-days"></i>
+                                </div>
+                                <div>
+                                    <h2 class="font-extrabold text-lg text-white leading-tight flex items-center gap-2">
+                                        <span>${day.name}</span>
+                                        <span class="text-xs font-normal text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">
+                                            ${day.meals.reduce((acc, m) => acc + m.items.length, 0)} أصناف
+                                        </span>
+                                    </h2>
+                                    <span class="text-xs text-slate-400 font-mono">${day.date}</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 lg:hidden no-print">
+                                <button onclick="event.stopPropagation(); deleteDay('${day.id}')" title="حذف اليوم" class="text-slate-400 hover:text-rose-400 p-2 transition cursor-pointer">
+                                    <i class="fa-solid fa-trash-can text-sm"></i>
+                                </button>
+                                <span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300">
+                                    <i class="fa-solid fa-chevron-${isCollapsed ? 'down' : 'up'} text-xs"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-4 sm:grid-cols-7 gap-2 w-full lg:w-auto text-center text-xs" onclick="event.stopPropagation()">
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl">
+                                <span class="block text-[10px] text-amber-400 font-semibold mb-0.5">🔥 سعرات</span>
+                                <span class="font-extrabold text-sm text-white">${Math.round(dayTotals.calories)}</span>
+                                <span class="text-[9px] text-slate-400 block">kcal</span>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl">
+                                <span class="block text-[10px] text-rose-400 font-semibold mb-0.5">🥩 بروتين</span>
+                                <span class="font-extrabold text-sm text-white">${dayTotals.protein.toFixed(1)}</span>
+                                <span class="text-[9px] text-slate-400 block">g</span>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl">
+                                <span class="block text-[10px] text-sky-400 font-semibold mb-0.5">🌾 كارب</span>
+                                <span class="font-extrabold text-sm text-white">${dayTotals.carbs.toFixed(1)}</span>
+                                <span class="text-[9px] text-slate-400 block">g</span>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl">
+                                <span class="block text-[10px] text-amber-300 font-semibold mb-0.5">🥑 دهون</span>
+                                <span class="font-extrabold text-sm text-white">${dayTotals.fat.toFixed(1)}</span>
+                                <span class="text-[9px] text-slate-400 block">g</span>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl hidden sm:block">
+                                <span class="block text-[10px] text-indigo-300 font-semibold mb-0.5">🧂 صوديوم</span>
+                                <span class="font-extrabold text-sm text-white">${Math.round(dayTotals.sodium)}</span>
+                                <span class="text-[9px] text-slate-400 block">mg</span>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl hidden sm:block">
+                                <span class="block text-[10px] text-emerald-300 font-semibold mb-0.5">🍌 بوتاسيوم</span>
+                                <span class="font-extrabold text-sm text-white">${Math.round(dayTotals.potassium)}</span>
+                                <span class="text-[9px] text-slate-400 block">mg</span>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl hidden sm:block">
+                                <span class="block text-[10px] text-purple-300 font-semibold mb-0.5">🦴 فسفور</span>
+                                <span class="font-extrabold text-sm text-white">${Math.round(dayTotals.phosphorus)}</span>
+                                <span class="text-[9px] text-slate-400 block">mg</span>
+                            </div>
+                        </div>
+
+                        <div class="hidden lg:flex items-center gap-2 no-print">
+                            <button onclick="event.stopPropagation(); deleteDay('${day.id}')" title="حذف اليوم" class="text-slate-400 hover:text-rose-400 w-9 h-9 rounded-xl hover:bg-slate-800 flex items-center justify-center transition cursor-pointer">
+                                <i class="fa-solid fa-trash-can text-sm"></i>
+                            </button>
+                            <span title="${isCollapsed ? 'توسيع' : 'طي'}" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300">
+                                <i class="fa-solid fa-chevron-${isCollapsed ? 'down' : 'up'} text-sm"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="collapsible-body ${isCollapsed ? 'hidden' : ''} p-4 sm:p-6 space-y-6 bg-slate-50/50 border-t border-slate-100">
+                        <div class="grid grid-cols-1 gap-6">
+                            ${day.meals.map(meal => renderMealCard(day.id, meal)).join('')}
+                        </div>
+
+                        <div class="text-center pt-2 no-print">
+                            <button onclick="openAddMealModal('${day.id}')" class="inline-flex items-center gap-2 border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-semibold px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm cursor-pointer">
+                                <i class="fa-solid fa-folder-plus text-emerald-600"></i>
+                                <span>إضافة وجبة جديدة لهذا اليوم</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+        }
+
+        function renderMealCard(dayId, meal) {
+            const mealTotals = sumNutrients(meal.items);
+
+            return `
+                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs transition hover:border-slate-300">
+                    
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 mb-4 gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <h3 class="font-bold text-slate-800 text-base">${meal.name}</h3>
+                            <span class="text-xs bg-slate-100 text-slate-500 px-2.5 py-0.5 rounded-full font-medium">(${meal.items.length} مواد)</span>
+                        </div>
+
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                            <button onclick="openFoodModal('${dayId}', '${meal.id}', '${meal.name}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 border border-emerald-200/60 cursor-pointer">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>إضافة صنف</span>
+                            </button>
+                            <button onclick="deleteMeal('${dayId}', '${meal.id}')" class="text-slate-400 hover:text-rose-500 text-xs p-1.5 transition cursor-pointer" title="حذف الوجبة">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    ${meal.items.length === 0 ? `
+                        <div class="py-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
+                            لا توجد أصناف في هذه الوجبة بعد. انقر على "إضافة صنف" بالأعلى.
+                        </div>
+                    ` : `
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-right text-xs">
+                                <thead>
+                                    <tr class="text-slate-400 border-b border-slate-100 font-bold">
+                                        <th class="py-2 px-2">الصنف</th>
+                                        <th class="py-2 px-2 text-center">الكمية</th>
+                                        <th class="py-2 px-2 text-center">سعرات</th>
+                                        <th class="py-2 px-2 text-center">بروتين</th>
+                                        <th class="py-2 px-2 text-center">كارب</th>
+                                        <th class="py-2 px-2 text-center">دهون</th>
+                                        <th class="py-2 px-2 text-center hidden md:table-cell">صوديوم</th>
+                                        <th class="py-2 px-2 text-center hidden md:table-cell">بوتاسيوم</th>
+                                        <th class="py-2 px-2 text-center hidden md:table-cell">فسفور</th>
+                                        <th class="py-2 px-1 text-center"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50 text-slate-700">
+                                    ${meal.items.map((item, idx) => {
+                                        const nut = calculateItemNutrients(item);
+                                        return `
+                                            <tr class="hover:bg-slate-50/80 transition">
+                                                <td class="py-2.5 px-2 font-bold text-slate-800">${item.name}</td>
+                                                <td class="py-2.5 px-2 text-center font-semibold text-emerald-700 bg-emerald-50/50 rounded-lg">${item.grams} جرام</td>
+                                                <td class="py-2.5 px-2 text-center font-mono font-bold">${Math.round(nut.calories)}</td>
+                                                <td class="py-2.5 px-2 text-center font-mono">${nut.protein.toFixed(1)}g</td>
+                                                <td class="py-2.5 px-2 text-center font-mono">${nut.carbs.toFixed(1)}g</td>
+                                                <td class="py-2.5 px-2 text-center font-mono">${nut.fat.toFixed(1)}g</td>
+                                                <td class="py-2.5 px-2 text-center font-mono text-slate-500 hidden md:table-cell">${Math.round(nut.sodium)}mg</td>
+                                                <td class="py-2.5 px-2 text-center font-mono text-slate-500 hidden md:table-cell">${Math.round(nut.potassium)}mg</td>
+                                                <td class="py-2.5 px-2 text-center font-mono text-slate-500 hidden md:table-cell">${Math.round(nut.phosphorus)}mg</td>
+                                                <td class="py-2.5 px-1 text-center">
+                                                    <button onclick="removeFoodFromMeal('${dayId}', '${meal.id}', ${idx})" class="text-slate-300 hover:text-rose-500 transition px-1 cursor-pointer">
+                                                        <i class="fa-solid fa-xmark"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 bg-slate-50/80 p-2.5 rounded-xl">
+                            <span class="font-bold text-slate-700">مجموع الوجبة:</span>
+                            <div class="flex flex-wrap gap-3 font-semibold">
+                                <span class="text-amber-700">🔥 ${Math.round(mealTotals.calories)} kcal</span>
+                                <span class="text-rose-700">🥩 ${mealTotals.protein.toFixed(1)}g P</span>
+                                <span class="text-sky-700">🌾 ${mealTotals.carbs.toFixed(1)}g C</span>
+                                <span class="text-amber-600">🥑 ${mealTotals.fat.toFixed(1)}g F</span>
+                                <span class="text-indigo-600 hidden sm:inline">🧂 ${Math.round(mealTotals.sodium)}mg Na</span>
+                                <span class="text-emerald-600 hidden sm:inline">🍌 ${Math.round(mealTotals.potassium)}mg K</span>
+                                <span class="text-purple-600 hidden sm:inline">🦴 ${Math.round(mealTotals.phosphorus)}mg P</span>
+                            </div>
+                        </div>
+                    `}
+
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+```
+....
+اعمل تاب اسمها الاعدادات فيها ضبط التفاصيل دي بيانات الطبيب والعيادة (تظهر بالواجهة والتقرير المطبوع)
+حاسبه السعرات تكون في صفحة الخطه الغذائية مع امكانيه خصم او زيادة السعرات الكليه حسب الرغبه 
+امسح زر csv 
+المنحنى يكون المسافات ١٠
+....
+ضيف كل الاصناف دي في القائمة المنسدله
+﻿Food item - صنف الطعام,Water (g),Energy (kcal),Ptn (g),Fats (g),Fibers (g),CHO (g),Na (mg),K (mg),Ca (mg),Ph (mg),Mg (mg),Fe (mg),Zn (mg),Cu (mg),A (ug RE),C (mg),B1 (mg),B2 (mg)
+"( شعير، حبوب ) Barley,grains",88,335,10.7,1.5,6.5,69.6,55,299,104,184,26,4.63,2.25,0.41,0,0,0.3,0.11
+"( ذرة، حبوب (بيضاء) ) Corn,grains (White)",10.7,364,10.2,4,1.9,71.9,8,125,27,254,25,2.42,1.7,0.21,0,0,0.37,0.12
+"( ذرة، حبوب (صفراء) ) Corn,grains (Yellow)",10.1,368,12.7,5.5,2.9,67,10,161,26,239,30,2.6,1.5,0.19,120,0,0.39,0.1
+"( رقائق الذرة (كورن فليكس) ) Corn,flakes",5,373,6.2,2.1,2,82.3,464,139,15,44,11,1.4,1,0.23,0,0,0.5,0
+"( دقيق الذرة ) Corn,flour",11.1,359,8.9,2.5,1,75.2,6,95,22,183,20,2.3,1.05,0.19,0,0,0,0
+"( حبوب ذرة، معلبة ) Corn,Kernels,canned",74.5,100,2.8,0.9,0.8,20.1,301,82,5,65,0,0.65,0.5,0.05,25,7,0.03,0
+"( كوز ذرة مشوي ) Corn,Kernels,on cob,grilled",56.9,161,4,1,3,34.1,4,69,7,0,0,1.02,0.14,0,8,0,0,0
+"( فشار ) Corn,popped",1.8,451,9.1,16.7,2.5,66,706,158,20,293,0,1.8,1.5,0,0,0,0,0
+"( ذرة مقرمشة (بافد) ) Corn,puffed",2.7,503,7.8,25.7,1.5,60.1,687,190,32,231,0,2,1.3,0,30,0,0,0
+"( نشا الذرة ) Corn,Starch",5,380,0.2,0.1,0,94.5,5,7,0,30,0,0,0,0,0,0,0,0
+( مكرونة ) Macaroni,9.9,361,12,1.1,0.4,75.8,10,176,35,128,22,1.4,1.65,0.16,0,0,0.17,0
+"( مكرونة بالطماطم، مطبوخة ) Macaroni/Tomato,cooked",59.3,169,5,3,0.7,30.5,288,95,15,66,0,0.7,0.56,0,0,0,0,0
+"( مكرونة باللحم والطماطم، مطبوخة ) Macaroni/Tomato/meat,cooked",61,175,6.8,5.6,0.6,24.4,342,184,30,130,0,1.1,1.05,0,0,0,0,0
+"( نودلز مقلية ) Noodles,fried",52.5,218,5.1,6,0.3,36,250,88,18,42,0,0.6,0.7,0,0,0,0,0
+"( أرز، حبوب (طويل الحبة) ) Rice,grains (Long)",11.2,357,8.7,0.8,0.3,78.7,13,108,22,108,15,0.77,1.3,0.23,0,0,0.09,0.04
+"( أرز، حبوب (قصير الحبة) ) Rice,grains (short)",12.5,351,7.3,0.7,0.3,78.8,11,93,30,98,23,0.59,1.05,0.31,0,0,0.1,0.03
+"( دقيق الأرز ) Rice,flour",11.6,354,7.3,0.5,0.3,80,13,80,18,106,10,0.8,0.76,0.2,0,0,0,0
+"( أرز مقلي ) Rice,fried",49.8,214,3.6,3.9,0.3,41.1,278,67,7,43,0,0.25,0.43,0,0,0,0,0
+"( أرز بالشعرية ) Rice,fried with noodles",49.4,219,3.5,4.5,0.3,41.1,299,75,18,52,0,0.7,0.45,0,0,0,0,0
+"( أرز بالبصل (صيادية) ) Rice,fried with onions",53.7,203,3.1,4.6,0.6,37.2,283,42,15,62,0,1,0.8,0,0,0,0,0
+"( أرز مدعم - طعام أطفال ) Rice,fortified-baby food",4,420,16.2,10,0.5,66.4,170,780,555,460,13,7,2.2,0,375,40,0.6,0.4
+( أرز (كشري) ) Rice (Koshari),61,172,6.5,5.2,1.1,24.7,324,228,10,32,0,1.4,1.3,0.2,0,0,0,0
+( كشري محلات ) Rice (Koshari) market,63,157,4.5,3.7,0.9,26.3,401,185,8,27,0,0.82,1.11,0.12,0,0,0,0
+"( أرز باللبن ) Rice, pudding with milk",70,129,3.3,2.6,0.5,23.1,25,125,58,0,0,0.05,0,0,0,0,0,0
+"( أرز مقرمش ) Rice, puffed/crisp",5,379,9,0.7,0.3,84.2,115,141,14,105,13,1.01,0.98,0.23,0,0,0,0
+( سميد ) Semolina,11,360,12,1.8,0.4,74,5,208,26,114,10,2.02,1.9,0.015,0,0,0.2,0.1
+"( ذرة رفيعة، حبوب ) Sorghum,grains",8.9,366,10.9,3.6,2.2,72.6,10,131,40,250,23,4.4,3.06,0.41,0,0,0.21,0.1
+"( ردة القمح ) Wheat,bran",10.2,313,14.4,3.9,10,55,60,1251,91,997,0,10.5,8,0.95,0,0,0.75,0.3
+"( قمح، حبوب ) Wheat,grains",12.1,344,12,1.6,2.4,70.3,10,315,35,412,88,3.1,2.9,0.33,0,0,0.61,0.12
+"( بليلة معلبة ) Wheat,grains (Belila,canned)",75.9,95,2.4,0.6,0.6,20,72,79,15,0,12,0.87,0.48,0.05,0,0,0,0
+"( دقيق قمح (أسمر) ) Wheat,flour (brown)",12.1,350,11.8,1.3,1.1,72.7,8,265,28,118,27,2.6,1.82,0.3,0,0,0.5,0.11
+"( دقيق قمح (أبيض) ) Wheat,flour (White)",11.8,354,10,1,0.4,76.3,6,120,18,92,22,0.85,1.5,0.13,0,0,0.11,0.05
+"( قمح مدعم - طعام أطفال ) Wheat,fortified-baby food",3.5,413,17,10,2.2,63.8,135,850,550,460,0,8.25,2.5,0,375,40,0.5,0.5
+"( كسكسي سادة ) Wheat,Koskos plain",47,213,5.8,0.7,0.3,45.8,4,62,17,0,0,0.41,0.6,0.05,0,0,0,0
+"( كسكسي حلو ) Wheat,Koskos sweet",40.6,283,5.8,9.8,0.5,42.9,7,65,15,92,0,0.4,0.58,0.06,0,0,0,0
+"( برغل ) Wheat,parboiled (Burghul)",11.8,352,12.5,1.8,1,71.4,37,350,43,405,66,3.2,4.2,0.31,0,0,0.35,0.14
+"( فريك ) Wheat,rubbed (Fereek)",10.8,351,11.6,1.7,2.1,72.4,22,300,41,320,56,3,3.5,0.3,0,0,0.57,0.12
+"( فريك مطبوخ ) Wheat,rubbed,cooked",53.5,199,5.3,4,1,35.4,309,115,15,120,0,1.4,1.6,0,0,0,0,0
+"( فريك باللحم مطبوخ ) Wheat,rubbed/meat,cooked",53,213,7.8,6.4,0.6,31,354,154,35,188,0,2.07,1.87,0,0,0,0,0
+"( بسكويت مغطى بالشوكولاتة ) Biscuit,Chocolate coat",2.7,517,10.5,27.5,1,56.8,200,235,110,0,0,195,0.78,0,0,0,0.04,0.13
+"( بسكويت محشو بالكريمة ) Biscuit,cream fill",2.6,509,7.3,25,0.6,63.6,130,135,62,168,0,1.6,0.5,0,0,0,0.04,0.15
+"( بسكويت بالعجوة ) Biscuit,date fill",4.5,453,6.4,15.8,1,71.2,167,246,85,0,8,2.85,0.53,0.15,0,0,0.2,0.18
+"( بسكويت دايجستف ) Biscuit,digestive",3,468,7.5,20,3,64.6,500,200,78,0,32,320,0.7,0.2,0,0,0.15,0.09
+"( بسكويت نايس ) Biscuit,nice",3.1,454,9.8,15,0.9,70,162,137,120,155,0,1.86,0.77,0,0,0,0.1,0.03
+"( بسكويت سادة ) Biscuit,plain",3.5,438,9.6,11.8,0.8,73.3,129,140,109,173,0,2,0.7,0,0,0,0.08,0.05
+"( بسكويت سادة مدعم بالحديد ) Biscuit,plain(fe-fortified)",3.3,440,9.4,12,0.8,73.5,127,135,114,182,0,4.6,0.8,0.22,0,0,0.07,0.03
+"( بسكويت مملح ) Biscuit,salted",3.9,438,10.1,13.7,0.3,68.6,869,123,25,123,0,1.41,1,0,0,0,0,0
+"( بسكويت مملح (بريتزل) ) Biscuit,salted (pretzel)",2,398,9.8,3,0.3,82.9,765,138,27,123,0,1.5,1.1,0,0,0,0,0
+"( ويفر مغطى بالشوكولاتة ) Biscuit,wafers chocolate coal",1.9,535,6.4,29.8,0.6,60.4,180,160,103,0,0,2.1,0.6,0,0,0,0.1,0.12
+"( ويفر محشو بالكريمة ) Biscuit,wafers cream fill",2,515,6.3,25.4,0.6,65.2,93,150,45,83,0,1.5,0.51,0.16,0,0,0.09,0.08
+"( عيش بلدي ) Bread,Baladi",35.3,254,8.8,1,1.3,52.5,338,236,42,134,14,2.89,1.75,0.14,0,0,0.29,0.1
+"( عيش بلدي (قمح/ذرة) ) Bread,Baladi,(wheat/corn)",35.1,256,9,1.3,1.4,52,369,208,47,197,13,3,2,0.19,0,0,0.31,0.12
+"( عيش سن (بالردة جاف) ) Bread,bran dry (sin)",5,369,12.3,2.1,3.3,75.2,449,430,42,0,0,4.5,2.9,0.4,0,0,0,0
+"( كيزر بالسمسم ) Bread,buns with sesame",32.8,273,12.5,3,1.1,49,330,0,60,0,0,2.1,0.85,0.52,0,0,0,0
+"( خبز ذرة وقمح (1:1) ) Bread,corn/wheat (1:1)",12,355,9.9,2.5,1.1,73.2,452,0,53,0,0,2.4,0,0,0,0,0.29,0.12
+"( خبز ذرة وقمح (1:2) ) Bread,corn/wheat (1:2)",10,360,10.1,2.8,1.9,73.7,483,234,65,147,19,3.2,1.8,0.18,0,0,0.28,0.12
+"( خبز ذرة وقمح (2:1) ) Bread,corn/wheat (2:1)",12.5,351,9.8,2.9,2,71.3,474,0,55,0,0,2.5,0,0,0,0,0.28,0.11
+"( بقسماط مطحون / فتات خبز ) Bread,crumb",9.7,356,10.3,2,2,74.2,501,200,76,115,15,2,1.53,0.38,0,0,0.2,0.12
+"( خبز فرنسي (فينو) ) Bread,french",28.8,285,8.7,1,0.3,60.3,296,125,14,94,18,0.7,1.1,0.52,0,0,0.1,0.05
+"( خبز لبناني ) Bread,lebanese",22,311,9.2,0.7,0.3,66.9,307,104,15,85,17,0.72,1.2,0.1,0,0,0.11,0.05
+"( خبز لبناني أسمر ) Bread,lebanese (brown)",25.8,293,9.4,2.1,2.5,59.1,336,186,27,0,0,3.94,2,0.44,0,0,0,0
+"( خبز شامي ) Bread,shemi",27.3,292,8.6,0.9,0.2,62.3,350,120,16,82,16,0.7,1,0.1,0,0,0.1,0.05
+"( خبز شمسي ) Bread,shamsy",35,259,9.2,1.1,0.6,53.1,375,175,14,120,14,2.1,1.9,0.1,0,0,0.27,0.11
+"( توست أسمر شرائح ) Bread,sliced (brow toast)",34.5,257,8.9,1.9,2.4,51.1,405,201,49,185,18,2.86,1.1,0.59,0,0,0.2,0.08
+"( توست أبيض شرائح ) Bread,sliced (White toast)",33,270,8.4,1.5,0.5,55.6,400,152,30,0,0,1,0.9,0,0,0,0.18,0.05
+"( بقسماط أصابع بالسمسم ) Bread,sticks with seame",6.1,379,11.7,2.9,1.3,76.5,410,203,79,0,0,2.15,1.99,0.42,0,0,0,0
+"( فايش ) Bread,sticks (fayesh)",8.1,398,12,7.5,0.9,70.6,188,150,85,0,0,3.8,1.5,0,0,0,0,0
+"( كب كيك ) Cakes,cup",26.8,379,7,18.4,0.3,46.3,350,83,58,100,0,0.5,0,0,53,0,0.02,0.08
+"( كيكة إسفنجية ) Cakes,sponge",32,290,7.5,4.2,0.2,55.6,159,90,58,120,0,1.19,1.04,0,93,0,0.1,0.12
+( فطير مشلتت / معجنات مورقة ) Flaky pastry,22,476,5.5,34,0.3,37.1,372,201,90,200,14,1.05,0.8,0.2,0,0,0,0
+"( فطيرة بالعجوة (مدرسية) ) Pie,date (school)",21,361,9.5,10.9,1.3,56.1,285,297,59,0,0,2.11,0.18,0,32,8,0,0
+"( فطير مشلتت ) Pie,fiteer,meshaltet",35.5,402,6.7,30,0.5,26.2,300,0,25,0,0,0.4,0.45,0,0,0,0,0
+"( فطير جاهز (أسواق) ) Pie,fiteer,market",28.6,341,7.6,12,0.4,50.7,256,0,15,0,0,0.6,0,0,0,0,0,0
+"( رقاق باللحمة ) Pie,Rucak with meat",51.4,279,8.5,18.6,1,19.4,422,102,72,75,0,1.2,0.64,0,0,0,0,0
+"( بيتزا بالجبنة ) Pizza,chese topping",48.5,243,12,9.9,1,26.5,583,124,231,0,0,120,1.6,0.1,0,0,0,0
+"( بيتزا باللحم/السجق ) Pizza,meat/sausage topping",41.5,267,10.4,9.3,1,32.4,508,157,160,0,0,1.5,1.1,0.12,0,0,0,0
+"( بيتزا بالمأكولات البحرية ) Pizza,seafood topping",44,252,10,8,0.8,35.1,498,130,201,0,0,1.15,0.99,0.19,0,0,0,0
+"( بيتزا خضروات ) Pizza,vegetarian",47.8,230,5.9,7.1,1,35.6,476,192,154,0,0,1.15,0.95,0.8,0,0,0,0
+"( ساندوتش جبنة بيضاء ) Sandwithes,cheese white",57,180,7.5,4,1,28.5,496,190,196,0,17,1.1,1.1,0.04,0,0,0,0
+"( ساندوتش جبنة صفراء ) Sandwithes,cheese,yellow",40,262,10.5,7,1.2,39.3,68.4,183,202,0,20,0.59,1.3,0.01,0,0,0,0
+"( ساندوتش مخ مقلي ) Sandwiches,fried brain",55,232,10.1,11.5,0.3,21.9,403,286,63,0,21,2.16,0.87,0.21,0,0,0,0
+"( ساندوتش فراخ مقلية ) Sandwiches,fried chicken",45,259,9.6,10,1,32.7,590,280,20,0,29,1.93,1,0.2,0,0,0,0
+"( ساندوتش باذنجان مقلي ) Sandwiches,fried eggplant",56,123,4,5.5,0.3,31.9,615,386,27,0,12,1.35,0.96,0.06,0,0,0,0
+"( ساندوتش كبدة مقلية ) Sandwiches,fried liver",46.7,238,14.4,6.8,0.6,29.7,599,270,53,0,50,5.6,2.3,1.87,0,0,0,0
+"( ساندوتش جمبري مقلي ) Sandwiches,fried shrimp",47.5,252,10.2,10.5,0.7,29.1,525,285,54,0,27,2.82,1.1,0.19,0,0,0,0
+"( ساندوتش طعمية مقلية ) Sandwiches,fried taamia",55,205,6.1,5.8,1.5,32.2,587,273,33,0,30,2.6,1.36,0.14,0,0,0,0
+"( ساندوتش فراخ مشوية ) Sandwiches,grilled chicken",51.5,223,11.4,8,0.9,26.4,522,316,28,0,34,1.83,1.4,0.15,0,0,0,0
+"( ساندوتش كفتة مشوية ) Sandwiches,grilled kofta",50.9,224,12,7.5,0.6,27.2,491,226,23,0,30,2.86,1.03,0.18,0,0,0,0
+"( ساندوتش همبرجر ) Sandwiches,hamburger",52.8,216,8.8,7.5,0.8,28.4,689,307,38,0,24,2,1.63,0.11,0,0,0,0
+"( ساندوتش هوت دوج ) Sandwiches,hotdog",50.2,221,8.8,6.5,0.5,31.9,615,250,20,0,31,1.58,1,0.21,0,0,0,0
+"( ساندوتش شاورما لحمة ) Sandwiches,shawerma meat",51.1,220,10.7,7,0.7,28.6,698,273,46,0,32,2.9,1.91,0.33,0,0,0,0
+"( ساندوتش فول مدمس ) Sandwiches,stewed foul",56.2,173,5,2.2,1.5,33.3,669,300,43,0,29,2.05,1.24,0.12,0,0,0,0
+( حب العزيز ) Chufa tuber (Hab-alaziz),5.3,413,5.7,16.2,9.3,61.1,51,0,27,0,0,5.8,2.19,0,0,0,0,0
+"( حب العزيز رطب ) Chufa tuber ,wet",35.6,278,4,9.3,5,44.6,0,0,0,0,0,3.5,1.32,0,0,0,0,0
+( قلقاس ) Colocasia,79.1,77,2.1,0.2,0.8,16.6,14,495,62,60,13,1,0.5,0.08,11,6,0.15,0.05
+"( قلقاس مطبوخ ) Colocasia,coocked",81,91,2.5,4.4,0.3,10.3,375,340,58,64,0,1,0.32,0,0,0,0,0
+( بطاطس ) potatoes,80.5,7.3,1.6,0.1,0.6,16.4,8,420,7,46,16,0.6,0.32,0.15,2,18,0.09,0.04
+"( رقائق بطاطس (شيبسي) ) potatoes,chips",1.5,55.7,5.5,37.5,1.6,49.4,65.4,1100,37,143,53,1.7,0.9,0.25,0,0,0.21,0.05
+"( بطاطس مقلية ) potatoes,fries",45.2,281,4.1,14.5,1,33.4,290,627,13,0,0,1.2,0.3,0,0,0,0,0
+"( بطاطس مطبوخة بالطماطم ) potatoes,cooked with tomato",76.6,104,1.2,3.5,0.4,16.9,369,394,10,72,0,0.7,0.5,0,0,0,0,0
+"( بطاطس مطبوخة باللبن ) potatoes,cooked with milk",81,80,2.2,1.9,0.4,33.6,317,321,48,54,0,0.65,0.56,0,0,0,0,0
+"( بطاطس مهروسة باللحم والبيض ) potatoes,mashed/meat/egg",76.7,121,6,7,0.5,8.4,377,422,26,78,0,0.5,0,0,0,0,0,0
+"( بطاطس محشوة باللحم ) potatoes,meat stuff",76.2,115,3.1,5,0.6,14.5,339,407,18,54,0,1.8,0.77,0,0,0,0,0
+( بطاطا حلوة ) sweespotatos,70.5,112,1.8,0.3,0.9,25.5,13,398,39,40,25,0.8,0.3,0.11,570,24,0.11,0.06
+"( فول عريض / فول رومي ) Beans,broad",10.3,326,24.1,1.5,6.9,54,35,724,85,386,148,5.8,3.14,0.29,9,5,0.48,0.28
+"( بصارة ) Beans,broad (Bisara)",68,130,6,4,3,17.4,290,187,25,0,0,1.2,0.2,0,0,8,0,0
+"( فول مدشوش ) Beans,broad,decorticated",10.4,316,25.9,2,2.8,56.2,39,640,92,359,126,4.8,2.9,0.18,13,2,0.41,0.13
+"( فول معلب ) Beans,broad (fcul),canned",70,132,6.1,5,2.1,15.7,335,275,44,175,49,2.7,0.9,0,0,0,0.12,0.08
+"( فول مدمس ) Beans,broad (foal medames)",73.7,98,5.6,0.7,2,17.2,24,218,37,183,0,2.4,1,0,0,0,0,0
+"( فول نابت ) Beans,broad (Menabet)",61,145,10.4,0.7,2.9,24.2,14,290,34,154,59,2.3,1.05,0.12,5,3,0.2,0.22
+"( فول نابت مطبوخ ) Beans,broad (Nabet) cooked",70,114,8.8,0.6,1,18.4,330,218,37,166,0,2.4,1,0,0,0,0,0
+"( طعمية مقلية ) beans,broad (taamia),fried",32.7,355,10.9,20.1,1.5,32.6,524,258,24,118,41,2.7,1.16,0.4,0,6,0,0
+"( فاصوليا حمراء ) Beans,kidney (red)",11.6,323,23.1,1.3,5.8,54.8,20,1309,120,374,136,6.5,2.01,0,0,3,0.62,0.21
+"( فاصوليا بيضاء ) Beans,Kidney (White)",10.8,333,22.1,1.4,4.2,58,36,1270,148,415,142,7.2,3.4,0.78,0,2,0.58,0.26
+"( فاصوليا بيضاء مطبوخة ) Beans,kidney white,cooked",66,134,8.9,2.4,1.9,19.3,324,504,57,139,0,2.5,1.13,0,0,0,0,0
+"( فاصوليا بيضاء باللحم ) Beans,kidney white/meat",65.6,152,11.4,5.6,2,14,371,566,59,167,0,2.96,1.41,0,0,0,0,0
+"( ماش (فول الماش) ) Beans,mung",7.2,352,21.4,2,4,62.1,32,1354,168,293,98,5,2.9,0,12,4,0.27,0.19
+( حمص ) Chickpeas,8.6,352,20.3,4.2,5.3,58.3,50,962,127,352,122,6.7,4.7,1.25,10,4,0.41,0.29
+"( حمص الشام ) Chickpeas,(Homos sham)",64.2,138,7.6,1.6,2.1,23.9,405,380,48,151,43,2.5,1.82,0.17,T,0,0.12,0.29
+"( حمص أصفر (مقلة) ) Chickpeas,yellow",10.5,354,19.6,4.4,3.4,59,34,855,155,430,130,5.8,3.4,1.3,19,2,0.48,0.21
+( لوبيا ) Cowpeas,11.3,330,23,1.2,4.7,56.7,30,1217,104,347,136,6.8,3.22,0.46,3,2,0.75,0.21
+"( لوبيا مطبوخة ) Cowpeas,cooked",68,131,8.5,3.5,2,16.4,343,579,37,96,34,2.2,1.07,0,0,0,0,0
+"( لوبيا مطبوخة باللحم ) Cowpeas,cooked with meat",66,146,11,5.5,2.5,13,317,456,26,142,0,3.5,1.54,0,0,0,0,0
+( حلبة ) Fenugreek,9.4,356,25.6,6.7,6.5,48.3,93,966,197,365,115,14,4.6,0.4,132,4,0.27,0.52
+"( عدس غير مقشور (بجبة) ) Lentils,nu-peeld",10,340,22.4,1.1,3.8,60,30,725,48,327,86,7.3,4.2,0.25,12,0,0.4,0.22
+"( عدس بجبة مطبوخ ) Lentils,nu-peeld,cooked",65,151,5.8,5.6,2.3,19.3,440,372,45,164,0,3.1,1.5,0,0,0,0,0
+"( عدس مقشور (أصفر) ) Lentils,peeled (yellow)",11.5,340,22.9,0.7,2.1,60.5,41,765,50,330,82,6.8,3.2,0.35,15,0,0.41,0.18
+"( كشري عدس أصفر (أرز بالعدس) ) Lentils,peeled/rice cooked",68.9,140,6.2,5.2,1.2,17.1,312,384,12,57,0,1.1,0.8,0,0,0,0,0
+"( شوربة عدس ) Lentils,peeled soup",82.5,68,4.8,1.5,0.7,8.8,318,245,26,76,0,1.8,0.6,0,0,0,0,0
+( ترمس ) Lupines,8,355,38,9,11,30.5,94,605,270,490,189,5.82,2.87,0.37,0,0,0.41,0.48
+"( ترمس ) Lupines,(Termis)",70.7,111,9.6,2.7,3,12,580,200,89,128,53,1.58,0.8,0.24,0,5,0.15,0.1
+( بسلة ) peas,10,345,22.1,2.1,3.9,59.4,32,928,82,352,125,5.5,3.15,0.75,34,4,0.84,0.25
+( فول الصويا ) soybeans,9.3,426,31.7,19.9,4.3,30.1,21,1618,305,563,258,7.5,2,0,0,0,0.8,0.32
+"( دقيق فول الصويا ) soybeans,flour",7.5,362,44.5,3.9,2.8,37.1,28,1870,268,424,303,8.33,1.2,0,0,0,0.83,0.29
+( لوز ) Almonds,4.6,640,17.6,55.8,2.5,16.8,7,793,215,485,230,1.5,3.2,0.13,21,0,0.26,0.72
+"( جوز هند مجفف ) Coconuts,dry",3,689,6,65,4,20,23,560,20,176,44,2.9,1.5,0.4,0,0,0.07,0.04
+( بندق ) Hazelnufs,5,633,18.6,55.7,3.7,14.4,3,600,180,300,130,3.3,2,1.1,24,0,0.45,0.25
+( فول سوداني ) Peanuts,4.6,585,26.4,44.9,2.9,18.8,1,670,55,380,180,2.5,2.6,0.29,84,0,0.35,0.14
+( صنوبر ) Pinenuts,4.6,614,30.2,20.2,1,10.3,53,888,15,500,240,4.9,2.4,1.4,5,0,1,0.22
+( فستق ) pistachio nuts,5.5,631,20.9,54.1,1.8,15.1,15,850,122,503,150,6.9,1.9,1.2,54,0,0.73,0.19
+( لب خشب (لب قرع مملح) ) puinpkin seeds/salted,4.3,591,23.9,48,4.5,15.8,695,790,55,1027,0,9.5,5.5,0,21,0,0.3,0.39
+( بذور السمسم ) sesame seeds,4.6,600,19,51.8,5.5,14.5,65,506,887,515,174,10.2,8.6,1.23,9,0,1.1,0.32
+( طحينة ) sesame butter (Tehina),3,660,20,60,4,10,84,205,340,665,44,6.1,5.5,0.8,11,0,0.94,0.26
+( عين جمل ) Walnuts,3.4,695,14.7,64.9,2.2,13,5,600,75,390,120,2,2.8,0.3,7,5,0.35,0.12
+( لب سوبر (بذر بطيخ مملح) ) Watermelon seeds/salted,5.5,592,34.7,48,3,5.3,505,0,45,896,0,8,0.3,0,0,0,0.22,0.16
+( خرشوف ) Artichokes,85.8,45,3.5,0.2,2,7.4,32,350,55,96,30,0.9,0.5,0.03,15,11,0.07,0.06
+( سلطة خرشوف ) Artichokes/salad,79.7,89,2.7,4.7,1.4,9,314,380,35,90,0,0.86,0.41,0,0,0,0,0
+"( فول أخضر ) Beaus,broad (green)",77.3,79,5.7,0.4,2.4,13.2,6,250,31,110,30,1.1,0.8,0.3,34,27,0.22,0.15
+"( فاصوليا خضراء ) Beans,green",91,30,1.8,0.2,1.1,5.2,8,274,35,45,12,1.75,0.51,0.24,57,18,0.09,0.12
+"( فاصوليا خضراء مطبوخة ) Beans,green,cooked",86.2,61,1.9,3.2,1.1,6.2,390,346,34,33,0,1.4,0.39,0,0,0,0,0
+( بنجر ) Beetroots,86.8,45,1.5,0.1,1.1,9.5,70,320,22,35,25,0.9,0.63,0.07,5,8,0.02,0.05
+( بروكلي ) Broccoli,88.2,38,3.5,0.3,1.5,5.4,35,368,57,80,20,1.23,0.84,0.09,150,95,0.1,0.24
+( كرنب بروكسل (مكور) ) Brussels sprouts,85.6,50,4.6,0.4,1.3,6.9,12,440,43,85,20,0.95,0.79,0.2,75,65,0.11,0.19
+"( كرنب أحمر ) Cabbage,red",90.2,31,1.6,0.3,1.5,5.4,31,298,55,0,3,0.74,0.36,0.05,8,54,0,0
+"( كرنب أبيض ) Cabbage,white",91.6,27,1.3,0.2,1.2,5,35,250,40,32,15,0.58,0.3,0.04,5,35,0.07,0.06
+"( محشي كرنب بالأرز ) Cabbage,rice stuff",71,127,3.5,4,1.2,19.2,325,250,42,0,0,0.5,0.5,0,0,0,0,0
+"( محشي كرنب بالأرز واللحم ) Cabbage,rice/meat stuff",70,140,5,6.2,1.2,16.1,318,219,48,62,0,0.8,0.65,0,0,0,0,0
+( جزر ) Carrots,89.4,36,1.2,0.2,1,7.4,62,300,40,42,18,0.58,0.42,0.06,1871,8,0.06,0.04
+( قرنبيط ) Cauliflower,91.5,28,2.3,0.3,1,4.1,15,304,30,56,20,0.5,0.3,0.19,4,58,0.05,0.06
+"( قرنبيط مطبوخ ) Cauliflower,cooked",89,49,2,2.1,0.8,5.4,420,269,27,0,0,0.5,0.4,0,0,0,0,0
+"( قرنبيط مطبوخ باللحم ) Cauliflower/meat,cooked",87,62,3.7,3.1,0.7,4.9,405,313,32,0,0,0.77,0.5,0,0,0,0,0
+( كرفس ) Celery,85.2,52,0.5,0.2,0.7,11.7,74,315,40,48,25,0.95,0.21,0.02,15,7,0.04,0.05
+( سلق سويسري ) Chard swiss,91.2,27,2.3,0.4,0.9,3.5,164,505,85,32,57,9.05,2,0.18,666,18,0.05,0.14
+( حمص أخضر (ملانة) ) Chickpeas greep,64,139,4.7,4.3,1.7,27,0,0,75,0,0,2.5,0,0,0,40,0.08,0
+( شيكوريا / هندباء ) Chicory,91.7,27,1.8,0.4,0.9,4,0,0,140,0,0,2.8,0,0,0,35,0,0
+( كزبرة ) Coriander,88.5,34,3.7,0.6,1.7,4.5,54,366,182,64,9,3.3,3.2,0.07,470,75,0.13,0.31
+( لوبيا ) Cowpeas,83.4,50,3.5,0.3,1.6,8.4,5,298,52,86,28,1.4,0.7,0.25,45,25,1.05,0.21
+( خيار ) Cucumber,95,16,0.7,0.1,0.6,4.1,5,120,18,31,8,0.6,0.08,0.07,4,9,0.04,0.05
+"( خيار مخلل ) Cucumber,pickled",90,22,1.3,0,0.4,4.5,891,185,21,0,0,0.8,0.21,0,0,0,0,0
+( شبت ) Dill,88.9,36,2.9,0.5,1.2,5,60,305,150,41,20,2.1,3.6,0.07,300,34,0.12,0.38
+"( باذنجان أسود أو أبيض ) Eggplant,black or white",91.3,28,1.7,0.2,1.2,4.9,7,272,15,25,13,0.5,0.33,0.07,8,6,0.04,0.03
+"( باذنجان رومي ) Eggplant,round",91,27,1.8,0.1,1.4,4.8,8,270,17,24,12,0.38,0.36,0.07,6,8,0.03,0.05
+"( باذنجان مطبوخ ) Eggplant,cooked",87,73,1.6,5.3,0.8,4.7,396,229,13,20,0,0.34,0.25,0,0,0,0,0
+"( مسقعة باللحم المفروم ) Eggplant,cooked with meat",85,84,3.6,6,0.7,4,364,264,21,33,0,0.72,0.5,0,0,0,0,0
+"( باذنجان مقلي ) Eggplant,fired",75.1,175,1.5,17,1,3.9,409,257,15,22,0,0.33,0.29,0,0,0,0,0
+"( محشي باذنجان ) Eggplant,rice stuff",71,126,3,4,1,19.5,390,238,19,0,0,0.77,0.52,0,0,0,0,0
+( شمر ) Fennel,88.6,37,2.6,0.5,1.5,5.4,52,226,52,48,26,1.34,0.15,0.08,0,28,0,0
+"( أوراق الحلبة ) Fenugreek,leaves",86.6,45,3.5,0.5,1.4,6.5,68,260,135,47,12,6.4,4.5,0.07,700,60,0.12,0.25
+( جرجير ) Garden rocket,89.9,32,2.5,0.5,1,4.4,33,257,127,40,13,8.3,0.8,0.3,364,125,0.14,0.21
+"( رأس ثوم ) Garlic,bulb",62.3,142,5.6,0.3,1.2,29.1,22,515,34,168,30,1.6,0.72,0.22,0,5,0.22,0.07
+( ورق عنب ) Grape leaves,76.4,80,4,0.6,2.3,14.7,55,370,394,45,15,2.2,0.3,0.05,1287,90,0.25,0.1
+"( ورق عنب مخلل ) Grape leaves,pickled",75.4,71,7.3,0.6,3,9.1,894,0,385,0,0,2,0.3,0,0,13,0,0
+"( محشي ورق عنب ) Grape leaves,rice stuff",69.4,131,4,4.2,1.5,19.4,385,205,96,52,14,2.5,0.3,0.13,0,0,0,0
+( ملوخية ) Jew s mallow,83.9,54,5,1,1.5,6.3,42,380,270,61,17,4.2,0.4,0.04,1150,80,0.5,0.32
+"( ملوخية مطبوخة ) Jew s mallow,cooked",81,91,3.5,6,1.5,5.7,300,250,200,74,0,1.4,0.13,0,0,0,0,0
+"( كرات ) Leeks,bulb",93.9,18,1.8,0.3,0.9,2,18,270,87,35,15,1.2,0.4,0.03,8,19,0.04,0.11
+"( خس كابوتشا (آيسبرغ) ) Lettuce,Ice-burg",95.5,15,0.9,0.2,0.5,2.3,9,213,12,29,3,1.1,0.15,0.09,12,8,0.06,0.06
+"( أوراق الخس ) Lettuce,leaves",95,16,1.1,0.3,0.7,2.1,7,125,28,22,10,1,0.15,0.08,181,10,0.05,0.07
+"( محشي خس ) Lettuce,rice stuff",72,124,3.1,4,1,18.8,320,185,20,0,0,0.7,0.3,0,0,0,0,0
+"( محشي خس باللحم والرز ) Lettuce,rice/meat stuff",70,147,5,7,0.9,16,308,188,27,67,0,6.9,0.62,0,0,0,0,0
+( خبيزة / خبازي ) Mallow,83.3,55,5,0.6,1.3,7.5,48,296,258,77,16,4.5,3.6,0.12,1272,34,0.12,0.16
+"( خبيزة مطبوخة ) Mallow,cooked",80,99,3,5.6,0.9,9.1,352,154,98,65,0,2.7,1.64,0,0,0,0,0
+( نعناع ) Mint,84.6,52,3.7,1.2,2.8,6.5,2,160,160,74,16,1.2,0.4,0.14,394,26,0.09,0.22
+( عش الغراب (مشروم) ) Mushrooms,90.8,31,2.5,0.1,0.5,5.1,10,346,6,120,11,0.6,0.72,0.65,0,2,0.1,0.4
+"( مشروم معلب ) Mushrooms,canned",91.6,27,3.2,0.1,0.5,3.4,491,228,20,56,16,0.45,0.52,0.46,0,0,0.02,0.25
+( بامية ) Okra,86.5,47,2,0.2,1,9.3,11,210,98,74,25,1.9,0.58,0.16,13,20,0.1,0.12
+"( بامية مطبوخة ) Okra,cooked",85,72,2.8,3.6,0.7,7.2,375,213,59,50,0,1.23,0.38,0,0,0,0,0
+"( طاجن بامية باللحم ) Okra,cooked with meat",82.9,89,5.1,5,0.6,5.8,386,246,42,40,0,1.58,0.49,0,0,0,0,0
+"( زيتون أسود مخلل ) Olives,black pickled",69.5,158,1.5,12,1,10.9,905,137,158,0,0,1.5,0,0,30,0,0,0
+"( زيتون أخضر مخلل ) Olives,green pickled",82.7,88,1,8,1,2.9,899,150,105,0,0,1.4,0,0,23,0,0,0
+"( بصل أخضر ) Onions,green",86.6,49,1.1,0.2,0.9,10.7,10,224,125,50,8,1.05,0.07,0.1,60,18,0.04,0.05
+"( بصل ناضج ) Onions,mature bulb",83.9,60,1.2,0.2,0.7,13.3,13,139,35,56,12,0.5,0.1,0.15,9,7,0.03,0.04
+"( بصل مخلل ) Onions,pickled",82.5,53,0.5,0.2,1.4,12.2,840,66,30,0,0,0.1,0,0,0,0,0,0
+( بقدونس ) Parsley,81.6,50,3.3,0.4,1.3,8.2,30,723,210,54,39,6.55,1.85,0.18,1272,156,0.12,0.32
+( بسلة ) Peas,75.3,89,6.2,0.4,2.1,15.1,3,286,20,122,19,1.7,1.26,0.03,55,25,0.32,0.18
+"( بسلة بالجزر مطبوخة ) Peas/carrot,cooked",86,62,4.1,3,1.2,4.7,415,260,17,61,0,1.1,1,0,0,0,0,0
+"( فلفل أخضر ) Peppers,green",92.2,24,1.3,0.3,1.5,4.1,25,195,15,25,14,0.9,0.3,0.1,30,110,0.06,0.04
+"( فلفل ملون (برتقالي/أحمر/أصفر) ) Peppera,orange/red/yellow",90,34,1.2,0.3,1.2,6.6,40,62,5,0,3,0.95,0.21,0,0,82,0,0
+( قرع عسلي ) Pumpkin,91.8,26,1,0.1,1.1,5.2,2,310,25,33,15,0.7,0.24,0.02,330,7,0.04,0.06
+( رجلة ) Purslane,90.5,31,2,0.5,1,4.5,30,610,95,28,6,3.2,0.1,0,606,65,0.14,0.13
+"( فجل أحمر ) Radishes,red",94,19,1.2,0.1,0.8,3.2,21,246,27,33,17,0.99,0.33,0.15,0,24,0.03,0.04
+"( فجل أبيض ) Radishes,white",91.6,27,1.4,0.1,1,5,18,292,56,27,12,0.8,0.17,0.11,0,30,0.02,0.04
+"( فجل أبيض بالرؤوس والأوراق ) Radished,white root/leaves",91,26,2,0.4,1.1,3.7,20,320,213,0,0,1.8,0.3,0,0,35,0,0
+( سبانخ ) Spinach,92.4,22,2.5,0.3,0.7,2.4,58,540,92,47,54,4.2,0.4,0.19,1058,32,0.11,0.19
+"( سبانخ مطبوخة ) Spinach,cooked",88.6,57,2,3.9,1,3.4,405,323,55,28,0,2.91,0.28,0,0,0,0,0
+"( سبانخ مطبوخة باللحم ) Spinach,cooked with meat",86,75,4,5.2,0.7,3.1,394,375,63,34,0,3.2,0.24,0,0,0,0,0
+( كوسة / قرع ) Squash,92.8,24,1.3,0.2,0.8,4.2,6,200,25,31,12,0.5,0.19,0.05,12,12,0.04,0.09
+"( كوسة مطبوخة ) Squaslr,cooked",89.6,55,1.9,3.4,0.3,4.3,389,212,20,29,0,0.43,0.18,0,0,0,0,0
+"( كوسة مطبوخة باللحم ) Squash,cooked with meat",88.1,67,3.4,4.6,0.5,2.9,350,204,18,22,0,0.8,0.2,0,0,0,0,0
+"( محشي كوسة بالأرز ) Squash,rice stuff",75.5,103,2.1,2.7,1,17.6,440,245,13,76,0,0.7,0.5,0,0,0,0,0
+"( محشي كوسة بالأرز واللحم ) Squash,rice/meat stuff",75,112,3,4,0.9,16,404,222,12,75,0,0.8,0.52,0,0,0,0,0
+( طماطم ) Tomatoes,94.3,20,1.1,0.3,0.6,3.1,10,328,15,30,12,0.5,0.2,0.12,95,21,0.05,0.05
+( كاتشب طماطم ) Tomatoes/Ketchup,66.7,126,1.6,0.6,0.3,28.6,7.13,587,20,40,22,1.2,0.3,0.4,0,13,0.07,0.04
+"( صلصة طماطم ) Tomato,paste",78,78,3.8,0.4,0.5,14.8,807,514,25,83,28,3.1,0.51,0.2,285,15,0.19,0.11
+"( رؤوس اللفت ) Turnipa,roots",91.8,27,1.2,0.2,0.7,5.2,48,270,36,33,10,0.5,0.15,0.05,0,30,0.04,0.04
+"( مخلل خضروات مشكل ) Vegetables,pickled",89,16,1.1,0,0.4,3,956,258,150,0,0,0.9,0.09,0,0,6,0.03,0.03
+( تفاح ) Apples,84.5,57,0.4,0.2,0.8,13.5,5,125,5,12,6,0.3,0.08,0.07,5,7,0.05,0.03
+( مشمش ) Apricots,84.6,58,0.9,0.4,0.7,12.7,3,304,15,25,11,0.5,0.2,0.1,265,12,0.04,0.06
+"( مشمش مجفف (قراصيا/مشمشية) ) Apricots,dried",24,282,4.5,0.6,3.2,64.6,18,1615,86,120,40,5,0.63,0.3,590,2,0.01,0.18
+( أفوكادو ) Avocado,73,165,2.2,14,1.5,7.5,3,594,15,0,0,1.05,0.9,0,0,12,0.12,0.19
+( موز ) Bananas,75.2,95,1.3,0.3,0.6,21.7,3,350,10,25,30,0.6,0.21,0.18,28,8,0.04,0.05
+( كانتيلوب ) Cantaloupe,90.8,33,0.8,0.1,0.4,7.3,18,280,15,18,20,0.5,0.15,0.05,219,23,0.05,0.04
+( قشطة (فاكهة) ) Custard-apple,76.5,85,2.9,0.5,1.4,17.3,25,436,20,38,44,0.77,0.9,0.2,0,27,0.1,0.06
+( بلح / تمر ) Dafes,70,115,0.9,0.2,0.9,27.3,2,300,22,26,18,1.1,0.13,0.12,4,11,0.05,0.06
+"( عجوة ) Dates,dried (Agwa)",18,315,2.3,0.5,2.2,75.3,3,690,62,61,44,3.2,0.4,0.3,10,0,0.08,0.1
+( تين ) Figs,80.4,72,1.3,0.4,1.5,15.8,4,180,62,28,25,1.05,0.22,0.05,27,4,0.07,0.06
+"( تين مجفف ) Fifs,dried",20.3,293,4.1,1.1,5.7,66.6,13,901,130,80,65,3.53,0.9,0.23,0,0,0.12,0.11
+( جريب فروت ) Grapefruits,88.7,43,0.6,0.1,0.4,9.8,5,140,15,18,12,0.2,0.12,0.03,2,35,0.03,0.02
+"( عنب بناتى (بدون بذر) ) Grapes,seedless",80.4,77,0.6,0.6,0.7,17.2,5,242,17,22,9,0.36,0.09,0.12,3,5,0.07,0.03
+( جوافة ) Guavas,81.2,62,0.8,0.5,3.4,13.5,8,255,23,44,25,0.8,0.46,0.12,20,227,0.05,0.05
+( حرنكش ) Husk tomatoes,79.9,75,2.7,0.3,1,15.3,15,146,27,42,0,0.47,0.52,0,7,13,0.09,0.08
+( عناب ) Jujuba,76,89,1.4,0.2,1.4,20.3,5,280,34,27,0,0.8,0,0,0,65,0,0
+( كيوي ) Kiwifruit,85,54,1.9,0.6,1.6,10.2,3,210,30,0,0,0.3,0.1,0,0,95,0.01,0.02
+( ليمون ) Lemons,91.3,32,0.8,0.2,0.6,6.7,4,165,32,14,12,0.5,0.15,0.22,4,75,0.05,0.03
+( ليمون حلو ) Lemons sweet,90.6,37,0.6,0.5,0.4,7.6,6,140,29,20,11,0.35,0.24,0.23,4,36,0.03,0.02
+( ليمون بنزهير / ليمون أخضر صغير ) Lime,91.1,33,0.6,0.3,0.7,6.9,5,160,27,22,15,0.4,0.12,0.21,0,50,0.04,0.01
+( بشملة ) Loquate,87,51,0.3,0.6,0.7,11,12,238,15,25,0,0.43,0,0,250,5,0,0
+( يوسفي ) Mandarin,86.9,48,0.7,0.2,0.9,10.8,7,147,39,22,16,0.5,0.4,0.04,13,26,0.09,0.03
+( مانجو ) Mangos,81.8,68,0.8,0.3,1.1,15.5,10,200,15,17,8,0.5,0.18,0.11,250,30,0.04,0.04
+( شمام / بطيخ ) Melons,91.5,30,0.8,0.2,0.6,6.3,8,270,10,14,8,0.4,0.2,0.12,18,22,0.05,0.03
+( توت ) Mulbercy,79.6,76,1.6,0.5,1.2,16.3,25,236,55,35,17,1.8,1.3,0.06,3,10,0.05,0.07
+( برتقال ) Oranges,85.5,56,1.1,0.3,0.6,12.1,3,181,37,28,7,0.3,0.2,0.07,8,55,0.08,0.04
+( بابايا ) Papaya,88,44,0.6,0.2,0.6,10,5,237,25,18,22,0.57,0.3,0,124,59,0.03,0.03
+( خوخ ) Peaches,86.2,51,0.7,0.2,0.7,11.7,3,280,15,22,11,0.8,0.2,0.04,43,12,0.02,0.04
+( كمثرى ) Pears,83.8,58,0.3,0.2,1.3,13.7,5,144,10,12,10,0.4,0.14,0.12,2,2,0.03,0.05
+( كاكا ) Persimmon,77,85,0.9,0.5,1,19.3,4,179,12,22,10,0.4,0.14,0.11,157,12,0.05,0.03
+( أناناس ) Pineapple,85.7,55,0.5,0.2,0.5,12.7,3,219,15,12,16,0.55,0.22,0.06,8,15,0.1,0.05
+( برقوق ) plums,86.8,50,0.7,0.2,0.6,11.3,2,260,19,21,11,0.6,0.05,0.08,71,5,0.04,0.03
+( رمان ) pomegranate,80.7,68,0.7,0.4,2.1,15.5,5,280,15,30,8,0.3,0.14,0.07,2,16,0.08,0.06
+( تين شوكي ) prickly pears,86.5,31,1,0.9,6.5,4.8,5,150,50,35,18,1.4,0.72,0.24,13,18,0.03,0.04
+"( قراصيا (برقوق مجفف) ) prunes,dried",22.5,299,2.3,0.5,2.5,71.2,12,850,41,61,0,2.2,0.5,0,145,2,0.12,0.25
+( زبيب ) Raisins,17,320,2.4,0.3,1.6,76.9,30,740,63,90,34,1.64,0.16,0.18,0,0,0.12,0.09
+( توت العليق (راسبيري) ) Raspberries,83.5,60,1.3,0.5,1.5,12.5,2,155,30,27,25,1.2,0.35,0.11,0,22,0.04,0.07
+( فراولة ) Strawberries,90.3,34,0.8,0.4,1.2,6.7,2,185,26,24,15,0.9,0.1,0.11,6,40,0.04,0.05
+( جميز ) Sycamore,82,66,0.9,0.3,0.5,15,9,183,19,0,0,1.7,0,0,0,13,0.03,0.09
+( بطيخ ) Watermelons,92.8,26,0.4,0.1,0.4,5.9,2,90,6,11,7,0.4,0.4,0.06,6,5,0.03,0.04
+"( عسلية ) Candy, Assalia",2.5,387,1.6,0.7,0,93.6,30,0,26,0,0,7.2,0.63,0,0,0,0.2,0.04
+"( بونبوني / حلوى جافة بنكهة الفواكه ) Candy, fruit flavor ( hard)",1.5,392,0,0,0,98,75,10,0,0,0,0,0,0,0,0,0,0
+"( فولية (حلاوة مولد) ) Candy, Folia",2.3,444,7.8,12,0.9,76.1,77,0,19,0,0,0.75,0.74,0,20,0,0,0
+"( حمصية (حلاوة مولد) ) Candy, homosia",3.5,387,6.5,1.7,0.9,86.5,27,405,77,215,0,2.3,1.7,0,9,0,0.24,0.1
+"( حلوى الجيلي (جيلي بينز) ) Candy , jelly beans",12,353,2.6,0.3,0,84.9,46,0,0,0,0,0,0,0,0,0,0,0
+"( كوز عسل ) Candy, Koozassal",2.3,387,2.4,0.5,0,93.3,33,0,41,0,0,9.2,0.87,0,0,0,0,0
+"( ملبن سادة ) Candy, Malban",5,382,0.8,0.5,0,93.5,40,0,9,0,0,0.05,0,0,0,0,0,0
+"( نوجا بالمكسرات ) Candy, Nogha with nuts",3.7,397,7.7,3.3,0,84.2,66,0,90,0,0,1.6,1.5,0,0,0,0,0
+"( سمسمية (حلاوة مولد) ) Candy, semsemia",1.9,443,6,12,1.3,77.7,16,0,177,0,0,2.8,2.1,0,5,0,0,0
+"( توفي / حلوى طرية ) Candy, Toffee",5,392,4,4,0,85,178,122,105,0,0,0.3,0.2,0,0,0,0,0
+( لبان (علكة) ) Chewing gum,0,320,0,0,0,80,0,0,0,0,0,0,0,0,0,0,0,0
+"( شوكولاتة باللبن ) Chocolate, milk",2.5,513,8,27,1,59.5,142,373,170,202,45,1.4,0.2,0,0,0,0.06,0.21
+"( شوكولاتة بجوز الهند ) Chocolate, coconuts",5.3,469,4,20,1.3,68.2,155,300,73,130,40,1.2,0.3,0,0,0,0.04,0.1
+"( شوكولاتة بالمكسرات ) Chocolate, nuts",2.1,530,9.3,30,1.1,55.6,103,310,132,234,12,1.6,0.6,0,0,0,0.09,0.4
+( شراب الذرة ) Corn syrup,20.5,317,0,0,0,79.3,20,3,8,16,0,0,0,0,0,0,0,0
+( حلاوة طحينية ) Halawa Tahinia,2.1,520,11.2,27.5,1.2,57,22,95,42,386,20,3,2.2,0.4,0,0,0.42,0.12
+( حلاوة طحينية بالمكسرات ) Halawa Tahinia with nuts,1.8,519,12.1,28,2,54.6,48,0,76,0,0,3.2,0,0,0,0,0,0
+( عسل نحل ) Honey,17.4,329,0.3,0,0,82,6,50,11,10,4,6,0.08,0.04,0,3,0.02,0.05
+( مربى ) Jam,28.8,283,0.7,0.1,0.3,69.7,14,95,16,10,9,1.2,0.03,0.2,0,9,0.02,0.04
+( مسحوق جيلي ) Jelly Powder,1.8,390,10,0,0,87.4,325,0,0,0,0,0,0,0,0,0,0,0
+( عسل أسود ) Molasses,26,280,0,0,0,70,88,1400,29,0,0,5.71,0.68,1.8,0,0,0.07,0.13
+( بقلاوة شرقية ) Oriental Baklava,15,450,4.8,23,0.5,56,0,0,0,0,0,0,0,0,0,0,0,0
+( مشكل بقلاوة شرقية ) Oriental Baklava ( assorted),8.2,531,6.3,34.3,0.9,49.3,0,0,0,0,0,0,0,0,0,0,0,0
+( بلح الشام ) Oriental Balah El-sham,10,420,5.3,12.7,0.4,71.2,0,0,0,0,0,0,0,0,0,0,0,0
+( بسبوسة سادة ) Oriental Basbusa,17.5,355,4.9,6,0.7,70.3,0,0,0,0,0,0,0,0,0,0,0,0
+"( بسبوسة بالمكسرات ) Oriental Basbusa, nuts",15,375,5.4,8,0.8,70.3,0,0,0,0,0,0,0,0,0,0,0,0
+( عيش السرايا بالكريمة ) Oriental Eish Saraya ( cream),7.7,426,2.5,12.5,0.5,75.9,0,0,0,0,0,0,0,0,0,0,0,0
+( Oriental Gohraiba ) Oriental Gohraiba,4.3,533,5.5,31,0.7,58,0,0,0,0,0,0,0,0,0,0,0,0
+( كحك العيد ) Oriental Kaak Eid,3.9,518,7,27.6,0.5,60.5,0,0,0,0,0,0,0,0,0,0,0,0
+( قطايف بالقطر ) Oriental Kataif,28,348,5,12.8,0.6,53.1,0,0,0,0,0,0,0,0,0,0,0,0
+( كنافة بالكريمة ) Oriental Kunafa Cream,27.2,361,3,14.5,0.5,54.5,0,0,0,0,0,0,0,0,0,0,0,0
+"( كنافة بالمكسرات ) Oriental Kunafa, nuts",6.6,487,5.8,23.7,0.8,62.5,0,0,0,0,0,0,0,0,0,0,0,0
+( لقمة القاضي (زلابية) ) Oriental Lukmet El-Kady,11.9,396,3.9,9.5,0.5,73.7,0,0,0,0,0,0,0,0,0,0,0,0
+( معمول بعجوة ) Oriental Maamoul,3.3,500,0.6,24.3,1,64.3,171,0,76,0,0,0,0,0,0,0,0,0
+"( سكر سكروز ) Sugar, sucrose",0.5,398,0,0,0,99.5,0,0,0,0,0,0,0,0,0,0,0,0
+"( سكر فركتوز ) Sugar, fructose",1,396,0,0,0,98.9,0,0,0,0,0,0,0,0,0,0,0,0
+( محليات صناعية ) Sweeteners,1.5,399,0,0.9,0,97.6,0,0,0,0,0,0,0,0,0,0,0,0
+( صوص شوكولاتة للتزيين ) Topping ( Chocolate),42.2,4,1.9,20.7,0,515,0,180,0,0,0,0,0,0,0,0,0,0
+"( بسطرمة بقري ) Beef, Basterma",47.2,201,28.62,5.8,1.6,8.5,2200,285,105,318,36,6.9,7.5,0.72,13,0,0.15,0.27
+"( لحم بسطرمة ) Beef, Basterma meat",58.6,156,29.9,4,0,0,1500,212,45,270,29,4,7.1,0.15,0,0,0,0
+"( مخ بقري نيء ) Beef, Brain",79.3,121,10.4,8.5,0,0.6,122,225,10,374,15,1.4,1.2,0.24,83,12,0.18,0.24
+"( مخ بقري مقلي ) Beef, Brain ( fried)",53,251,13.7,13.9,0,17.7,665,273,87,0,0,1.52,1.09,0.3,0,0,0,0
+"( برجر بقري ) Beef, Burger",59.4,256,18,20,0,1,613,276,75,166,19,2.8,3.5,0.24,0,0,0.05,0.18
+"( برجر بقري مشوي ) Beef, Burger ( grilled)",55.3,263,21.1,19,0,2,750,150,31,0,0,3.1,4,0,0,0,0,0
+"( فرانكفورتر بقري (هوت دوج) ) Beef, frsnkfurter",60,224,15.2,16.1,0,4.6,1052,230,68,127,74,2.5,3.7,0.07,0,0,0.16,0.2
+"( لحمة رأس بقري ) Beef , Head",64,212,20.2,14.5,0,0.1,0,0,0,0,0,0,0,0,0,0,0,0
+"( لحمة رأس مسلوقة ) Beef , Head meat ( boiled)",57.4,239,25.1,15.2,0,0.4,0,0,0,0,0,5.5,4.4,0.28,0,0,0,0
+"( قلب بقري ) Beef , Heart",76.5,112,16.5,4.3,0,1.7,90,310,12,288,17,4.6,2,0.41,5,5,0.32,0.92
+"( كلاوي بقري ) Beef , Kidneys",75.9,121,16.5,5.8,0,0.8,184,215,10,234,12,5.8,1.8,0.41,266,10,0.27,1.8
+"( كوارع بقري ) Beef , Kunckles",71,137,23,5,0,0,62,134,0,0,0,0.4,1.6,0,0,0,0,0
+"( كبدة بقري ) Beef , liver",70.5,132,19.5,4,0,4.4,88,303,10,352,14,7.8,7.7,0.8,0,25,0.26,3.1
+"( لانشون بقري ) Beef , luncheon",66.3,155,16.3,7.5,1.2,5.6,1250,222,25,200,17,2.6,4,0.1,0,0,0.25,0.24
+"( فشة بقري ) Beef , lung",79.5,88,17.1,2.2,0,0,50,218,10,204,12,5.8,2.4,0.04,46,0,0.07,0.28
+"( لحم بقري مشفي ) Beef , meat",67.4,186,19.6,11.9,0,0,72,375,15,171,22,3.4,4.8,0.1,5,0,0.07,0.11
+"( لحم بقري مفروم ) Beef , meat ground",65,216,18,16,0,0,69,210,14,180,17,2.7,4,0.11,0,0,0,0
+"( كفتة بقري مقلية ) Beef , meat ( Kofta , Fried)",60,245,17.5,18.1,0.2,2.9,418,155,12,196,0,2.5,0.95,0,0,0,0,0
+"( كفتة بقري مشوية ) Beef , meat ( Kofta , Grilled)",52,271,21.2,18.2,0,5.5,525,122,35,0,0,2.43,2.75,0,0,0,0,0
+"( كفتة أرز بقري ) Beef , meat (Kofta, Rice)",70,149,10.6,7,0.6,11,418,122,20,122,0,1.7,1.9,0.09,0,0,0,0
+"( Beef , meat ( Kubeba, fried) ) Beef , meat ( Kubeba, fried)",48.2,237,11.5,8.8,0.7,28,628,290,9,0,17,2.5,1.8,0.14,0,0,0,0
+"( لحم بقري بالصوص البني ) Beef , meat ( brown saus)",72.1,159,14,11,0.3,0.9,412,315,20,155,0,1.6,2.2,0,0,0,0,0
+"( بلوبيف معلب (لحم بقري كورند) ) Beef , meat corned ( canned)",60,213,24.8,11.8,0,1.9,880,152,12,150,17,3.3,4.5,0.26,0,0,0.02,0.18
+"( سجق بقري ) Beef, sauages",50,312,15,24,0,9,810,172,35,172,16,1.4,1.6,0.16,0,0,0.05,0.11
+"( سجق بقري مشوي ) Beef, sauages grilled",48,291,17,18.5,0,14,1090,180,45,210,17,1.8,1.7,0.26,0,0,0,0
+"( طحال بقري ) Beef, spleen",77,97,18,2.1,0,1.5,108,415,9,218,11,10.6,2.4,0.12,0,0,0.12,0.34
+"( Beef, toungue ) Beef, toungue",67,201,16.8,14.6,0,0.6,88,304,10,174,12,4.6,3.1,0.05,0,0,0.12,0.28
+"( لسان بقري مسلوق ) Beef,  toungue ( boiled)",52,298,23.4,22.1,0,1.3,124,131,25,201,16,3,2,0,0,0,0,0
+"( لحم جاموسي ) Buffalo , meat",65.4,210,18.8,15,0,0,63,370,25,180,30,4.2,3.6,0.24,0,0,0.21,0.35
+"( كبدة جملي ) Camel , liver",68,143,20.7,4.4,0,5.2,37,150,35,0,13,7,2.2,0.9,0,0,0,0
+"( لحم جملي ) Camel , meat",75.2,108,19,3.6,0,0,187,347,15,160,12,7.8,8.2,1.22,8,0,0.38,0.76
+"( هوت دوج دجاج ) Chicken, frankfurter",59.5,221,18.1,15,1.1,3.3,995,258,18,164,0,1.75,1.87,0,0,0,0,0
+"( قوانص دجاج ) Chicken, gizzard",75,106,20.5,2.3,0,0.7,65,240,10,105,0,2.9,0,0,0,0,0.02,0.2
+"( كبدة دجاج ) Chicken, liver",73.6,122,17.6,4.6,0,2.5,45,166,20,240,13,10.5,3.5,0.5,7500,20,0.35,2.8
+"( لانشون دجاج ) chicken,  lucheon",67.5,144,18,5.5,1.5,5.5,1003,300,20,0,0,1.06,0.91,0,0,0,0,0
+"( دجاج مسلوق ) chicken,  boiled",65.2,193,21.6,11.7,0,0.3,91,206,14,190,26,2.3,2.1,0,0,0,0,0
+"( دجاج مقلي ) chicken,  fried",46.8,316,22.4,22.2,0,6.6,540,348,15,0,0,1.23,1.37,0,0,0,0,0
+"( دجاج مشوي ) chicken,  grilled",63,213,21.2,13.8,0,0.9,86,311,16,180,25,2,2.2,0,0,0,0,0
+"( لحم دجاج وراك (داكن) ) chicken,  meat ( dark)",75.1,121,19,5,0,0,67,250,12,168,17,1.6,2.12,0,0,0,0,0
+"( لحم دجاج صدور (فاتح) ) chicken, meat ( light)",75.6,109,20.5,3,0,0,58,330,11,214,19,1.1,0.69,0,0,0,0,0
+"( دجاج كامل بالجلد واللحم ) chicken, meat and skin",65.6,214,17.4,16,0,0,77,340,11,194,20,1.6,2,0.15,22,0,0.13,0.18
+"( لحم بط بالجلد ) duck, meat and skin",55.2,315,15.4,28.2,0,0,90,312,12,194,18,2.4,2.9,0.35,0,0,0.08,0.25
+( لحم ماعز ) goat meat,70.3,165,18.4,10.2,0,0,53,286,12,150,14,2.3,2.4,0.08,0,0,0.18,0.26
+"( لحم إوز بالجلد ) goose , meat and skin",51.5,346,16,31.3,0,0,80,440,18,190,25,1.5,1.7,0.26,21,0,0.03,0.25
+"( كلاوي ضأن ) lamb, kidneys",78,109,16,5,0,0,168,217,10,245,12,8.4,2.5,0.42,100,8,0,0
+"( كبدة ضأن ) lamb, liver",70.7,126,19.9,2.8,0,5.2,63,257,4,354,12,9.4,3.99,1.4,12000,10,0,0
+"( لحم ضأن ) lamb, meat",62.2,249,16.5,20.3,0,0,65,300,15,163,15,2.5,2.7,0.6,9,0,0.12,0.19
+"( كباب ضأن ) lamb, meat ( Kabab)",52.8,273,23,19.3,0,1.8,505,383,22,220,32,3,3.1,0,0,0,0,0
+( لحم حمام بالجلد ) Pigeon meat and skin,59.6,251,20,19,0,0,58,275,27,276,20,2.2,2.4,0.31,0,0,0.1,0.18
+"( لحم خنزير ) Pork, meat",51.1,354,15.9,32.3,0,0,62,315,10,172,16,1.9,1.8,0.12,0,0,0.65,0.18
+"( لحم أرانب ) Rabbit, meat",72.4,133,20.7,5.6,0,0,72,345,15,243,30,1.6,1.6,0.22,5,0,0.08,0.16
+"( هوت دوج ديك رومي ) Turkey , frankfurter",61.5,187,19,9.9,1.1,5.5,1009,274,73,0,20,1.15,1.23,0.07,0,0,0,0
+"( لانشون ديك رومي ) Turkey, luncheon",68,129,20,3.5,1.1,4.4,996,315,87,0,34,0.96,1.33,0,0,0,0,0
+"( لحم ديك رومي بالجلد ) Turkey, meat and skin",70.4,151,21,7.4,0,0,70,321,15,220,20,0.99,1.6,0.18,0,0,0.11,0.12
+"( لحم بتلو ) Veal, meat",75.1,123,18.7,5.4,0,0,103,372,10,253,27,2,2.6,0.03,3,0,0.1,0.2
+"( بيض دجاج كامل ) Eggs , Chicken whole",75.2,149,12.6,10.8,0,0.3,155,130,62,218,15,2.5,1.5,0.14,128,0,0.14,0.36
+"( بياض بيض دجاج ) Eggs , Chicken white",88,46,11,0.1,0,0.2,172,133,10,22,10,0.15,0.03,0.04,0,0,0.02,0.21
+"( صفار بيض دجاج ) Eggs , Chicken , yolk",50.4,343,16.5,30.2,0,1.2,44,89,150,586,18,5,4,0.02,384,0,0.28,0.55
+"( بيض بط كامل ) Eggs , duck whole",71.2,177,13.5,13.3,0,0.7,115,233,58,217,18,3.5,1.4,0.03,178,0,0.14,0.36
+( أومليت (عجة مصري) ) Omelet ( Ijaa),74.1,148,9.9,10.5,0.5,3.5,452,143,42,162,0,1.5,0.63,0,0,0,0,0
+( سمك المرجان / أبراميس ) Bream,76.5,100,19.4,2.4,0,0.3,55,180,127,101,55,1.21,0.4,0.21,21,0,0.02,0.14
+"( سمك دنيس ذهبي ) Bream,golden",79.4,79,17.6,1,0,0,64,215,128,186,33,0.94,1,0.18,18,0,0.16,0.15
+"( سمك بياض ) Catfish, bayad",77.4,102,18.7,3,0,0,62,155,116,318,60,1.05,0.6,0.23,13,2,0.1,0.21
+"( سمك قرموط نيلي ) Catfish, river",80.5,81,16.4,1.5,0,0.5,92,174,75,177,43,1.02,0.8,0.24,17,0,0.05,0.2
+"( سمك قشر بياض ) Catfish, scaled",75.8,112,18.1,4,0,0.8,90,158,103,340,58,1.01,1.1,0.24,10,2,0.11,0.12
+"( قرموط مملح ) Catfish, salted",60.8,152,21.7,7,0,0.5,2210,188,132,350,64,1.15,0.8,0.24,15,0,0.06,0.11
+( كابوريا ) crab,77,96,18,1.5,0,2.6,85,209,53,225,0,1.5,4.5,0,0,0,0.05,0.1
+"( سمك مأكول ) Eat, fish",70,166,19,10,0,0,70,220,30,210,0,0.8,0.5,0,0,0,0.2,0.25
+"( أصابع سمك مقلية (فيش فينجرز) ) Fish Finger,fried",52,252,12,13.4,0,20.9,490,275,74,222,0,1.01,0.4,0.04,0,0,0.09,0.07
+"( رنجة مدخنة ) Herrings, smoked",62,200,20,12.9,0,0.9,1056,257,66,254,43,1.53,1.2,0.2,15,0,0.02,0.12
+"( Lizard fish, ) Lizard fish,",76.8,95,19.4,1.5,0,0.9,66,243,181,227,24,0.83,1.2,0.16,0,0,0.14,0.16
+"( ماكريل معلب ) Mackerel, canned",53,248,23.2,14.4,0,6.5,475,250,128,292,45,0.9,1.2,0.18,0,0,0.08,0.01
+( سمك بوري ) Mullet,62.7,215,20,15,0,0.1,152,349,10,283,29,1.93,0.61,0.05,38,0,0.09,0.2
+"( سمك بوري مشوي ) Mullet, grilled",73.4,133,19,6.3,0,0,88,280,21,208,18,1.3,1.53,0.19,24,1,0.07,0.15
+"( فسيخ (بوري مملح) ) Mullet, salted",69.1,151,21.5,6.7,0,1.2,100,195,37,209,30,1.2,0.9,0.21,31,0,0.05,0.09
+( سردين ) Sardines,62.8,154,20.8,7.8,0,0.1,1805,200,38,205,25,1.21,1,0.2,14,0,0.05,0.12
+( سردين ) Sardines,70.6,156,19.2,8.8,0,0,91,212,34,210,20,0.92,0.8,0.16,13,0,0.11,0.08
+"( سردين معلب ) Sardines,canned",58.8,227,22,15.4,0,0.1,630,257,320,354,28,3,2.9,0.19,15,0,0.04,0.25
+"( سردين مشوي ) Sardines, grilled",64.1,180,22.5,9.2,0,1.7,107,220,86,220,36,1,0.9,0.18,16,0,0.07,0.07
+"( سردين مملح ) Sardines, salted",56.6,218,23.3,13.5,0,0.8,1440,307,45,383,30,1.23,1.2,0.18,15,0,0.6,0.06
+( جمبري ) Shrimp,77.8,88,19.5,0.9,0,0.5,125,205,57,152,40,1.41,2.08,0.06,15,0,0.02,0.1
+"( جمبري مسلوق ) Shrimp, boiled",70.4,116,25,1.1,0,1.5,77,250,65,0,0,1.42,2.9,0.11,20,0,0.04,0.09
+( سمك موسى ) Sole,78.5,88,18,1.6,0,0.3,85,210,15,158,38,0.9,1,0.05,27,0,0.11,0.18
+"( سمك موسى مقلي ) Sole, fried",50.5,262,21.5,15.2,0,9.8,229,225,16,0,0,1.1,1.5,0.12,31,0,0.06,0.1
+( سمك بلطي ) Tilapia,77.8,94,19,2,0,0,85,280,92,197,32,1.9,0.8,0.05,25,0,0.08,0.15
+"( سمك بلطي مقلي ) Tilapia, fried",58.4,233,20,15,0,4.4,364,116,72,0,0,1.2,1,0,0,0,0,0
+"( سمك بلطي مشوي ) Tilapia, grilled",71,121,22.5,2.6,0,1.9,95,205,0,129,0,1.1,0.9,0.18,25,0,0.05,0.09
+( تونا معلبة ) Tuna canned,54.2,267,24.6,18.5,0,0.4,450,285,10,189,31,2.75,0.4,0.2,28,0,0.04,0.1
+( زبدة غير مملحة ) Butter ( unsalted),16.7,742,0.7,82,0,0.3,10,25,15,23,2,0.16,0.15,0.02,727,0,0,0
+( سمن خالص (زيت الزبدة) ) Butter Oil (ghee),0.3,896,0.2,99.5,0,0,0,0,0,0,0,0,0,0,833,0,0,0
+"( جبنة كاممبرت ) Cheese , camembert",50.5,301,20,23.9,0,1.5,1019,112,400,287,18,0.65,3.4,0.09,280,0,0.03,0.69
+"( جبنة شيدر ) Cheese, cheddar",35.8,406,26,32.9,0,1.5,725,90,724,512,42,0.95,3,0.03,305,0,0.04,0.46
+"( جبنة جودة ) Cheese, gouda",41,371,24.5,30,0,0.8,646,160,765,570,0,0.3,3.5,0,250,0,0,0
+"( Cheese, Karesh ) Cheese, Karesh",77.5,100,13,3.5,0,4.1,130,95,300,161,23,0.41,2.4,0.04,12,0,0.03,0.19
+"( جبنة قريش قليل الدسم ) Cheese, Karesh low fat",76.5,91,19,0.5,0,2.7,145,115,388,174,28,0.33,2,0.04,0,0,0.02,0.24
+"( جبنة مش قريش ) Cheese, Karesh ( MISH)",72.8,93,14,3,0,2.4,4500,118,360,276,32,0.5,1.44,0.05,0,0,0.1,0.32
+"( جبنة موتزاريلّا ) Cheese, Mozzarella",52.3,265,27,16.5,0,2.2,555,35,724,0,0,0.4,2.6,0,0,0,0,0
+"( جبنة بارميزان ) Cheese, Parmesan",29.5,399,35,27.5,0,2.9,982,144,1016,715,0,0.4,3.54,0.05,356,0,0.04,0.52
+"( جبنة مطبوخة (مثلثات) ) Cheese , Processed",46.9,324,19,25,0,5.7,1160,93,710,542,30,0.5,2.4,0.09,205,0,0.03,0.26
+( جبنة قابلة للدهن / كريمية ) Cheese spread,51.5,289,15.9,22.9,0,4.8,1027,190,420,480,25,0.3,2.1,0,150,0,0.05,0.36
+( جبنة بيضاء ) Cheese white,53.4,256,16.3,19.8,0,3.2,2769,115,456,273,45,0.2,1.9,0.07,166,0,0.08,0.37
+( جبنة بيضاء فيتا نصف دسم ) Cheese white half cream,69.5,151,13,8.9,0,4.6,805,146,357,175,32,0.25,1.4,0.08,95,0,0.1,0.35
+( Cheese Roquefort ) Cheese Roquefort,40.5,361,22.3,29,0,2.7,1390,207,415,385,36,0.8,2.34,0.09,295,0,0.05,0.4
+( كريمة خفق ) Cream whipping,56.6,353,3,36.4,0,3.3,40,76,81,25,5,0.25,0.2,0.08,275,0,0.02,0.012
+( Fermented Milk ) Fermented Milk,87.7,62,3.8,3.2,0,4.5,51,144,122,90,10,0.05,0.31,0.05,38,0,0.23,1.03
+( لبن رايب خالي الدسم ) Fermented Skim Milk,88.4,46,4.9,0.8,0,4.9,54,150,132,95,13,0.05,0.35,0.03,0,0,0.02,0.12
+"( لبن جاموسي ) Milk,buffalo",82.5,102,4.2,7.1,0,5.4,52,142,180,86,17,0.2,0.22,0.01,22,3,0.1,0.35
+"( لبن بقري ) Milk , Cow",87.8,64,3.3,3.7,0,4.4,54,149,123,87,17,0.05,0.3,0.02,35,0,0.04,0.19
+"( لبن الأم (بشري) ) Milk , human",87.1,70,1.2,3.9,0,7.5,17,52,32,13,30,0.15,1.3,0,97,5,0.02,0.04
+( حليب بالشوكولاتة ) Milk chocolate,81.2,80,3.2,1.7,0,12.9,64,131,122,87,18,0.31,0.41,0.8,24,0,0.04,0.16
+( Milk full cream ) Milk full cream,87.8,64,3.3,3.5,0,4.7,48,142,120,92,15,0.06,0.4,0.01,37,0,0.04,0.17
+( Milk fruit ) Milk fruit,82,76,3.2,1.7,0,12,49,175,125,80,17,0.04,0.41,0.04,22,2,0.07,0.19
+( حليب نصف دسم ) Milk half cream,89.1,48,3.4,1.5,0,5.1,52,153,128,88,17,0.05,0.4,0.02,23,0,0.08,0.2
+( Milk low fat Skimmed ) Milk low fat Skimmed,89.6,41,3.5,0.6,0,5.3,50,143,126,95,16,0.05,0.4,0.03,0,0,0.1,0.21
+( Milk Powder Skimmed ) Milk Powder Skimmed,5,362,37,1.5,0,50,462,1201,1045,803,95,0.45,4.3,0,0,5,0.45,2.1
+( حليب بودرة كامل الدسم ) Milk Powder Whole,2.7,497,26.7,26.2,0,38.7,350,1450,930,850,105,0.4,3.53,0.2,353,10,0.4,1.4
+( زبادي ) Youghurt,87,64,3.4,3.2,0,5.5,62,180,168,101,16,0.2,0.2,0.02,30,0,0.06,0.18
+"( زبادي قليل الدسم ) Youghurt , low fat",87.5,50,4,0.9,0,6.4,60,185,170,105,14,0.2,0.22,0.01,0,0,0.07,0.019
+"( زبادي بالفواكه ) Youghurt , fruits",82.5,68,3,1.2,0.9,11.2,85,199,162,140,15,0.25,0.7,0.07,9,3,0.08,0.23
+"( بيرة بدون كحول ) Beer, nonalcholic",95.8,16,0.2,0,0,3.8,8,25,2,19,0,0.03,0,0,0,0,0,0
+"( مشروب شعير غازي (فيروز/بيريل) ) Carbonated, barley, drinks",89.4,42,0,0,0,10.5,2,25,12,10,0,0.03,0,0,0,0,0,0
+"( مشروبات غازية سوداء/بيضاء ) Carbonated, soft drinks",89.2,42,0,0,0,10.6,7,2,3,15,0,0,0,0,0,0,0,0
+"( مشروبات غازية دايت ) Carbonated, soft drinks diet",99.7,1,0,0,0,0.2,4,3,0,0,0,0,0,0,0,0,0,0
+"( ماء تونيك غازي ) Carbonated, tonic water",89.7,40,0,0,0,10,8,0,0,0,0,0,0,0,0,0,0,0
+"( مشروب شوكولاتة سريع التحضير (نسكويك) ) Drink, chocolate instant",2,412,6.2,6,0.9,83.4,280,408,29,0,0,2.4,1.8,1.1,0,0,0.06,0.04
+"( قهوة سريعة الذوبان بودرة ) Drink, Coffe instant Powder",2.5,360,20.5,0.5,0,68.3,110,1205,0,0,0,3.29,0.5,0.05,0,0,0,0
+"( مشروب فواكه بودرة (تانج) ) Drink, Fruit instant Powder",0.3,392,1.1,0,0,96.9,183,0,0,0,0,0,0,0,0,100,0,0
+"( شاي سريع التحضير بودرة (أيس تي) ) Drink, tea instant Powder",0.5,396,1,0,0,97.9,44,0,0,0,0,0,0,0,0,0,0,0
+"( عصير تفاح ) Juice , Apple",87.7,48,0.1,0,0,12,3,105,8,10,6,0.4,0.03,0.4,16,4,0.02,0.03
+"( Juice, Apple sweetened ) Juice, Apple sweetened",85.8,56,0,0,0,14,5,100,7,10,6,0.3,0.03,0.4,0,2,0.02,0.02
+"( Juice, grapes sweetened ) Juice, grapes sweetened",83,66,0.3,0,0,16.2,5,130,15,14,9,0.4,0.03,0.03,5,3,0.03,0.03
+"( عصير جريب فروت ) Juice, grapefruit",89.9,39,0.5,0,0.1,9.2,3,155,7,16,13,0.3,0.4,0.02,0,30,0.04,0.03
+"( عصير برتقال ) Juice, Orange.",88.4,46,0.6,0.2,0.1,10.4,4,220,10,19,10,0.4,0.3,0.04,3,35,0.08,0.04
+"( عصير برتقال محلى ) Juice, Orange Sweetened",85.7,56,0.1,0,0,14,3,170,10,45,11,0.3,0.4,0.05,0,20,0.08,0.04
+"( عصير خوخ ) Juice, Peach",87.3,47,0.5,0.2,0.5,10.9,3,200,7,20,8,0.4,0.01,0.02,18,5,0.02,0.3
+"( Juice, Pomegrante ) Juice, Pomegrante",84.2,62,1,0,0,14.4,5,280,5,30,8,0.26,0.14,0.2,0,8,0.04,0.02
+"( عصير قصب ) Juice, Sugarcane",88.5,45,0,0,0,11.3,0,0,0,0,0,0.15,0,0,0,2,0,0
+"( Juice, tomato ) Juice, tomato",93,24,0.2,0,0.1,5.8,250,203,9,20,13,0.5,0.2,0,42,30,0.04,0.01
+"( نكتار مشمش ) Nectar, apricot",84.8,59,0.5,0.1,0.2,14,4,105,12,18,10,0.4,0.05,0.05,257,5,0.04,0.03
+"( نكتار كوكتيل فواكه ) Nectar, Fruit Cocktail",84.4,61,0.1,0.1,0,15,8,180,12,15,4,0.039,0.06,0.1,94,12,0.06,0.02
+"( نكتار جوافة ) Nectar, Guava",84.5,60,0.1,0,0.1,14.9,7,75,8,13,5,0.3,0.07,0.04,0,60,0,0
+"( نكتار مانجو ) Nectar, Mango",84.1,62,0.2,0.1,0.1,15.1,9,83,5,3,1,0.21,0.04,0.06,89,15,0.01,0.01
+( حبهان (هيل) ) Cardamom,12.6,288,12,4.3,14.3,50.4,3,30,124,97,54,6,3.8,1.4,0,0,2.5,1.13
+( Cinnamon ) Cinnamon,7.8,263,4,2,24.1,57.3,15,380,500,42,50,14.2,2.4,0.3,0,0,0.08,0.35
+( Clove ) Clove,8,348,6.5,8.3,8.5,61.7,300,1200,690,80,250,5.4,3.5,0.4,0,0,0.14,0.26
+( كزبرة ) Coriander,10.6,284,13.6,15.7,33.5,22,35,1020,380,408,85,18.2,8.7,1.2,0,0,0.18,0.27
+( كمون ) Cumin,20.4,327,18,13.3,7,33.8,145,2150,1025,480,410,37,5,1.1,0,0,0,0
+( جنزبيل ) Ginger,9.7,338,9,3.4,3,67.9,30,1200,120,240,165,10.7,5.1,0.4,0,0,0.11,0.2
+( جوزة الطيب ) Nutmeg,9.8,511,7.5,34.7,3,42.2,17,400,210,185,172,2.1,1.7,1.1,0,0,0,0
+"( فلفل أسود ) Pepper, black",10.5,343,14.7,4.6,5.1,60.6,20,1400,360,185,155,12.5,1.4,1.2,0,0,0.05,0.02
+"( فلفل أحمر ) Pepper, red",11.8,291,15.6,7.7,18.1,39.8,215,1150,140,230,145,8.7,3.4,0.5,0,0,0.2,0.81
+( زعتر ) Thyme,11.6,287,12.2,2.9,11.8,53.1,75,1000,210,180,295,41,5.8,0.7,0,0,1.8,0.9
+( بيكنج بودر ) Backing Powder,2.1,144,0.9,0,0,35,10953,170,0,5404,0,0,0,0,0,0,0,0
+( مرقة دجاج ) Chicken Stock,2,305,7.5,25,0,12.5,6073,1113,3237,0,0,4.2,1.56,0,0,0,0,0
+( مسحوق كاكاو ) Coca Powder,4.5,438,17,18.9,4.6,50,953,1420,130,650,0,6.98,6.6,0,0,0,0,0
+( بودرة دوم ) Dom Powder,4.9,312,3.6,1.4,12.5,71.3,119,0,0,0,0,0,0,0,0,0,0,0
+( جيلاتين ) Gelatin,12.4,345,86,0.1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+( كشك ) Kishk,3.4,380,21.6,7.2,4.5,57.2,0,0,0,0,0,0.5,0,0,0,0,0,0
+( مايونيز ) Mayonnaise,14.7,722,1.3,77.4,0,5.1,650,45,20,52,0,0,0.4,0,80,0,0.05,0.1
+( زيت نباتي ) Oil ( Vegtables),1,899,0,99.9,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+( تتبيلة سلطة ) Salad dressing,41,370,2.9,29.1,0,24.2,520,18,27,0,10,0.25,0,0,0,0,0,0
+( ملح طعام للطبخ ) Salt table cooking,5,0,0,0,0,0,38900,0,29,0,0,0,0,0,0,0,0,0
+( ملح منخفض الصوديوم ) Salt soidium reduced,5,0,0,0,0,0,18000,25500,0,0,0,0,0,0,0,0,0,0
+( تمر هندي ) tamarind,22.5,292,3.1,0.4,3,68.9,0,0,5,0,0,1,0,0,0,6,0.4,0.16
+"( خميرة طازجة مضغوطة ) Yeast, compressed",72,105,13,0.5,0,12.1,15,624,0,387,50,4.8,2.7,1.7,0,4,0.8,1.7
+"( خميرة جافة ) Yeast , dried",4.5,357,37,1.5,0,48.8,85,1709,65,1595,200,16.8,8.2,3.2,0,0,2.51,5.94            .border {
                 border-color: #cbd5e1 !important;
             }
             .page-break {
