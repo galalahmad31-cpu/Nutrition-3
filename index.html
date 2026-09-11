@@ -68,6 +68,10 @@
             .border {
                 border-color: #cbd5e1 !important;
             }
+            textarea, input, select {
+                border-color: #cbd5e1 !important;
+                background-color: transparent !important;
+            }
             table th, table td {
                 padding: 8px !important;
                 border-bottom: 1px solid #f1f5f9;
@@ -98,7 +102,7 @@
 
             <!-- Header Action Controls -->
             <div class="flex items-center gap-2 sm:gap-3">
-                <button onclick="openPrintSettingsModal()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-sm flex items-center gap-1.5 cursor-pointer">
+                <button onclick="openPrintSettingsModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-sm flex items-center gap-2 cursor-pointer active:scale-95">
                     <i class="fa-solid fa-print"></i>
                     <span>طباعة التقرير</span>
                 </button>
@@ -106,6 +110,7 @@
         </div>
     </header>
 
+    <!-- PRINT HEADER -->
     <div class="print-only p-6 border-b-2 border-emerald-600 mb-6 bg-slate-50" style="-webkit-print-color-adjust: exact;">
         <div class="flex justify-between items-center">
             <div>
@@ -114,7 +119,7 @@
                 <p id="printDoctorSpecialty" class="text-xs text-slate-600 font-bold">استشاري التغذية العلاجية</p>
             </div>
             <div class="text-left text-xs text-slate-600 flex flex-col items-end">
-                <p id="printClinicAddress" class="text-[11px] text-slate-500 max-w-[200px]">العنوان</p>
+                <p id="printClinicAddress" class="text-[11px] text-slate-500 max-w-[200px]">القاهرة - مصر</p>
                 <p id="printReportDate" class="text-[11px] text-slate-500 mt-1"></p>
             </div>
         </div>
@@ -122,67 +127,109 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        <section class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-4">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-slate-100 pb-3 gap-2">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-id-card text-emerald-600"></i>
-                    <h2 class="font-bold text-slate-800 text-base">بيانات ملف المريض</h2>
+        <!-- PATIENT PROFILE CARD -->
+        <section class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-4 page-break">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 gap-2">
+                <div class="flex items-center gap-2 cursor-pointer select-none" onclick="togglePatientCard()">
+                    <button id="patientToggleBtn" type="button" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 flex items-center justify-center font-bold text-sm transition shadow-xs no-print">
+                        <i id="patientToggleIcon" class="fa-solid fa-chevron-down transition-transform duration-200"></i>
+                    </button>
+                    <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <span>بيانات ملف المريض</span>
+                            <span id="patientSummaryName" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 hidden sm:inline-block"></span>
+                        </h2>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 no-print">
+                    <button onclick="togglePatientCard()" class="text-xs font-bold text-slate-600 hover:text-emerald-600 bg-slate-50 hover:bg-emerald-50 px-3 py-1.5 rounded-xl border border-slate-200 transition cursor-pointer flex items-center gap-1.5">
+                        <i class="fa-solid fa-sliders text-emerald-600"></i>
+                        <span id="patientToggleText">طي البيانات</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">اسم المريض</label>
-                    <input type="text" id="patientName" placeholder="أدخل اسم المريض..." onchange="savePatientData()"
-                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition font-bold">
+            <!-- COLLAPSIBLE PATIENT CONTENT -->
+            <div id="patientCardBody" class="space-y-4 transition-all duration-300 collapsible-body">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">اسم المريض</label>
+                        <input type="text" id="patientName" placeholder="أدخل اسم المريض..." oninput="savePatientData()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">العمر (سنة)</label>
+                        <input type="number" id="patientAge" placeholder="30" oninput="savePatientData()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">الطول (سم)</label>
+                        <input type="number" id="patientHeight" placeholder="175" oninput="savePatientData(); renderWeightTabUI();"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">الهدف التغذوي الرئيسي</label>
+                        <select id="patientGoal" onchange="savePatientData()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition font-semibold">
+                            <option value="loss">تنزيل الوزن وخسارة الدهون</option>
+                            <option value="maintain">الحفاظ على الوزن</option>
+                            <option value="gain">زيادة الوزن والبناء العضلي</option>
+                            <option value="therapeutic">تغذية علاجية</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">العمر (سنة)</label>
-                    <input type="number" id="patientAge" placeholder="30" onchange="savePatientData()"
-                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">الطول (سم)</label>
-                    <input type="number" id="patientHeight" placeholder="175" onchange="savePatientData(); renderWeightTabUI();"
-                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">الهدف التغذوي الرئيسي</label>
-                    <select id="patientGoal" onchange="savePatientData()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition font-semibold">
-                        <option value="loss">تنزيل الوزن وخسارة الدهون</option>
-                        <option value="maintain">الحفاظ على الوزن</option>
-                        <option value="gain">زيادة الوزن والبناء العضلي</option>
-                        <option value="therapeutic">تغذية علاجية</option>
-                    </select>
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-3 border-t border-slate-100">
-                <div>
-                    <label class="block text-xs font-bold text-emerald-700 mb-1">السعرات المستهدفة (kcal)</label>
-                    <input type="number" id="patientTargetCal" placeholder="2000" onchange="savePatientData(); renderDays();"
-                           class="w-full bg-emerald-50/60 border border-emerald-200 rounded-xl px-3 py-2 text-sm font-bold text-emerald-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+                <!-- DIAGNOSIS AND COMPLAINT SECTION -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-notes-medical text-rose-500"></i>
+                            <span>شكوى المريض / الأعراض</span>
+                        </label>
+                        <textarea id="patientComplaint" rows="2" placeholder="أدخل شكوى المريض الرئيسية أو الأعراض التي يعاني منها..." oninput="savePatientData()"
+                                  class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition resize-y font-semibold"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-stethoscope text-sky-500"></i>
+                            <span>التشخيص الطبي / الحالة الصحية</span>
+                        </label>
+                        <textarea id="patientDiagnosis" rows="2" placeholder="أدخل التشخيص الطبي (مثل: سكري النوع الثاني، ضغط الدم، مقاومة إنسولين...)" oninput="savePatientData()"
+                                  class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition resize-y font-semibold"></textarea>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">بروتين مستهدف (جرام)</label>
-                    <input type="number" id="patientTargetPro" placeholder="150" onchange="savePatientData(); renderDays();"
-                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">كاربوهيدرات مستهدفة (جرام)</label>
-                    <input type="number" id="patientTargetCarb" placeholder="200" onchange="savePatientData(); renderDays();"
-                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">دهون مستهدفة (جرام)</label>
-                    <input type="number" id="patientTargetFat" placeholder="60" onchange="savePatientData(); renderDays();"
-                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+
+                <!-- MACRO TARGETS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-3 border-t border-slate-100">
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-700 mb-1">السعرات المستهدفة (kcal)</label>
+                        <input type="number" id="patientTargetCal" placeholder="2000" oninput="savePatientData(); renderDays();"
+                               class="w-full bg-emerald-50/60 border border-emerald-200 rounded-xl px-3 py-2 text-sm font-bold text-emerald-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">بروتين مستهدف (جرام)</label>
+                        <input type="number" id="patientTargetPro" placeholder="150" oninput="savePatientData(); renderDays();"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">كاربوهيدرات مستهدفة (جرام)</label>
+                        <input type="number" id="patientTargetCarb" placeholder="200" oninput="savePatientData(); renderDays();"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">دهون مستهدفة (جرام)</label>
+                        <input type="number" id="patientTargetFat" placeholder="60" oninput="savePatientData(); renderDays();"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+                    </div>
                 </div>
             </div>
         </section>
 
         <div class="border-b border-slate-200 no-print flex gap-2 overflow-x-auto custom-scrollbar pb-1">
-            <button id="btn-planTab" onclick="switchTab('planTab')" class="tab-btn active font-bold text-sm px-5 py-2.5 rounded-xl transition flex items-center gap-2 whitespace-nowrap bg-emerald-600 text-white shadow-sm cursor-pointer">
+            <button id="btn-planTab" onclick="switchTab('planTab')" class="tab-btn font-bold text-sm px-5 py-2.5 rounded-xl transition flex items-center gap-2 whitespace-nowrap bg-emerald-600 text-white shadow-sm cursor-pointer">
                 <i class="fa-solid fa-calendar-days"></i>
                 <span>الخطة التغذوية</span>
             </button>
@@ -206,7 +253,7 @@
                     <h3 class="font-extrabold text-slate-800 text-lg">البرنامج الغذائي</h3>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="addNewDay()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-4 py-2.5 rounded-xl transition shadow-sm flex items-center gap-2 cursor-pointer">
+                    <button onclick="addNewDay()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-4 py-2.5 rounded-xl transition shadow-sm flex items-center gap-2 cursor-pointer active:scale-95">
                         <i class="fa-solid fa-plus"></i>
                         <span>إضافة يوم جديد</span>
                     </button>
@@ -262,15 +309,15 @@
                         <div>
                             <label class="block font-bold text-slate-600 mb-1">مستوى النشاط البدني</label>
                             <select id="calcActivity" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-500">
-                                <option value="1.2">خامل جداً</option>
-                                <option value="1.375">نشاط خفيف</option>
-                                <option value="1.55" selected>نشاط متوسط</option>
-                                <option value="1.725">نشاط عالٍ</option>
-                                <option value="1.9">نشاط مفرط جداً</option>
+                                <option value="1.2">خامل جداً (بدون تمارين)</option>
+                                <option value="1.375">نشاط خفيف (1-3 أيام/الأسبوع)</option>
+                                <option value="1.55" selected>نشاط متوسط (3-5 أيام/الأسبوع)</option>
+                                <option value="1.725">نشاط عالٍ (6-7 أيام/الأسبوع)</option>
+                                <option value="1.9">نشاط مفرط جداً (عمل شاق / تدريب مضاعف)</option>
                             </select>
                         </div>
 
-                        <button onclick="calculateTDEE()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs py-3 rounded-xl transition shadow-sm cursor-pointer mt-2">
+                        <button onclick="calculateTDEE()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs py-3 rounded-xl transition shadow-sm cursor-pointer mt-2 active:scale-95">
                             احسب (BMR / TDEE)
                         </button>
                     </div>
@@ -297,7 +344,7 @@
                         <div>
                             <label class="block font-bold text-slate-600 mb-1">تعديل السعرات من (TDEE) <span class="text-[10px] text-slate-400">(استخدم سالب للخصم وموجب للزيادة)</span></label>
                             <div class="flex gap-2">
-                                <input type="text" id="calcAdjustment" value="-500" oninput="updateTargetAndMacros()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
+                                <input type="number" id="calcAdjustment" value="-500" oninput="updateTargetAndMacros()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
                                 <div class="bg-sky-50 border border-sky-200 text-sky-800 px-4 py-2 rounded-xl flex items-center justify-center font-black whitespace-nowrap min-w-[100px]">
                                     <span id="finalTargetCal">0</span> <span class="text-[10px] ml-1">kcal</span>
                                 </div>
@@ -328,7 +375,7 @@
                             <div id="macroTotalAlert" class="mt-2 text-[10px] font-bold text-center hidden p-1 rounded"></div>
                         </div>
 
-                        <button onclick="applyCustomTargetToPatient()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 rounded-xl transition shadow-sm cursor-pointer mt-2 flex justify-center items-center gap-2">
+                        <button onclick="applyCustomTargetToPatient()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 rounded-xl transition shadow-sm cursor-pointer mt-2 flex justify-center items-center gap-2 active:scale-95">
                             <i class="fa-solid fa-check"></i>
                             اعتماد السعرات في خطة المريض
                         </button>
@@ -384,7 +431,7 @@
                             <label class="block text-xs font-bold text-slate-600 mb-1">الوزن (كجم)</label>
                             <input type="number" step="0.1" id="weightLogVal" placeholder="مثال: 78.5" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-emerald-500">
                         </div>
-                        <button onclick="addWeightEntry()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-sm cursor-pointer">
+                        <button onclick="addWeightEntry()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-sm cursor-pointer active:scale-95">
                             إضافة القياس
                         </button>
                     </div>
@@ -426,7 +473,7 @@
 
                     <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                         <input type="text" id="dbTabSearchInput" onkeyup="renderDatabaseTabTable()" placeholder="ابحث عن مادة..." class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 w-full sm:w-48">
-                        <button onclick="openAddCustomFoodModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer">
+                        <button onclick="openAddCustomFoodModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer active:scale-95">
                             <i class="fa-solid fa-plus"></i>
                             <span>إضافة</span>
                         </button>
@@ -435,7 +482,7 @@
                             <span>استيراد (Excel / CSV)</span>
                             <input type="file" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
                         </label>
-                        <button onclick="clearAllFoodDatabase()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs px-3 py-2 rounded-xl border border-rose-200/80 transition flex items-center gap-1.5 cursor-pointer">
+                        <button onclick="clearAllFoodDatabase()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs px-3 py-2 rounded-xl border border-rose-200/80 transition flex items-center gap-1.5 cursor-pointer active:scale-95">
                             <i class="fa-solid fa-trash-can"></i>
                             <span>مسح المكتبة</span>
                         </button>
@@ -488,8 +535,8 @@
                 </div>
             </div>
             <div class="flex gap-2 pt-2 border-t border-slate-100">
-                <button onclick="executePrint()" class="flex-1 bg-emerald-600 text-white font-bold text-xs py-2 rounded-xl cursor-pointer">حفظ وطباعة</button>
-                <button onclick="closePrintSettingsModal()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-2 rounded-xl cursor-pointer">إلغاء</button>
+                <button onclick="executePrint()" class="flex-1 bg-emerald-600 text-white font-bold text-xs py-2 rounded-xl cursor-pointer hover:bg-emerald-500 transition">حفظ وطباعة</button>
+                <button onclick="closePrintSettingsModal()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-2 rounded-xl cursor-pointer hover:bg-slate-200 transition">إلغاء</button>
             </div>
         </div>
     </div>
@@ -503,9 +550,9 @@
             </div>
             <div class="space-y-3">
                 <div>
-                    <input type="text" id="foodSearchInput" onkeyup="filterFoodList()" placeholder="اكتب اسم الطعام للبحث..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="foodSearchInput" onkeyup="filterFoodList()" placeholder="اكتب اسم الطعام للبحث..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 font-bold">
                     <input type="hidden" id="selectedFoodId">
-                    <div id="foodDropdownList" class="mt-1 border border-slate-200 rounded-xl max-h-36 overflow-y-auto divide-y divide-slate-100 custom-scrollbar"></div>
+                    <div id="foodDropdownList" class="mt-2 border border-slate-200 rounded-xl max-h-48 overflow-y-auto divide-y divide-slate-100 custom-scrollbar"></div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-1">الكمية (جرام)</label>
@@ -513,8 +560,8 @@
                 </div>
             </div>
             <div class="flex gap-2 pt-2 border-t border-slate-100">
-                <button onclick="confirmAddFoodItem()" class="flex-1 bg-emerald-600 text-white font-bold text-xs py-2.5 rounded-xl cursor-pointer">إضافة للوجبة</button>
-                <button onclick="closeFoodModal()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer">إلغاء</button>
+                <button onclick="confirmAddFoodItem()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2.5 rounded-xl cursor-pointer transition">إضافة للوجبة</button>
+                <button onclick="closeFoodModal()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer hover:bg-slate-200 transition">إلغاء</button>
             </div>
         </div>
     </div>
@@ -524,11 +571,11 @@
         <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
             <h3 class="font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">إضافة وجبة جديدة</h3>
             <div class="space-y-3">
-                <input type="text" id="newMealNameInput" placeholder="اسم الوجبة (مثال: سناك)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                <input type="text" id="newMealNameInput" placeholder="اسم الوجبة (مثال: سناك بعد الظهر)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold">
             </div>
             <div class="flex gap-2 pt-2">
-                <button onclick="confirmCreateMeal()" class="flex-1 bg-emerald-600 text-white font-bold text-xs py-2 rounded-xl cursor-pointer">إضافة الوجبة</button>
-                <button onclick="closeAddMealModal()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-2 rounded-xl cursor-pointer">إلغاء</button>
+                <button onclick="confirmCreateMeal()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 rounded-xl cursor-pointer transition">إضافة الوجبة</button>
+                <button onclick="closeAddMealModal()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-2 rounded-xl cursor-pointer hover:bg-slate-200 transition">إلغاء</button>
             </div>
         </div>
     </div>
@@ -540,40 +587,40 @@
             <div class="grid grid-cols-2 gap-3 text-xs">
                 <div class="col-span-2">
                     <label class="block font-bold text-slate-600 mb-1">اسم الصنف</label>
-                    <input type="text" id="custFoodName" placeholder="مثال: جبن قريش" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                    <input type="text" id="custFoodName" placeholder="مثال: جبن قريش" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">السعرات (kcal)</label>
-                    <input type="number" id="custFoodCal" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                    <input type="number" id="custFoodCal" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">البروتين (g)</label>
-                    <input type="number" step="0.1" id="custFoodPro" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                    <input type="number" step="0.1" id="custFoodPro" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">الكاربوهيدرات (g)</label>
-                    <input type="number" step="0.1" id="custFoodCarb" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                    <input type="number" step="0.1" id="custFoodCarb" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-600 mb-1">الدهون (g)</label>
-                    <input type="number" step="0.1" id="custFoodFat" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                    <input type="number" step="0.1" id="custFoodFat" placeholder="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold">
                 </div>
                 <div>
                     <label class="block font-bold text-sky-700 mb-1">الصوديوم (mg)</label>
-                    <input type="number" step="0.1" id="custFoodSodium" placeholder="0" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2">
+                    <input type="number" step="0.1" id="custFoodSodium" placeholder="0" class="w-full bg-sky-50/50 border border-sky-200 rounded-xl px-3 py-2 font-bold">
                 </div>
                 <div>
                     <label class="block font-bold text-emerald-700 mb-1">البوتاسيوم (mg)</label>
-                    <input type="number" step="0.1" id="custFoodPotassium" placeholder="0" class="w-full bg-emerald-50/50 border border-emerald-200 rounded-xl px-3 py-2">
+                    <input type="number" step="0.1" id="custFoodPotassium" placeholder="0" class="w-full bg-emerald-50/50 border border-emerald-200 rounded-xl px-3 py-2 font-bold">
                 </div>
                 <div class="col-span-2">
                     <label class="block font-bold text-purple-700 mb-1">الفسفور (mg)</label>
-                    <input type="number" step="0.1" id="custFoodPhosphorus" placeholder="0" class="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3 py-2">
+                    <input type="number" step="0.1" id="custFoodPhosphorus" placeholder="0" class="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3 py-2 font-bold">
                 </div>
             </div>
             <div class="flex gap-2 pt-2 border-t border-slate-100">
-                <button onclick="saveCustomFoodToDb()" class="flex-1 bg-emerald-600 text-white font-bold text-xs py-2.5 rounded-xl cursor-pointer">حفظ الصنف</button>
-                <button onclick="closeAddCustomFoodModal()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer">إلغاء</button>
+                <button onclick="saveCustomFoodToDb()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2.5 rounded-xl cursor-pointer transition">حفظ الصنف</button>
+                <button onclick="closeAddCustomFoodModal()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer hover:bg-slate-200 transition">إلغاء</button>
             </div>
         </div>
     </div>
@@ -584,8 +631,8 @@
             <h3 id="confirmTitle" class="font-bold text-slate-800 text-base">تأكيد الإجراء</h3>
             <p id="confirmText" class="text-xs text-slate-500">هل أنت متأكد من القيام بهذا الإجراء؟</p>
             <div class="flex gap-2 pt-2">
-                <button id="confirmOkBtn" class="flex-1 bg-rose-600 text-white font-bold text-xs py-2 rounded-xl cursor-pointer">تأكيد</button>
-                <button onclick="closeConfirmModal()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-2 rounded-xl cursor-pointer">إلغاء</button>
+                <button id="confirmOkBtn" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs py-2 rounded-xl cursor-pointer transition">تأكيد</button>
+                <button onclick="closeConfirmModal()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-2 rounded-xl cursor-pointer hover:bg-slate-200 transition">إلغاء</button>
             </div>
         </div>
     </div>
@@ -594,33 +641,34 @@
     <div id="toastContainer" class="fixed bottom-5 left-5 z-50 space-y-2 pointer-events-none no-print"></div>
 
     <script>
-        // DEFAULT INITIAL FOOD LIBRARY (100g values)
+        // DEFAULT ARABIC NUTRITIONAL DATABASE (100g basis)
         const DEFAULT_FOODS = [
-            { id: 'f_1', name: 'صدر دجاج مطبوخ بدون جلد', calories: 165, protein: 31, carbs: 0, fat: 3.6, sodium: 74, potassium: 256, phosphorus: 228 },
+            { id: 'f_1', name: 'صدور دجاج مطبوخة (مشوي)', calories: 165, protein: 31, carbs: 0, fat: 3.6, sodium: 74, potassium: 256, phosphorus: 228 },
             { id: 'f_2', name: 'أرز أبيض مطبوخ', calories: 130, protein: 2.7, carbs: 28, fat: 0.3, sodium: 1, potassium: 35, phosphorus: 43 },
             { id: 'f_3', name: 'أرز بني مطبوخ', calories: 111, protein: 2.6, carbs: 23, fat: 0.9, sodium: 5, potassium: 43, phosphorus: 83 },
             { id: 'f_4', name: 'بيض مسلوق (كامل)', calories: 155, protein: 12.6, carbs: 1.1, fat: 10.6, sodium: 124, potassium: 126, phosphorus: 172 },
             { id: 'f_5', name: 'بياض بيض مسلوق', calories: 52, protein: 11, carbs: 0.7, fat: 0.2, sodium: 166, potassium: 163, phosphorus: 15 },
-            { id: 'f_6', name: 'جبن قريش قليل الدسم', calories: 81, protein: 11, carbs: 3.4, fat: 2.3, sodium: 364, potassium: 104, phosphorus: 134 },
-            { id: 'f_7', name: 'شوفان مطبوخ بالماء', calories: 71, protein: 2.5, carbs: 12, fat: 1.5, sodium: 2, potassium: 61, phosphorus: 77 },
-            { id: 'f_8', name: 'موز طازج', calories: 89, protein: 1.1, carbs: 22.8, fat: 0.3, sodium: 1, potassium: 358, phosphorus: 22 },
-            { id: 'f_9', name: 'تفاح طازج بالقشر', calories: 52, protein: 0.3, carbs: 13.8, fat: 0.2, sodium: 1, potassium: 107, phosphorus: 11 },
-            { id: 'f_10', name: 'زيت زيتون صفي', calories: 884, protein: 0, carbs: 0, fat: 100, sodium: 2, potassium: 1, phosphorus: 0 },
-            { id: 'f_11', name: 'بطاطس مسلوقة', calories: 87, protein: 1.9, carbs: 20, fat: 0.1, sodium: 6, potassium: 379, phosphorus: 44 },
-            { id: 'f_12', name: 'بطاطا حلوة مشوية', calories: 90, protein: 2, carbs: 20.7, fat: 0.15, sodium: 36, potassium: 337, phosphorus: 47 },
-            { id: 'f_13', name: 'سمك سلمون مشوي', calories: 206, protein: 22, carbs: 0, fat: 12, sodium: 60, potassium: 363, phosphorus: 250 },
-            { id: 'f_14', name: 'تونة معلبة بالماء', calories: 116, protein: 26, carbs: 0, fat: 1, sodium: 334, potassium: 237, phosphorus: 210 },
-            { id: 'f_15', name: 'لحم بقر بفتيك مشوي', calories: 250, protein: 26, carbs: 0, fat: 15, sodium: 60, potassium: 318, phosphorus: 210 },
-            { id: 'f_16', name: 'لوز نيء', calories: 579, protein: 21, carbs: 21.6, fat: 49.9, sodium: 1, potassium: 733, phosphorus: 481 },
-            { id: 'f_17', name: 'بروكلي مسلوق', calories: 35, protein: 2.4, carbs: 7.2, fat: 0.4, sodium: 15, potassium: 293, phosphorus: 66 },
-            { id: 'f_18', name: 'حليب كامل الدسم', calories: 61, protein: 3.2, carbs: 4.8, fat: 3.3, sodium: 43, potassium: 132, phosphorus: 84 }
+            { id: 'f_6', name: 'شوفان خام', calories: 389, protein: 16.9, carbs: 66.3, fat: 6.9, sodium: 2, potassium: 429, phosphorus: 523 },
+            { id: 'f_7', name: 'موز', calories: 89, protein: 1.1, carbs: 22.8, fat: 0.3, sodium: 1, potassium: 358, phosphorus: 22 },
+            { id: 'f_8', name: 'تفاح', calories: 52, protein: 0.3, carbs: 13.8, fat: 0.2, sodium: 1, potassium: 107, phosphorus: 11 },
+            { id: 'f_9', name: 'زبادي يوناني سادة (خالي الدسم)', calories: 59, protein: 10, carbs: 3.6, fat: 0.4, sodium: 36, potassium: 141, phosphorus: 135 },
+            { id: 'f_10', name: 'زيت زيتون', calories: 884, protein: 0, carbs: 0, fat: 100, sodium: 2, potassium: 1, phosphorus: 0 },
+            { id: 'f_11', name: 'جبن قريش', calories: 98, protein: 11, carbs: 3.4, fat: 4.3, sodium: 364, potassium: 104, phosphorus: 159 },
+            { id: 'f_12', name: 'لحم بقر بفتيك مطبوخ', calories: 217, protein: 26.1, carbs: 0, fat: 11.8, sodium: 65, potassium: 318, phosphorus: 210 },
+            { id: 'f_13', name: 'سمك بوري مشوي', calories: 150, protein: 20, carbs: 0, fat: 7.5, sodium: 70, potassium: 340, phosphorus: 220 },
+            { id: 'f_14', name: 'سمك تونة علب (في الماء)', calories: 116, protein: 26, carbs: 0, fat: 1, sodium: 334, potassium: 237, phosphorus: 210 },
+            { id: 'f_15', name: 'بطاطس مسلوقة', calories: 87, protein: 1.9, carbs: 20.1, fat: 0.1, sodium: 6, potassium: 379, phosphorus: 44 },
+            { id: 'f_16', name: 'بطاطا حلوة مشوية', calories: 90, protein: 2, carbs: 20.7, fat: 0.15, sodium: 36, potassium: 475, phosphorus: 54 },
+            { id: 'f_17', name: 'لوز خام', calories: 579, protein: 21.2, carbs: 21.7, fat: 49.9, sodium: 1, potassium: 733, phosphorus: 481 },
+            { id: 'f_18', name: 'خيار طازج', calories: 15, protein: 0.7, carbs: 3.6, fat: 0.1, sodium: 2, potassium: 147, phosphorus: 24 },
+            { id: 'f_19', name: 'طماطم طازجة', calories: 18, protein: 0.9, carbs: 3.9, fat: 0.2, sodium: 5, potassium: 237, phosphorus: 24 },
+            { id: 'f_20', name: 'سبانخ طازجة', calories: 23, protein: 2.9, carbs: 3.6, fat: 0.4, sodium: 79, potassium: 558, phosphorus: 49 }
         ];
 
-        // APPLICATION GLOBAL STATE VARIABLES
         let foodDatabase = [];
         let daysData = [];
         let weightLogs = [];
-        let patientInfo = { name: '', age: '', height: '', targetCal: '', targetPro: '', targetCarb: '', targetFat: '', goal: 'loss' };
+        let patientInfo = { name: '', age: '', height: '', targetCal: '', targetPro: '', targetCarb: '', targetFat: '', goal: 'loss', complaint: '', diagnosis: '', isCollapsed: false };
         
         let currentModalContext = { dayId: null, mealId: null };
         let targetMealDayId = null;
@@ -632,6 +680,7 @@
             renderDays();
             renderWeightTabUI();
             renderDatabaseTabTable();
+            updatePatientCardUI();
             
             const today = new Date().toISOString().split('T')[0];
             const dateInput = document.getElementById('weightLogDate');
@@ -650,25 +699,21 @@
         });
 
         function switchTab(tabId) {
-            const tabs = ['planTab', 'calcTab', 'weightTab', 'dbTab'];
-            tabs.forEach(t => {
-                const content = document.getElementById(t);
-                const btn = document.getElementById('btn-' + t);
-                if (content) {
-                    if (t === tabId) {
-                        content.classList.remove('hidden');
-                    } else {
-                        content.classList.add('hidden');
-                    }
-                }
-                if (btn) {
-                    if (t === tabId) {
-                        btn.className = "tab-btn active font-bold text-sm px-5 py-2.5 rounded-xl transition flex items-center gap-2 whitespace-nowrap bg-emerald-600 text-white shadow-sm cursor-pointer";
-                    } else {
-                        btn.className = "tab-btn font-bold text-sm px-5 py-2.5 rounded-xl transition flex items-center gap-2 whitespace-nowrap bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 cursor-pointer";
-                    }
-                }
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
+                btn.classList.add('bg-white', 'text-slate-600', 'hover:bg-slate-100', 'border', 'border-slate-200');
             });
+
+            const activeTab = document.getElementById(tabId);
+            if (activeTab) activeTab.classList.remove('hidden');
+
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white', 'text-slate-600', 'hover:bg-slate-100', 'border', 'border-slate-200');
+                activeBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+            }
 
             if (tabId === 'weightTab') renderWeightTabUI();
             if (tabId === 'dbTab') renderDatabaseTabTable();
@@ -677,9 +722,11 @@
         function saveData() {
             try {
                 localStorage.setItem('nutri_daysData', JSON.stringify(daysData));
-                localStorage.setItem('nutri_weightLogs', JSON.stringify(weightLogs));
                 localStorage.setItem('nutri_foodDatabase', JSON.stringify(foodDatabase));
-            } catch (e) { console.error('Error saving data to localStorage', e); }
+                localStorage.setItem('nutri_weightLogs', JSON.stringify(weightLogs));
+            } catch (e) {
+                console.error('Error saving application data:', e);
+            }
         }
 
         function savePatientData() {
@@ -691,7 +738,44 @@
             patientInfo.targetCarb = document.getElementById('patientTargetCarb') ? document.getElementById('patientTargetCarb').value : '';
             patientInfo.targetFat = document.getElementById('patientTargetFat') ? document.getElementById('patientTargetFat').value : '';
             patientInfo.goal = document.getElementById('patientGoal').value;
+            patientInfo.complaint = document.getElementById('patientComplaint') ? document.getElementById('patientComplaint').value : '';
+            patientInfo.diagnosis = document.getElementById('patientDiagnosis') ? document.getElementById('patientDiagnosis').value : '';
+            updatePatientCardUI();
             try { localStorage.setItem('nutri_patientInfo', JSON.stringify(patientInfo)); } catch (e) {}
+        }
+
+        function togglePatientCard() {
+            patientInfo.isCollapsed = !patientInfo.isCollapsed;
+            updatePatientCardUI();
+            try { localStorage.setItem('nutri_patientInfo', JSON.stringify(patientInfo)); } catch (e) {}
+        }
+
+        function updatePatientCardUI() {
+            const body = document.getElementById('patientCardBody');
+            const icon = document.getElementById('patientToggleIcon');
+            const text = document.getElementById('patientToggleText');
+            const summaryName = document.getElementById('patientSummaryName');
+
+            if (summaryName) {
+                if (patientInfo.name) {
+                    summaryName.textContent = patientInfo.name;
+                    summaryName.classList.remove('hidden');
+                } else {
+                    summaryName.classList.add('hidden');
+                }
+            }
+
+            if (body && icon && text) {
+                if (patientInfo.isCollapsed) {
+                    body.classList.add('hidden');
+                    icon.className = "fa-solid fa-chevron-down rotate-180 transition-transform duration-200";
+                    text.textContent = 'عرض البيانات';
+                } else {
+                    body.classList.remove('hidden');
+                    icon.className = "fa-solid fa-chevron-down transition-transform duration-200";
+                    text.textContent = 'طي البيانات';
+                }
+            }
         }
 
         function loadData() {
@@ -707,9 +791,14 @@
                     if (document.getElementById('patientTargetCarb')) document.getElementById('patientTargetCarb').value = patientInfo.targetCarb || '';
                     if (document.getElementById('patientTargetFat')) document.getElementById('patientTargetFat').value = patientInfo.targetFat || '';
                     document.getElementById('patientGoal').value = patientInfo.goal || 'loss';
+                    if (document.getElementById('patientComplaint')) document.getElementById('patientComplaint').value = patientInfo.complaint || '';
+                    if (document.getElementById('patientDiagnosis')) document.getElementById('patientDiagnosis').value = patientInfo.diagnosis || '';
+                    updatePatientCardUI();
                 }
+
                 const d = localStorage.getItem('nutri_daysData');
                 if (d) daysData = JSON.parse(d);
+
                 const w = localStorage.getItem('nutri_weightLogs');
                 if (w) weightLogs = JSON.parse(w);
                 
@@ -784,7 +873,7 @@
             const adj = (rawAdj === '' || rawAdj === '-' || isNaN(parseInt(rawAdj, 10))) ? 0 : parseInt(rawAdj, 10);
             
             const targetCal = tdee > 0 ? (tdee + adj) : (adj > 0 ? adj : 0);
-            document.getElementById('finalTargetCal').textContent = targetCal;
+            document.getElementById('finalTargetCal').textContent = Math.max(0, targetCal);
 
             const pPercent = parseFloat(document.getElementById('macroProPercent').value) || 0;
             const cPercent = parseFloat(document.getElementById('macroCarbPercent').value) || 0;
@@ -970,7 +1059,7 @@
                 const isSelected = f.id === selectedId;
                 return `
                     <div onclick="selectFoodForMeal('${f.id}')" 
-                         class="p-2.5 hover:bg-emerald-50 cursor-pointer transition flex justify-between items-center text-xs ${isSelected ? 'bg-emerald-100/70 border-l-4 border-emerald-600' : ''}">
+                         class="p-2.5 hover:bg-emerald-50 cursor-pointer transition flex justify-between items-center text-xs ${isSelected ? 'bg-emerald-100/70 border-r-4 border-emerald-600' : ''}">
                         <div>
                             <span class="font-extrabold text-slate-800 block">${f.name}</span>
                             <span class="text-[10px] text-slate-500 font-semibold">${f.calories} kcal | بروتين ${f.protein}g | كارب ${f.carbs}g | دهون ${f.fat}g</span>
@@ -1286,7 +1375,7 @@
             saveData();
             renderWeightTabUI();
             document.getElementById('weightLogVal').value = '';
-            showToast('تم سجل القياس بنجاح');
+            showToast('تم تسجيل القياس بنجاح');
         }
 
         function deleteWeightEntry(idx) {
@@ -1510,14 +1599,12 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     
-                    // قراءة الورقة الأولى
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
                     const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                     
                     let count = 0;
                     rows.forEach((row, i) => {
-                        // تخطي صف العناوين الأول أو الأسطر الفارغة
                         if (i === 0 || !row || row.length === 0) return;
                         
                         const name = row[0] ? String(row[0]).trim() : '';
@@ -1548,9 +1635,6 @@
             };
             reader.readAsArrayBuffer(file);
         }
-
-        // توافق مع الدالة القديمة
-        const handleCSVUpload = handleFileUpload;
 
         function openPrintSettingsModal() {
             document.getElementById('printSettingsModal').classList.remove('hidden');
