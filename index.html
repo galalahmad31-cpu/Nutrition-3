@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome 6 CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS (XLSX) CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Google Fonts Cairo -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -429,9 +431,9 @@
                             <span>إضافة</span>
                         </button>
                         <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 border border-slate-200">
-                            <i class="fa-solid fa-file-import"></i>
-                            <span>استيراد CSV</span>
-                            <input type="file" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+                            <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                            <span>استيراد (Excel / CSV)</span>
+                            <input type="file" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
                         </label>
                         <button onclick="clearAllFoodDatabase()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs px-3 py-2 rounded-xl border border-rose-200/80 transition flex items-center gap-1.5 cursor-pointer">
                             <i class="fa-solid fa-trash-can"></i>
@@ -1498,38 +1500,57 @@
             });
         }
 
-        function handleCSVUpload(event) {
+        function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const lines = e.target.result.split('\n');
-                let count = 0;
-                lines.forEach((line, i) => {
-                    if (i === 0 || !line.trim()) return;
-                    const parts = line.split(',');
-                    if (parts.length >= 5) {
-                        foodDatabase.push({
-                            id: 'csv_' + Date.now() + '_' + i,
-                            name: parts[0].trim(),
-                            calories: parseFloat(parts[1]) || 0,
-                            protein: parseFloat(parts[2]) || 0,
-                            carbs: parseFloat(parts[3]) || 0,
-                            fat: parseFloat(parts[4]) || 0,
-                            sodium: parseFloat(parts[5]) || 0,
-                            potassium: parseFloat(parts[6]) || 0,
-                            phosphorus: parseFloat(parts[7]) || 0
-                        });
-                        count++;
-                    }
-                });
-                saveData();
-                renderDatabaseTabTable();
-                showToast(`تم استيراد ${count} صنف بنجاح`);
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // قراءة الورقة الأولى
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    let count = 0;
+                    rows.forEach((row, i) => {
+                        // تخطي صف العناوين الأول أو الأسطر الفارغة
+                        if (i === 0 || !row || row.length === 0) return;
+                        
+                        const name = row[0] ? String(row[0]).trim() : '';
+                        if (name) {
+                            foodDatabase.push({
+                                id: 'imp_' + Date.now() + '_' + i + '_' + Math.random().toString(36).substr(2, 4),
+                                name: name,
+                                calories: parseFloat(row[1]) || 0,
+                                protein: parseFloat(row[2]) || 0,
+                                carbs: parseFloat(row[3]) || 0,
+                                fat: parseFloat(row[4]) || 0,
+                                sodium: parseFloat(row[5]) || 0,
+                                potassium: parseFloat(row[6]) || 0,
+                                phosphorus: parseFloat(row[7]) || 0
+                            });
+                            count++;
+                        }
+                    });
+                    
+                    saveData();
+                    renderDatabaseTabTable();
+                    showToast(`تم استيراد ${count} صنف بنجاح من الملف`);
+                } catch (err) {
+                    console.error(err);
+                    showToast('حدث خطأ أثناء قراءة الملف. تأكد من صحة تنسيق الجدول', 'error');
+                }
+                event.target.value = '';
             };
-            reader.readAsText(file);
+            reader.readAsArrayBuffer(file);
         }
+
+        // توافق مع الدالة القديمة
+        const handleCSVUpload = handleFileUpload;
 
         function openPrintSettingsModal() {
             document.getElementById('printSettingsModal').classList.remove('hidden');
