@@ -1,98 +1,1025 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diet Tracker - د. أحمد جلال</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
 
-  <title>NICU Nutrition</title>
-
-  <link rel="stylesheet" href="style.css"/>
-
-  <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Arial, sans-serif;
-    }
-
-    body{
-      height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      background:#f4f7fb;
-    }
-
-    .login-card{
-      width:400px;
-      background:white;
-      padding:40px;
-      border-radius:16px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.08);
-      text-align:center;
-    }
-
-    .logo{
-      font-size:32px;
-      font-weight:bold;
-      color:#1e3a8a;
-      margin-bottom:10px;
-    }
-
-    .subtitle{
-      color:#666;
-      margin-bottom:30px;
-      line-height:1.5;
-    }
-
-    .google-btn{
-      width:100%;
-      padding:14px;
-      border:none;
-      border-radius:10px;
-      background:#2563eb;
-      color:white;
-      font-size:16px;
-      cursor:pointer;
-      transition:0.3s;
-    }
-
-    .google-btn:hover{
-      background:#1d4ed8;
-    }
-
-    .footer{
-      margin-top:20px;
-      font-size:13px;
-      color:#888;
-    }
-  </style>
+        /* Dedicated Print Stylesheet */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+            }
+            .no-print, header, footer, button, label, input[type="file"], .action-buttons, #toastContainer {
+                display: none !important;
+            }
+            .print-header {
+                display: block !important;
+            }
+            .collapsible-body {
+                display: block !important;
+            }
+            .shadow-sm, .shadow-md, .shadow-xl {
+                box-shadow: none !important;
+            }
+            .border {
+                border-color: #cbd5e1 !important;
+            }
+            .page-break {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
 </head>
+<body class="text-slate-800 bg-slate-50 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
 
-<body>
+    <!-- Header Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-100 font-bold text-xl">
+                    <i class="fa-solid fa-notes-medical"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg text-slate-800 leading-tight">Diet Tracker</h1>
+                    <p class="text-xs font-semibold text-emerald-700">د. أحمد جلال - استشاري التغذية العلاجية</p>
+                </div>
+            </div>
 
-  <div class="login-card">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Print Button -->
+                <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-print text-amber-400"></i>
+                    <span>طباعة التقرير</span>
+                </button>
 
-    <div class="logo">
-      NICU Nutrition
+                <label for="csvFileInput" class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 border border-slate-200">
+                    <i class="fa-solid fa-file-csv text-emerald-600 text-base"></i>
+                    <span class="hidden sm:inline">رفع CSV</span>
+                </label>
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+
+                <button onclick="addNewDay()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-sm hover:shadow transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>إضافة يوم جديد</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Print Only Header -->
+    <div class="hidden print-header p-6 border-b-2 border-emerald-600 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Diet Tracker - الخطة الغذائية العلاجية</h1>
+                <p class="text-sm font-bold text-emerald-700 mt-1">إشراف: د. أحمد جلال - استشاري التغذية العلاجية</p>
+            </div>
+            <div class="text-left text-xs text-slate-500" id="printDateStamp">
+                تاريخ الطباعة: 
+            </div>
+        </div>
     </div>
 
-    <div class="subtitle">
-      Neonatal Nutrition Management Platform
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow space-y-6">
+        
+        <!-- Patient Info Card -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-user-doctor"></i>
+                    </div>
+                    <h2 class="font-bold text-base text-slate-800">بيانات المريض والخطة التغذوية</h2>
+                </div>
+                <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-medium no-print">عيادة د. أحمد جلال</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">اسم المريض</label>
+                    <input type="text" id="patientName" placeholder="أدخل اسم المريض..." oninput="savePatientData()"
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">العمر (سنة)</label>
+                    <input type="number" id="patientAge" placeholder="مثال: 32" oninput="savePatientData()"
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">الجنس</label>
+                    <select id="patientGender" onchange="savePatientData()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                        <option value="ذكر">ذكر</option>
+                        <option value="أنثى">أنثى</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">الوزن الحالي (كجم)</label>
+                    <input type="number" id="patientWeight" placeholder="مثال: 75" oninput="savePatientData()"
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">الهدف السعري / اليومي (kcal)</label>
+                    <input type="number" id="patientTargetCal" placeholder="مثال: 2000" oninput="savePatientData()"
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-600 mb-1">توصيات وملاحظات طبيب التغذية</label>
+                    <input type="text" id="patientNotes" placeholder="مثال: التقليل من الصوديوم، شرب 3 لتر ماء يومياً..." oninput="savePatientData()"
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Info Banner -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <div>
+                    <div class="text-sm font-bold text-slate-700">قاعدة البيانات المحملة</div>
+                    <div class="text-xs text-slate-500" id="dbStatusText">جاري تحميل الأصناف الإفتراضية...</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                <i class="fa-solid fa-circle-info text-blue-500"></i>
+                <span>جميع الحسابات مبنية على <b>100 جرام</b> كمعيار أساسي.</span>
+            </div>
+        </div>
+
+        <!-- Days Stack Area -->
+        <div id="daysContainer" class="space-y-6">
+            <!-- Days will be rendered dynamically here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center max-w-lg mx-auto my-12">
+            <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-regular fa-calendar-plus"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-700 mb-1">لا توجد أيام مضافة حتى الآن</h3>
+            <p class="text-slate-500 text-sm mb-6">ابدأ بإنشاء يومك الأول لإضافة الوجبات ومتابعة القيم الغذائية بدقة.</p>
+            <button onclick="addNewDay()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow transition inline-flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-plus"></i>
+                <span>إضافة يوم جديد</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- Modal: Add Custom Meal -->
+    <div id="addMealModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-base">إضافة وجبة جديدة</h3>
+                <button onclick="closeAddMealModal()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">اسم الوجبة</label>
+                <input type="text" id="newMealNameInput" placeholder="مثال: وجبة خفيفة، قبل التمرين..." 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+            </div>
+
+            <!-- Quick Suggestions -->
+            <div>
+                <span class="block text-xs font-semibold text-slate-500 mb-2">اقتراحات سريعة:</span>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="setMealNameSuggestion('وجبة الإفطار 🌅')" class="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs px-2.5 py-1 rounded-lg border border-slate-200 transition cursor-pointer">🌅 إفطار</button>
+                    <button type="button" onclick="setMealNameSuggestion('وجبة الغداء ☀️')" class="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs px-2.5 py-1 rounded-lg border border-slate-200 transition cursor-pointer">☀️ غداء</button>
+                    <button type="button" onclick="setMealNameSuggestion('وجبة العشاء 🌙')" class="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs px-2.5 py-1 rounded-lg border border-slate-200 transition cursor-pointer">🌙 عشاء</button>
+                    <button type="button" onclick="setMealNameSuggestion('وجبة خفيفة / سناك 🍎')" class="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs px-2.5 py-1 rounded-lg border border-slate-200 transition cursor-pointer">🍎 سناك</button>
+                    <button type="button" onclick="setMealNameSuggestion('قبل التمرين 🏋️‍♂️')" class="bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-xs px-2.5 py-1 rounded-lg border border-slate-200 transition cursor-pointer">🏋️‍♂️ قبل التمرين</button>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAddMealModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer">إلغاء</button>
+                <button onclick="confirmCreateMeal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-semibold shadow-sm transition cursor-pointer">إضافة الوجبة</button>
+            </div>
+        </div>
     </div>
 
-    <button id="google-login" class="google-btn">
-      Continue with Google
-    </button>
+    <!-- Modal: Add Food Item to Meal -->
+    <div id="foodModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-base" id="modalMealTitle">إضافة صنف للوجبة</h3>
+                    <p class="text-xs text-slate-500">اختر المكون وحدد الوزن بالجرام</p>
+                </div>
+                <button onclick="closeFoodModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-200/60 transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
 
-    <div class="footer">
-      Secure clinical nutrition workflow
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-grow">
+                
+                <!-- Food Select with Live Search -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">ابحث واختر المادة الغذائية</label>
+                    <div class="relative">
+                        <input type="text" id="foodSearchInput" placeholder="اكتب اسم الطعام للبحث..." 
+                               oninput="filterFoodList()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                    </div>
+
+                    <!-- Dropdown List -->
+                    <div id="foodDropdownList" class="mt-2 border border-slate-200 rounded-xl max-h-48 overflow-y-auto custom-scrollbar divide-y divide-slate-100 bg-white">
+                        <!-- Dynamically filled -->
+                    </div>
+                    <input type="hidden" id="selectedFoodId">
+                </div>
+
+                <!-- Selected Item Preview Card -->
+                <div id="selectedFoodPreview" class="hidden bg-emerald-50/60 border border-emerald-100 rounded-xl p-3.5 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-sm text-emerald-900" id="previewFoodName">-</span>
+                        <span class="text-xs bg-emerald-200/60 text-emerald-800 px-2 py-0.5 rounded-md font-medium">لكل 100 جرام</span>
+                    </div>
+                    <!-- Quick Nutrients Mini Grid -->
+                    <div class="grid grid-cols-4 gap-2 text-center text-xs pt-1">
+                        <div class="bg-white p-1.5 rounded-lg border border-emerald-100/50">
+                            <span class="block text-slate-400 text-[10px]">سعرة</span>
+                            <span class="font-bold text-slate-700" id="prevCal">0</span>
+                        </div>
+                        <div class="bg-white p-1.5 rounded-lg border border-emerald-100/50">
+                            <span class="block text-slate-400 text-[10px]">بروتين</span>
+                            <span class="font-bold text-slate-700" id="prevPro">0g</span>
+                        </div>
+                        <div class="bg-white p-1.5 rounded-lg border border-emerald-100/50">
+                            <span class="block text-slate-400 text-[10px]">كاربو</span>
+                            <span class="font-bold text-slate-700" id="prevCarb">0g</span>
+                        </div>
+                        <div class="bg-white p-1.5 rounded-lg border border-emerald-100/50">
+                            <span class="block text-slate-400 text-[10px]">دهون</span>
+                            <span class="font-bold text-slate-700" id="prevFat">0g</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grams Input -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">الكمية المطلوبة (بالجرام)</label>
+                    <div class="relative">
+                        <input type="number" id="foodGramsInput" min="1" step="1" value="100" oninput="updateLiveCalculations()"
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+                        <span class="absolute left-3.5 top-2.5 text-xs font-bold text-slate-400">جرام</span>
+                    </div>
+                </div>
+
+                <!-- Computed Result Preview -->
+                <div id="computedPreview" class="hidden bg-slate-50 rounded-xl p-3 border border-slate-200">
+                    <div class="text-xs font-bold text-slate-600 mb-2">المجموع المحسوب للوزن المحدد:</div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🔥 <span id="calcCal">0</span> سعرة</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🥩 <span id="calcPro">0</span>g بروتين</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🌾 <span id="calcCarb">0</span>g كارب</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🥑 <span id="calcFat">0</span>g دهون</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🧂 <span id="calcSod">0</span>mg صوديوم</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🍌 <span id="calcPot">0</span>mg بوتاسيوم</div>
+                        <div class="p-1.5 bg-white rounded-lg border border-slate-100">🦴 <span id="calcPho">0</span>mg فسفور</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+                <button onclick="closeFoodModal()" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-600 hover:bg-slate-200/70 transition cursor-pointer">إلغاء</button>
+                <button onclick="confirmAddFoodItem()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition cursor-pointer">إضافة للوجبة</button>
+            </div>
+        </div>
     </div>
 
-  </div>
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 no-print"></div>
 
-  <script type="module" src="login.js"></script>
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-12 no-print">
+        Diet Tracker &copy; 2026 - إشراف <b>د. أحمد جلال</b> - جميع الحقوق محفوظة
+    </footer>
 
+    <!-- Application Logic Script -->
+    <script>
+        
+        // App State
+        let daysData = []; // Array of days: { id, name, date, isCollapsed, meals: [{ id, name, items: [] }] }
+        let foodDatabase = []; // Array of food items from CSV or built-in
+        let currentModalContext = { dayId: null, mealId: null };
+        let targetMealDayId = null;
+
+        // Sample Built-in Food Database (per 100g)
+        const defaultFoods = [
+            { id: '1', name: 'صدر دجاج مشوي / مطبوخ', calories: 165, protein: 31, carbs: 0, fat: 3.6, sodium: 74, potassium: 256, phosphorus: 228 },
+            { id: '2', name: 'أرز أبيض مطبوخ', calories: 130, protein: 2.7, carbs: 28, fat: 0.3, sodium: 1, potassium: 35, phosphorus: 43 },
+            { id: '3', name: 'بيض مسلوق كامل', calories: 155, protein: 12.6, carbs: 1.1, fat: 10.6, sodium: 124, potassium: 126, phosphorus: 172 },
+            { id: '4', name: 'شوفان خام', calories: 389, protein: 16.9, carbs: 66.3, fat: 6.9, sodium: 2, potassium: 429, phosphorus: 523 },
+            { id: '5', name: 'حليب كامل الدسم', calories: 61, protein: 3.2, carbs: 4.8, fat: 3.3, sodium: 43, potassium: 132, phosphorus: 84 },
+            { id: '6', name: 'موز طازج', calories: 89, protein: 1.1, carbs: 22.8, fat: 0.3, sodium: 1, potassium: 358, phosphorus: 22 },
+            { id: '7', name: 'تفاح طازج', calories: 52, protein: 0.3, carbs: 13.8, fat: 0.2, sodium: 1, potassium: 107, phosphorus: 11 },
+            { id: '8', name: 'سمك سلمون مشوي', calories: 206, protein: 22, carbs: 0, fat: 12.3, sodium: 61, potassium: 384, phosphorus: 252 },
+            { id: '9', name: 'بطاطس مسلوقة', calories: 87, protein: 1.9, carbs: 20.1, fat: 0.1, sodium: 6, potassium: 379, phosphorus: 44 },
+            { id: '10', name: 'زيت زيتون', calories: 884, protein: 0, carbs: 0, fat: 100, sodium: 2, potassium: 1, phosphorus: 0 },
+            { id: '11', name: 'لوز نيء', calories: 579, protein: 21.2, carbs: 21.7, fat: 49.9, sodium: 1, potassium: 733, phosphorus: 481 },
+            { id: '12', name: 'جبن قريش (Cottage)', calories: 98, protein: 11.1, carbs: 3.4, fat: 4.3, sodium: 364, potassium: 104, phosphorus: 159 },
+            { id: '13', name: 'خبز أسمر / بلدي', calories: 247, protein: 13, carbs: 41, fat: 3.4, sodium: 450, potassium: 250, phosphorus: 200 },
+            { id: '14', name: 'عدس مطبوخ', calories: 116, protein: 9, carbs: 20, fat: 0.4, sodium: 2, potassium: 369, phosphorus: 180 },
+            { id: '15', name: 'فول مدمس', calories: 110, protein: 7.6, carbs: 19.8, fat: 0.4, sodium: 220, potassium: 330, phosphorus: 125 }
+        ];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSavedData();
+            loadPatientDataUI();
+            if (foodDatabase.length === 0) {
+                foodDatabase = [...defaultFoods];
+            }
+            updateDatabaseStatusText();
+
+            if (daysData.length === 0) {
+                addNewDay("اليوم الأول");
+            } else {
+                renderDays();
+            }
+
+            // Set print date timestamp
+            const printEl = document.getElementById('printDateStamp');
+            if(printEl) {
+                printEl.textContent = 'تاريخ التقرير: ' + new Date().toLocaleDateString('ar-EG');
+            }
+        });
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = type === 'error' ? 'bg-rose-600' : (type === 'info' ? 'bg-slate-800' : 'bg-emerald-600');
+            
+            toast.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-lg text-xs font-bold flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0`;
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'error' ? 'fa-circle-xmark' : 'fa-circle-check'} text-base"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function saveData() {
+            localStorage.setItem('nutrition_days_data', JSON.stringify(daysData));
+            localStorage.setItem('nutrition_food_db', JSON.stringify(foodDatabase));
+        }
+
+        function loadSavedData() {
+            try {
+                const savedDays = localStorage.getItem('nutrition_days_data');
+                const savedDb = localStorage.getItem('nutrition_food_db');
+                if (savedDays) daysData = JSON.parse(savedDays);
+                if (savedDb) foodDatabase = JSON.parse(savedDb);
+            } catch (e) {
+                console.error("Error loading saved data:", e);
+            }
+        }
+
+        // Patient Info Methods
+        function savePatientData() {
+            const patientObj = {
+                name: document.getElementById('patientName').value,
+                age: document.getElementById('patientAge').value,
+                gender: document.getElementById('patientGender').value,
+                weight: document.getElementById('patientWeight').value,
+                targetCal: document.getElementById('patientTargetCal').value,
+                notes: document.getElementById('patientNotes').value,
+            };
+            localStorage.setItem('diet_tracker_patient_data', JSON.stringify(patientObj));
+        }
+
+        function loadPatientDataUI() {
+            try {
+                const saved = localStorage.getItem('diet_tracker_patient_data');
+                if (saved) {
+                    const obj = JSON.parse(saved);
+                    if(obj.name) document.getElementById('patientName').value = obj.name;
+                    if(obj.age) document.getElementById('patientAge').value = obj.age;
+                    if(obj.gender) document.getElementById('patientGender').value = obj.gender;
+                    if(obj.weight) document.getElementById('patientWeight').value = obj.weight;
+                    if(obj.targetCal) document.getElementById('patientTargetCal').value = obj.targetCal;
+                    if(obj.notes) document.getElementById('patientNotes').value = obj.notes;
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function updateDatabaseStatusText() {
+            const statusEl = document.getElementById('dbStatusText');
+            statusEl.textContent = `تحتوي قاعدة البيانات حالياً على (${foodDatabase.length}) صنف غذائي.`;
+        }
+
+        function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const text = e.target.result;
+                parseCSVData(text);
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function parseCSVData(csvText) {
+            const lines = csvText.split(/\r\n|\n/);
+            if (lines.length < 2) return;
+
+            const newDatabase = [];
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+
+            const findIdx = (keywords) => headers.findIndex(h => keywords.some(k => h.includes(k)));
+
+            const nameIdx = findIdx(['name', 'food', 'اسم', 'صنف', 'مكون', 'item']);
+            const calIdx = findIdx(['calori', 'kcal', 'سعرة', 'سعرات', 'energy']);
+            const proIdx = findIdx(['protein', 'بروتين']);
+            const carbIdx = findIdx(['carb', 'كربوهيدرات', 'كاربو']);
+            const fatIdx = findIdx(['fat', 'دهون', 'دهن']);
+            const sodIdx = findIdx(['sodium', 'صوديوم']);
+            const potIdx = findIdx(['potassium', 'بوتاسيوم']);
+            const phoIdx = findIdx(['phosphor', 'فسفور', 'فوسفور']);
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const row = lines[i].split(',').map(item => item.trim().replace(/^"|"$/g, ''));
+                if (row.length <= nameIdx) continue;
+
+                const name = row[nameIdx !== -1 ? nameIdx : 0];
+                if (!name) continue;
+
+                const parseNum = (idx) => idx !== -1 && row[idx] ? parseFloat(row[idx]) || 0 : 0;
+
+                newDatabase.push({
+                    id: 'csv_' + Date.now() + '_' + i,
+                    name: name,
+                    calories: parseNum(calIdx),
+                    protein: parseNum(proIdx),
+                    carbs: parseNum(carbIdx),
+                    fat: parseNum(fatIdx),
+                    sodium: parseNum(sodIdx),
+                    potassium: parseNum(potIdx),
+                    phosphorus: parseNum(phoIdx)
+                });
+            }
+
+            if (newDatabase.length > 0) {
+                foodDatabase = [...newDatabase, ...defaultFoods];
+                saveData();
+                updateDatabaseStatusText();
+                showToast(`تم استيراد ${newDatabase.length} صنف غذائي بنجاح من ملف CSV!`);
+            } else {
+                showToast('تعذر قراءة البيانات. تأكد من تنسيق ملف CSV.', 'error');
+            }
+        }
+
+        function addNewDay(customName = null) {
+            const dayNum = daysData.length + 1;
+            const newDay = {
+                id: 'day_' + Date.now(),
+                name: customName || `اليوم ${dayNum}`,
+                date: new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' }),
+                isCollapsed: false, // Opened by default when newly created
+                meals: [
+                    { id: 'meal_' + Date.now() + '_1', name: 'وجبة الإفطار 🌅', items: [] },
+                    { id: 'meal_' + Date.now() + '_2', name: 'وجبة الغداء ☀️', items: [] },
+                    { id: 'meal_' + Date.now() + '_3', name: 'وجبة العشاء 🌙', items: [] }
+                ]
+            };
+
+            daysData.push(newDay);
+            saveData();
+            renderDays();
+            showToast(`تم إضافة ${newDay.name} بنجاح`);
+        }
+
+        function toggleDayCollapse(dayId) {
+            const day = daysData.find(d => d.id === dayId);
+            if (day) {
+                day.isCollapsed = !day.isCollapsed;
+                saveData();
+                renderDays();
+            }
+        }
+
+        function deleteDay(dayId) {
+            const day = daysData.find(d => d.id === dayId);
+            const dayName = day ? day.name : 'اليوم';
+            daysData = daysData.filter(d => d.id !== dayId);
+            saveData();
+            renderDays();
+            showToast(`تم حذف ${dayName}`, 'info');
+        }
+
+        // Add Meal Modal Handling
+        function openAddMealModal(dayId) {
+            targetMealDayId = dayId;
+            document.getElementById('newMealNameInput').value = '';
+            document.getElementById('addMealModal').classList.remove('hidden');
+        }
+
+        function closeAddMealModal() {
+            document.getElementById('addMealModal').classList.add('hidden');
+            targetMealDayId = null;
+        }
+
+        function setMealNameSuggestion(name) {
+            document.getElementById('newMealNameInput').value = name;
+        }
+
+        function confirmCreateMeal() {
+            const mealName = document.getElementById('newMealNameInput').value.trim();
+            if (!mealName) {
+                showToast('يرجى كتابة اسم الوجبة أولاً', 'error');
+                return;
+            }
+
+            const day = daysData.find(d => d.id === targetMealDayId);
+            if (day) {
+                day.meals.push({
+                    id: 'meal_' + Date.now(),
+                    name: mealName,
+                    items: []
+                });
+                saveData();
+                renderDays();
+                closeAddMealModal();
+                showToast(`تمت إضافة ${mealName}`);
+            }
+        }
+
+        function deleteMeal(dayId, mealId) {
+            const day = daysData.find(d => d.id === dayId);
+            if (day) {
+                day.meals = day.meals.filter(m => m.id !== mealId);
+                saveData();
+                renderDays();
+                showToast('تم حذف الوجبة بنجاح', 'info');
+            }
+        }
+
+        function removeFoodFromMeal(dayId, mealId, itemIndex) {
+            const day = daysData.find(d => d.id === dayId);
+            if (day) {
+                const meal = day.meals.find(m => m.id === mealId);
+                if (meal) {
+                    meal.items.splice(itemIndex, 1);
+                    saveData();
+                    renderDays();
+                    showToast('تم حذف الصنف من الوجبة', 'info');
+                }
+            }
+        }
+
+        function calculateItemNutrients(item) {
+            const ratio = (item.grams || 0) / 100;
+            return {
+                calories: (item.calories || 0) * ratio,
+                protein: (item.protein || 0) * ratio,
+                carbs: (item.carbs || 0) * ratio,
+                fat: (item.fat || 0) * ratio,
+                sodium: (item.sodium || 0) * ratio,
+                potassium: (item.potassium || 0) * ratio,
+                phosphorus: (item.phosphorus || 0) * ratio,
+            };
+        }
+
+        function sumNutrients(items) {
+            return items.reduce((acc, item) => {
+                const n = calculateItemNutrients(item);
+                acc.calories += n.calories;
+                acc.protein += n.protein;
+                acc.carbs += n.carbs;
+                acc.fat += n.fat;
+                acc.sodium += n.sodium;
+                acc.potassium += n.potassium;
+                acc.phosphorus += n.phosphorus;
+                return acc;
+            }, { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0, potassium: 0, phosphorus: 0 });
+        }
+
+        function openFoodModal(dayId, mealId, mealName) {
+            currentModalContext = { dayId, mealId };
+            document.getElementById('modalMealTitle').textContent = `إضافة صنف إلى (${mealName})`;
+            document.getElementById('foodSearchInput').value = '';
+            document.getElementById('foodGramsInput').value = 100;
+            document.getElementById('selectedFoodId').value = '';
+            document.getElementById('selectedFoodPreview').classList.add('hidden');
+            document.getElementById('computedPreview').classList.add('hidden');
+
+            filterFoodList();
+            document.getElementById('foodModal').classList.remove('hidden');
+        }
+
+        function closeFoodModal() {
+            document.getElementById('foodModal').classList.add('hidden');
+        }
+
+        function filterFoodList() {
+            const query = document.getElementById('foodSearchInput').value.toLowerCase().trim();
+            const listEl = document.getElementById('foodDropdownList');
+            listEl.innerHTML = '';
+
+            const filtered = foodDatabase.filter(f => f.name.toLowerCase().includes(query));
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<div class="p-3 text-center text-xs text-slate-400">لم يتم العثور على نتائج للبحث.</div>`;
+                return;
+            }
+
+            filtered.slice(0, 30).forEach(food => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'p-2.5 hover:bg-slate-50 cursor-pointer flex justify-between items-center text-xs transition border-b border-slate-50 last:border-b-0';
+                itemEl.onclick = () => selectFoodForModal(food);
+                itemEl.innerHTML = `
+                    <span class="font-bold text-slate-700">${food.name}</span>
+                    <span class="text-slate-400 font-mono">${food.calories} kcal / 100g</span>
+                `;
+                listEl.appendChild(itemEl);
+            });
+        }
+
+        function selectFoodForModal(food) {
+            document.getElementById('selectedFoodId').value = food.id;
+            document.getElementById('foodSearchInput').value = food.name;
+            
+            // Show item preview
+            document.getElementById('previewFoodName').textContent = food.name;
+            document.getElementById('prevCal').textContent = food.calories;
+            document.getElementById('prevPro').textContent = food.protein + 'g';
+            document.getElementById('prevCarb').textContent = food.carbs + 'g';
+            document.getElementById('prevFat').textContent = food.fat + 'g';
+            document.getElementById('selectedFoodPreview').classList.remove('hidden');
+
+            updateLiveCalculations();
+        }
+
+        function updateLiveCalculations() {
+            const foodId = document.getElementById('selectedFoodId').value;
+            const grams = parseFloat(document.getElementById('foodGramsInput').value) || 0;
+            
+            if (!foodId || grams <= 0) {
+                document.getElementById('computedPreview').classList.add('hidden');
+                return;
+            }
+
+            const food = foodDatabase.find(f => f.id === foodId);
+            if (!food) return;
+
+            const computed = calculateItemNutrients({ ...food, grams });
+
+            document.getElementById('calcCal').textContent = Math.round(computed.calories);
+            document.getElementById('calcPro').textContent = computed.protein.toFixed(1);
+            document.getElementById('calcCarb').textContent = computed.carbs.toFixed(1);
+            document.getElementById('calcFat').textContent = computed.fat.toFixed(1);
+            document.getElementById('calcSod').textContent = Math.round(computed.sodium);
+            document.getElementById('calcPot').textContent = Math.round(computed.potassium);
+            document.getElementById('calcPho').textContent = Math.round(computed.phosphorus);
+
+            document.getElementById('computedPreview').classList.remove('hidden');
+        }
+
+        function confirmAddFoodItem() {
+            const foodId = document.getElementById('selectedFoodId').value;
+            const grams = parseFloat(document.getElementById('foodGramsInput').value) || 0;
+
+            if (!foodId) {
+                showToast('يرجى اختيار مادة غذائية من القائمة أولاً', 'error');
+                return;
+            }
+            if (grams <= 0) {
+                showToast('يرجى إدخال كمية صحيحة بالجرام', 'error');
+                return;
+            }
+
+            const food = foodDatabase.find(f => f.id === foodId);
+            if (!food) return;
+
+            const day = daysData.find(d => d.id === currentModalContext.dayId);
+            if (day) {
+                const meal = day.meals.find(m => m.id === currentModalContext.mealId);
+                if (meal) {
+                    meal.items.push({
+                        id: 'item_' + Date.now(),
+                        foodId: food.id,
+                        name: food.name,
+                        grams: grams,
+                        calories: food.calories,
+                        protein: food.protein,
+                        carbs: food.carbs,
+                        fat: food.fat,
+                        sodium: food.sodium,
+                        potassium: food.potassium,
+                        phosphorus: food.phosphorus
+                    });
+
+                    saveData();
+                    renderDays();
+                    closeFoodModal();
+                    showToast(`تمت إضافة (${food.name}) للوجبة`);
+                }
+            }
+        }
+
+        function renderDays() {
+            const container = document.getElementById('daysContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            if (daysData.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.innerHTML = daysData.map(day => renderDayCard(day)).join('');
+        }
+
+        function renderDayCard(day) {
+            const allDayItems = day.meals.flatMap(m => m.items);
+            const dayTotals = sumNutrients(allDayItems);
+            const isCollapsed = day.isCollapsed !== undefined ? day.isCollapsed : false;
+
+            return `
+                <div class="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden transition-all duration-200 page-break">
+                    
+                    <!-- Day Header & Total Summary Banner (Clickable to Expand/Collapse) -->
+                    <div class="p-4 sm:p-5 bg-slate-900 text-white flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 cursor-pointer hover:bg-slate-800/95 transition select-none"
+                         onclick="toggleDayCollapse('${day.id}')">
+                        
+                        <div class="flex items-center justify-between w-full lg:w-auto gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-base">
+                                    <i class="fa-regular fa-calendar-days"></i>
+                                </div>
+                                <div>
+                                    <h2 class="font-extrabold text-lg text-white leading-tight flex items-center gap-2">
+                                        <span>${day.name}</span>
+                                        <span class="text-xs font-normal text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">
+                                            ${day.meals.reduce((acc, m) => acc + m.items.length, 0)} أصناف
+                                        </span>
+                                    </h2>
+                                    <span class="text-xs text-slate-400 font-mono">${day.date}</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 lg:hidden no-print">
+                                <button onclick="event.stopPropagation(); deleteDay('${day.id}')" title="حذف اليوم" class="text-slate-400 hover:text-rose-400 p-2 transition cursor-pointer">
+                                    <i class="fa-solid fa-trash-can text-sm"></i>
+                                </button>
+                                <span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300">
+                                    <i class="fa-solid fa-chevron-${isCollapsed ? 'down' : 'up'} text-xs"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Overall Nutrients Summary Cards for Day -->
+                        <div class="grid grid-cols-4 sm:grid-cols-7 gap-2 w-full lg:w-auto text-center text-xs" onclick="event.stopPropagation()">
+                            
+                            <!-- Calories -->
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl">
+                                <span class="block text-[10px] text-amber-400 font-semibold mb-0.5">🔥 سعرات</span>
+                                <span class="font-extrabold text-sm text-white">${Math.round(dayTotals.calories)}</span>
+                                <span class="text-[9px] text-slate-400 block">kcal</span>
+                            </div>
+
+                            <!-- Protein -->
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl">
+                                <span class="block text-[10px] text-rose-400 font-semibold mb-0.5">🥩 بروتين</span>
+                                <span class="font-extrabold text-sm text-white">${dayTotals.protein.toFixed(1)}</span>
+                                <span class="text-[9px] text-slate-400 block">g</span>
+                            </div>
+
+                            <!-- Carbs -->
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl">
+                                <span class="block text-[10px] text-sky-400 font-semibold mb-0.5">🌾 كارب</span>
+                                <span class="font-extrabold text-sm text-white">${dayTotals.carbs.toFixed(1)}</span>
+                                <span class="text-[9px] text-slate-400 block">g</span>
+                            </div>
+
+                            <!-- Fat -->
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl">
+                                <span class="block text-[10px] text-amber-300 font-semibold mb-0.5">🥑 دهون</span>
+                                <span class="font-extrabold text-sm text-white">${dayTotals.fat.toFixed(1)}</span>
+                                <span class="text-[9px] text-slate-400 block">g</span>
+                            </div>
+
+                            <!-- Sodium -->
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl hidden sm:block">
+                                <span class="block text-[10px] text-indigo-300 font-semibold mb-0.5">🧂 صوديوم</span>
+                                <span class="font-extrabold text-sm text-white">${Math.round(dayTotals.sodium)}</span>
+                                <span class="text-[9px] text-slate-400 block">mg</span>
+                            </div>
+
+                            <!-- Potassium -->
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl hidden sm:block">
+                                <span class="block text-[10px] text-emerald-300 font-semibold mb-0.5">🍌 بوتاسيوم</span>
+                                <span class="font-extrabold text-sm text-white">${Math.round(dayTotals.potassium)}</span>
+                                <span class="text-[9px] text-slate-400 block">mg</span>
+                            </div>
+
+                            <!-- Phosphorus -->
+                            <div class="bg-slate-800/80 border border-slate-700/60 p-2 rounded-xl hidden sm:block">
+                                <span class="block text-[10px] text-purple-300 font-semibold mb-0.5">🦴 فسفور</span>
+                                <span class="font-extrabold text-sm text-white">${Math.round(dayTotals.phosphorus)}</span>
+                                <span class="text-[9px] text-slate-400 block">mg</span>
+                            </div>
+
+                        </div>
+
+                        <!-- Controls Desktop -->
+                        <div class="hidden lg:flex items-center gap-2 no-print">
+                            <button onclick="event.stopPropagation(); deleteDay('${day.id}')" title="حذف اليوم" class="text-slate-400 hover:text-rose-400 w-9 h-9 rounded-xl hover:bg-slate-800 flex items-center justify-center transition cursor-pointer">
+                                <i class="fa-solid fa-trash-can text-sm"></i>
+                            </button>
+                            <span title="${isCollapsed ? 'توسيع' : 'طي'}" class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300">
+                                <i class="fa-solid fa-chevron-${isCollapsed ? 'down' : 'up'} text-sm"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Meals Collapsible Body -->
+                    <div class="collapsible-body ${isCollapsed ? 'hidden' : ''} p-4 sm:p-6 space-y-6 bg-slate-50/50 border-t border-slate-100">
+                        <div class="grid grid-cols-1 gap-6">
+                            ${day.meals.map(meal => renderMealCard(day.id, meal)).join('')}
+                        </div>
+
+                        <!-- Add Meal Button -->
+                        <div class="text-center pt-2 no-print">
+                            <button onclick="openAddMealModal('${day.id}')" class="inline-flex items-center gap-2 border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-semibold px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-sm cursor-pointer">
+                                <i class="fa-solid fa-folder-plus text-emerald-600"></i>
+                                <span>إضافة وجبة جديدة لهذا اليوم</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+        }
+
+        function renderMealCard(dayId, meal) {
+            const mealTotals = sumNutrients(meal.items);
+
+            return `
+                <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs transition hover:border-slate-300">
+                    
+                    <!-- Meal Header -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 mb-4 gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <h3 class="font-bold text-slate-800 text-base">${meal.name}</h3>
+                            <span class="text-xs bg-slate-100 text-slate-500 px-2.5 py-0.5 rounded-full font-medium">(${meal.items.length} مواد)</span>
+                        </div>
+
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                            <button onclick="openFoodModal('${dayId}', '${meal.id}', '${meal.name}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 border border-emerald-200/60 cursor-pointer">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>إضافة صنف</span>
+                            </button>
+                            <button onclick="deleteMeal('${dayId}', '${meal.id}')" class="text-slate-400 hover:text-rose-500 text-xs p-1.5 transition cursor-pointer" title="حذف الوجبة">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Food Items Table/List -->
+                    ${meal.items.length === 0 ? `
+                        <div class="py-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
+                            لا توجد أصناف في هذه الوجبة بعد. انقر على "إضافة صنف" بالأعلى.
+                        </div>
+                    ` : `
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-right text-xs">
+                                <thead>
+                                    <tr class="text-slate-400 border-b border-slate-100 font-bold">
+                                        <th class="py-2 px-2">الصنف</th>
+                                        <th class="py-2 px-2 text-center">الكمية</th>
+                                        <th class="py-2 px-2 text-center">سعرات</th>
+                                        <th class="py-2 px-2 text-center">بروتين</th>
+                                        <th class="py-2 px-2 text-center">كارب</th>
+                                        <th class="py-2 px-2 text-center">دهون</th>
+                                        <th class="py-2 px-2 text-center hidden md:table-cell">صوديوم</th>
+                                        <th class="py-2 px-2 text-center hidden md:table-cell">بوتاسيوم</th>
+                                        <th class="py-2 px-2 text-center hidden md:table-cell">فسفور</th>
+                                        <th class="py-2 px-1 text-center"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50 text-slate-700">
+                                    ${meal.items.map((item, idx) => {
+                                        const nut = calculateItemNutrients(item);
+                                        return `
+                                            <tr class="hover:bg-slate-50/80 transition">
+                                                <td class="py-2.5 px-2 font-bold text-slate-800">${item.name}</td>
+                                                <td class="py-2.5 px-2 text-center font-semibold text-emerald-700 bg-emerald-50/50 rounded-lg">${item.grams} جرام</td>
+                                                <td class="py-2.5 px-2 text-center font-mono font-bold">${Math.round(nut.calories)}</td>
+                                                <td class="py-2.5 px-2 text-center font-mono">${nut.protein.toFixed(1)}g</td>
+                                                <td class="py-2.5 px-2 text-center font-mono">${nut.carbs.toFixed(1)}g</td>
+                                                <td class="py-2.5 px-2 text-center font-mono">${nut.fat.toFixed(1)}g</td>
+                                                <td class="py-2.5 px-2 text-center font-mono text-slate-500 hidden md:table-cell">${Math.round(nut.sodium)}mg</td>
+                                                <td class="py-2.5 px-2 text-center font-mono text-slate-500 hidden md:table-cell">${Math.round(nut.potassium)}mg</td>
+                                                <td class="py-2.5 px-2 text-center font-mono text-slate-500 hidden md:table-cell">${Math.round(nut.phosphorus)}mg</td>
+                                                <td class="py-2.5 px-1 text-center">
+                                                    <button onclick="removeFoodFromMeal('${dayId}', '${meal.id}', ${idx})" class="text-slate-300 hover:text-rose-500 transition px-1 cursor-pointer">
+                                                        <i class="fa-solid fa-xmark"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Meal Subtotal Footer -->
+                        <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 bg-slate-50/80 p-2.5 rounded-xl">
+                            <span class="font-bold text-slate-700">مجموع الوجبة:</span>
+                            <div class="flex flex-wrap gap-3 font-semibold">
+                                <span class="text-amber-700">🔥 ${Math.round(mealTotals.calories)} kcal</span>
+                                <span class="text-rose-700">🥩 ${mealTotals.protein.toFixed(1)}g P</span>
+                                <span class="text-sky-700">🌾 ${mealTotals.carbs.toFixed(1)}g C</span>
+                                <span class="text-amber-600">🥑 ${mealTotals.fat.toFixed(1)}g F</span>
+                                <span class="text-indigo-600 hidden sm:inline">🧂 ${Math.round(mealTotals.sodium)}mg Na</span>
+                                <span class="text-emerald-600 hidden sm:inline">🍌 ${Math.round(mealTotals.potassium)}mg K</span>
+                                <span class="text-purple-600 hidden sm:inline">🦴 ${Math.round(mealTotals.phosphorus)}mg P</span>
+                            </div>
+                        </div>
+                    `}
+
+                </div>
+            `;
+        }
+    </script>
 </body>
 </html>
+```
