@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>بيانات الوجبات الثابتة</title>
+</head>
+<body>
+<script>
+/*
+==============================================================
+مصدر الوجبات الثابتة
+==============================================================
+هذا الملف لا يحتاج أن يظهر للمستخدم داخل التطبيق.
+index.html يقرأ FIXED_MEALS منه تلقائيًا ويعرضها داخل كل يوم.
+
+لإضافة وجبة:
+{
+  name: "اسم الوجبة",
+  description: "وصف مختصر للوجبة",
+  items: [
+    { foodId: "food_0001", grams: 100 },
+    { foodId: "food_0002", grams: 50 }
+  ]
+},
+
+foodId = الـ ID الموجود في lib.html
+grams = الكمية بالجرام
+
+يمكنك إضافة أي عدد من الوجبات بنفس الشكل.
+==============================================================
+*/
+
+const FIXED_MEALS = [
+  {
+    name: "مثال — وجبة تجريبية",
+    description: "احذف هذا المثال واستبدله بالوجبات التي تريدها.",
+    items: [
+      { foodId: "food_0001", grams: 150 },
+      { foodId: "food_0002", grams: 200 }
+    ]
+  }
+
+  // أضف وجباتك هنا، مثل:
+  // ,
+  // {
+  //   name: "فطار",
+  //   description: "فطار متوازن عالي البروتين",
+  //   items: [
+  //     { foodId: "food_0001", grams: 100 },
+  //     { foodId: "food_0010", grams: 50 }
+  //   ]
+  // }
+];
+
+// Send the fixed meal data to index.html. No separate visible page is needed.
+try {
+  window.parent.postMessage(
+    { type: "FIXED_MEALS_DATA", meals: FIXED_MEALS },
+    "*"
+  );
+} catch (e) {}
+
+</script>
+</body>
+</html>
