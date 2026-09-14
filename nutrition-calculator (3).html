@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrition Calculator | حاسبة السعرات والماكروز | د. أحمد جلال</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+        <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+
+        .day-card.day-locked .day-editable-disabled { opacity:.58; }
+        .day-card.day-locked input, .day-card.day-locked select, .day-card.day-locked textarea { cursor:not-allowed; }
+        .day-card .day-save-btn:disabled { opacity:.45; cursor:not-allowed; }
+        .day-card .day-edit-btn:disabled { opacity:.55; cursor:not-allowed; }
+        @media (max-width:640px){
+            body{font-size:13px}
+            .day-card .p-4{padding:.75rem}
+            .day-card input,.day-card select,.day-card textarea{font-size:11px!important}
+            .day-card .day-edit-btn,.day-card .day-save-btn{padding:.35rem .55rem!important;font-size:10px!important}
+            .day-card .meal-header{gap:.5rem}
+        }
+
+        .print-only {
+            display: none !important;
+        }
+
+        /* Patient directory / profile navigation */
+        body.patient-directory-view main > :not(#patientManager) { display: none !important; }
+        body.patient-profile-view main > #patientManager { display: none !important; }
+        .patient-back-btn { white-space: nowrap; }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+        .print-only {
+                display: block !important;
+            }
+            body {
+                background-color: #ffffff !important;
+                padding: 0 !important;
+            }
+            .page-break {
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 12px !important;
+            }
+            .collapsible-body {
+                display: block !important;
+            }
+            .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl {
+                box-shadow: none !important;
+            }
+            .border {
+                border-color: #cbd5e1 !important;
+            }
+            textarea, input, select {
+                border-color: #cbd5e1 !important;
+                background-color: transparent !important;
+            }
+            table th, table td {
+                padding: 8px !important;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            .meal-header {
+                background-color: #f8fafc !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+        }
+        .custom-food-badge{display:inline-block}
+
+    </style>
+    <style>
+/* Mobile-only typography/layout refinement. No desktop styles or functionality changed. */
+@media (max-width:640px){
+    html{font-size:14px}
+    body{font-size:12px!important;line-height:1.55}
+    header .max-w-7xl{height:54px!important;padding-left:10px!important;padding-right:10px!important}
+    header .w-10{width:34px!important;height:34px!important}
+    header .w-10 i{font-size:16px!important}
+    header h1{font-size:16px!important}
+    header p{font-size:11px!important}
+    header .px-3\.5{padding-left:9px!important;padding-right:9px!important}
+    header .py-2{padding-top:6px!important;padding-bottom:6px!important}
+    header .text-xs{font-size:10px!important}
+    main{padding-left:10px!important;padding-right:10px!important;padding-top:12px!important;padding-bottom:16px!important;gap:12px!important}
+    main.space-y-6> :not([hidden])~ :not([hidden]){margin-top:12px!important}
+
+    /* Patient profile */
+    #patientManager{padding:11px!important;border-radius:15px!important}
+    #patientManager h2{font-size:14px!important}
+    #patientManager p{font-size:9px!important}
+    #patientManager input{font-size:11px!important;padding-top:8px!important;padding-bottom:8px!important}
+    #patientManager button{font-size:10px!important;padding:8px 11px!important}
+
+    #patientManager + section{padding:12px!important;border-radius:15px!important;gap:10px!important}
+    #patientManager + section h2{font-size:14px!important;line-height:1.45!important}
+    #patientManager + section h2 i{font-size:12px!important}
+    #patientManager + section label{font-size:10px!important;margin-bottom:3px!important}
+    #patientManager + section input,
+    #patientManager + section select,
+    #patientManager + section textarea{font-size:11px!important;padding:8px 10px!important;border-radius:10px!important;line-height:1.5!important}
+    #patientManager + section textarea{min-height:52px!important}
+    #patientManager + section .grid{gap:8px!important}
+    #patientManager + section .gap-4{gap:8px!important}
+    #patientManager + section .gap-2{gap:6px!important}
+    #patientManager + section .py-2\.5{padding-top:7px!important;padding-bottom:7px!important}
+    #patientManager + section .px-5{padding-left:12px!important;padding-right:12px!important}
+    #patientManager + section .text-base{font-size:14px!important}
+    #patientManager + section .text-sm{font-size:11px!important}
+    #patientManager + section .text-xs{font-size:9px!important}
+
+    /* Main tabs */
+    main > .border-b{gap:5px!important;padding-bottom:4px!important}
+    main > .border-b .tab-btn{font-size:10px!important;padding:7px 10px!important;border-radius:9px!important;gap:5px!important}
+    main > .border-b .tab-btn i{font-size:10px!important}
+
+    /* Diet days */
+    #planTab{gap:12px!important}
+    #planTab h3{font-size:16px!important}
+    #planTab .no-print button{font-size:10px!important;padding:7px 10px!important}
+    .day-card{border-radius:14px!important}
+    .day-card .text-xl{font-size:16px!important}
+    .day-card .text-2xl{font-size:18px!important}
+    .day-card .text-lg{font-size:14px!important}
+    .day-card .text-base{font-size:13px!important}
+    .day-card .text-sm{font-size:11px!important}
+    .day-card .text-xs{font-size:9px!important}
+    .day-card .text-\[10px\]{font-size:9px!important}
+    .day-card .text-\[9px\]{font-size:8px!important}
+    .day-card .p-5{padding:11px!important}
+    .day-card .p-4{padding:9px!important}
+    .day-card .px-3{padding-left:8px!important;padding-right:8px!important}
+    .day-card .py-3{padding-top:8px!important;padding-bottom:8px!important}
+    .day-card .gap-4{gap:8px!important}
+    .day-card .gap-3{gap:7px!important}
+    .day-card .gap-2{gap:5px!important}
+    .day-card .day-edit-btn,.day-card .day-save-btn{padding:5px 8px!important;font-size:9px!important}
+    .day-card .day-action-always.w-8{width:27px!important;height:27px!important}
+    .day-card input,.day-card select,.day-card textarea{font-size:10px!important;padding:7px 8px!important}
+    .day-card table{font-size:9px!important}
+
+    /* Calculator / weight sections */
+    #calcTab>div,#weightTab>div{border-radius:14px!important}
+    #calcTab h3,#weightTab h3{font-size:13px!important}
+    #calcTab label,#weightTab label{font-size:10px!important}
+    #calcTab input,#calcTab select,#weightTab input,#weightTab select{font-size:10px!important;padding:7px 8px!important}
+    #calcTab button,#weightTab button{font-size:10px!important}
+    #calcTab .text-xl,#weightTab .text-2xl{font-size:17px!important}
+}
+</style>
+    <style>
+        .calculator-page-header {
+            background:#0f172a;
+            color:#fff;
+            border-bottom:1px solid #1e293b;
+        }
+        .patient-context {
+            background:#fff;
+            border:1px solid #e2e8f0;
+            border-radius:1rem;
+            padding:1rem 1.25rem;
+            box-shadow:0 1px 2px rgba(15,23,42,.04);
+        }
+        .patient-context-name {
+            color:#047857;
+            font-weight:900;
+        }
+    </style>
+    <script id="supabase-cdn" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+
+<header class="calculator-page-header sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-900/40">
+                <i class="fa-solid fa-leaf text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-black text-lg sm:text-xl tracking-tight leading-tight">Nutrition Calculator</h1>
+                <p class="text-sm font-bold text-emerald-400">د. أحمد جلال</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3">
+            <a id="backPatientBtn" href="#" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition shadow-sm flex items-center gap-2">
+                <i class="fa-solid fa-arrow-right"></i>
+                <span>ملف المريض</span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div class="patient-context no-print">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="text-xs font-bold text-slate-500">المريض</div>
+            <div id="patientNameDisplay" class="patient-context-name text-sm">جاري تحميل بيانات المريض...</div>
+        </div>
+    </div>
+
+            <section id="calcTab" class="tab-content space-y-6">
+            <!-- ENERGY EQUATION CALCULATOR -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-5">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h3 class="font-black text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-calculator text-amber-500"></i>
+                            حاسبة الاحتياج من الطاقة
+                        </h3>
+                        <p class="text-[10px] text-slate-400 mt-1">
+                            اختر معادلة واحدة فقط، وستظهر المدخلات المطلوبة لها.
+                        </p>
+                    </div>
+                    <div class="flex rounded-xl bg-slate-100 p-1 w-full lg:w-auto">
+                        <button type="button" id="eqBtnMifflin" onclick="selectEnergyEquation('mifflin')"
+                            class="flex-1 lg:flex-none px-5 py-2.5 rounded-lg text-xs font-extrabold transition bg-white text-emerald-700 shadow-sm">
+                            Mifflin-St Jeor
+                        </button>
+                        <button type="button" id="eqBtnSchofield" onclick="selectEnergyEquation('schofield')"
+                            class="flex-1 lg:flex-none px-5 py-2.5 rounded-lg text-xs font-extrabold transition text-slate-500">
+                            Schofield
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Common inputs -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">النوع</label>
+                        <select id="energyGender" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold">
+                            <option value="male">ذكر</option>
+                            <option value="female">أنثى</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">العمر (سنة)</label>
+                        <input type="number" id="energyAge" min="0" step="0.1" placeholder="30"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">الوزن (كجم)</label>
+                        <input type="number" id="energyWeight" min="0.1" step="0.1" placeholder="75"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold">
+                    </div>
+                    <div id="heightField" class="col-span-2 md:col-span-3">
+                        <label class="block font-bold text-slate-600 mb-1">الطول (سم)</label>
+                        <input type="number" id="energyHeight" min="30" step="0.1" placeholder="175"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold">
+                    </div>
+                </div>
+
+                <!-- Schofield age-group information -->
+                <div id="schofieldInfo" class="hidden bg-orange-50 border border-orange-100 rounded-xl p-3 text-[10px] text-orange-800 leading-5">
+                    <div class="font-black mb-1">Schofield للأطفال والمراهقين</div>
+                    <div id="schofieldGroupHint">الفئات: أقل من 3 سنوات، 3–10، 10–18، ثم فئات البالغين.</div>
+                    <div class="text-orange-600 mt-1">المعادلة الأصلية تعتمد على الوزن (kg) والعمر والجنس، ولا تحتاج الطول.</div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-100">
+                    <label class="block font-bold text-slate-600 mb-1 text-xs">مستوى النشاط البدني (لحساب TDEE)</label>
+                    <select id="calcActivity" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs">
+                        <option value="1.2">خامل جداً (بدون تمارين)</option>
+                        <option value="1.375">نشاط خفيف (1-3 أيام/الأسبوع)</option>
+                        <option value="1.55" selected>نشاط متوسط (3-5 أيام/الأسبوع)</option>
+                        <option value="1.725">نشاط عالٍ (6-7 أيام/الأسبوع)</option>
+                        <option value="1.9">نشاط مفرط جداً (عمل شاق / تدريب مضاعف)</option>
+                    </select>
+                </div>
+
+                <button type="button" onclick="calculateSelectedEnergy()"
+                    class="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs py-3 rounded-xl transition shadow-sm cursor-pointer">
+                    احسب BMR / TDEE
+                </button>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-slate-100">
+                    <div class="bg-slate-50 p-3 rounded-xl text-center">
+                        <span class="block text-[10px] text-slate-500 font-bold mb-1">المعادلة</span>
+                        <span id="resEquation" class="text-xs font-black text-slate-700">Mifflin-St Jeor</span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl text-center">
+                        <span class="block text-[10px] text-slate-500 font-bold mb-1">BMR</span>
+                        <span id="resBMR" class="text-xl font-black text-slate-800">0</span>
+                        <span class="text-[9px] text-slate-400">kcal/day</span>
+                    </div>
+                    <div class="bg-emerald-50 p-3 rounded-xl text-center">
+                        <span class="block text-[10px] text-emerald-600 font-bold mb-1">TDEE</span>
+                        <span id="resTDEE" class="text-xl font-black text-emerald-700">0</span>
+                        <span class="text-[9px] text-emerald-500">kcal/day</span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl text-center">
+                        <span class="block text-[10px] text-slate-500 font-bold mb-1">فئة Schofield</span>
+                        <span id="resSchofieldGroup" class="text-xs font-black text-slate-700">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TARGET + MACROS -->
+<div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+                    <h3 class="font-bold text-slate-800 text-sm border-b border-slate-100 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye text-sky-500"></i>
+                        <span>الهدف وتوزيع الماكروز</span>
+                    </h3>
+
+                    <div class="space-y-4 text-xs">
+                        <div>
+                            <label class="block font-bold text-slate-600 mb-1">تعديل السعرات من (TDEE) <span class="text-[10px] text-slate-400">(استخدم سالب للخصم وموجب للزيادة)</span></label>
+                            <div class="flex gap-2">
+                                <input type="text" inputmode="numeric" id="calcAdjustment" value="-500" placeholder="مثال: -500 أو +300" oninput="updateTargetAndMacros()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
+                                <div class="bg-sky-50 border border-sky-200 text-sky-800 px-4 py-2 rounded-xl flex items-center justify-center font-black whitespace-nowrap min-w-[100px]">
+                                    <span id="finalTargetCal">0</span> <span class="text-[10px] ml-1">kcal</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-100 pt-3">
+                            <label class="block font-bold text-slate-800 mb-2">توزيع النسب (يجب أن يكون المجموع 100%)</label>
+                            
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 mb-1">بروتين %</label>
+                                    <input type="number" id="macroProPercent" value="30" oninput="updateTargetAndMacros()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 font-bold text-center">
+                                    <span id="macroProGrams" class="block text-center mt-1 text-slate-700 font-bold">0g</span>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 mb-1">كاربوهيدرات %</label>
+                                    <input type="number" id="macroCarbPercent" value="40" oninput="updateTargetAndMacros()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 font-bold text-center">
+                                    <span id="macroCarbGrams" class="block text-center mt-1 text-slate-700 font-bold">0g</span>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 mb-1">دهون %</label>
+                                    <input type="number" id="macroFatPercent" value="30" oninput="updateTargetAndMacros()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 font-bold text-center">
+                                    <span id="macroFatGrams" class="block text-center mt-1 text-slate-700 font-bold">0g</span>
+                                </div>
+                            </div>
+                            
+                            <div id="macroTotalAlert" class="mt-2 text-[10px] font-bold text-center hidden p-1 rounded"></div>
+                        </div>
+
+                        <button onclick="applyCustomTargetToPatient()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 rounded-xl transition shadow-sm cursor-pointer mt-2 flex justify-center items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-check"></i>
+                            اعتماد السعرات في خطة المريض
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+</main>
+
+<div id="toastContainer" class="fixed top-20 left-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+<script>
+const SUPABASE_URL = "https://zwxnmnfoknfbzvptnpmv.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_A6u5kWAdL60bYpz1Ryv6w_J2p896iY";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const patientId = new URLSearchParams(window.location.search).get('id');
+
+let patient = null;
+let selectedEnergyEquation = 'mifflin';
+
+function showToast(msg, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const bgColor = type === 'error' ? 'bg-rose-600' : 'bg-emerald-600';
+    const toast = document.createElement('div');
+    toast.className = `${bgColor} text-white font-bold text-xs px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 transition-all transform translate-y-2 opacity-0 pointer-events-auto`;
+    toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}"></i> <span>${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+        let selectedEnergyEquation = 'mifflin';
+
+        function selectEnergyEquation(eq) {
+            selectedEnergyEquation = eq === 'schofield' ? 'schofield' : 'mifflin';
+
+            const heightField = document.getElementById('heightField');
+            const schInfo = document.getElementById('schofieldInfo');
+            const mifflinBtn = document.getElementById('eqBtnMifflin');
+            const schofieldBtn = document.getElementById('eqBtnSchofield');
+
+            heightField.classList.toggle('hidden', selectedEnergyEquation !== 'mifflin');
+            schInfo.classList.toggle('hidden', selectedEnergyEquation !== 'schofield');
+
+            const active = 'flex-1 lg:flex-none px-5 py-2.5 rounded-lg text-xs font-extrabold transition bg-white text-emerald-700 shadow-sm';
+            const inactive = 'flex-1 lg:flex-none px-5 py-2.5 rounded-lg text-xs font-extrabold transition text-slate-500';
+            mifflinBtn.className = selectedEnergyEquation === 'mifflin' ? active : inactive;
+            schofieldBtn.className = selectedEnergyEquation === 'schofield' ? active : inactive;
+
+            document.getElementById('resEquation').textContent =
+                selectedEnergyEquation === 'mifflin' ? 'Mifflin-St Jeor' : 'Schofield';
+
+            updateSchofieldGroupHint();
+        }
+
+        function updateSchofieldGroupHint() {
+            const age = parseFloat(document.getElementById('energyAge').value);
+            const hint = document.getElementById('schofieldGroupHint');
+            const result = document.getElementById('resSchofieldGroup');
+
+            if (!Number.isFinite(age)) {
+                hint.textContent = 'الفئات: أقل من 3 سنوات، 3–10، 10–18، 18–30، 30–60، وأكثر من 60 سنة.';
+                result.textContent = '—';
+                return;
+            }
+
+            let group = '';
+            if (age < 3) group = '<3 سنوات';
+            else if (age < 10) group = '3–10 سنوات';
+            else if (age < 18) group = '10–18 سنة';
+            else if (age < 30) group = '18–30 سنة';
+            else if (age < 60) group = '30–60 سنة';
+            else group = '≥60 سنة';
+
+            hint.textContent = `الفئة المختارة: ${group}. المعادلة تستخدم الوزن فقط مع العمر والجنس.`;
+            result.textContent = group;
+        }
+
+        function calculateSelectedEnergy() {
+            const gender = document.getElementById('energyGender').value;
+            const age = parseFloat(document.getElementById('energyAge').value);
+            const weight = parseFloat(document.getElementById('energyWeight').value);
+            const activity = parseFloat(document.getElementById('calcActivity').value) || 1.2;
+
+            if (!Number.isFinite(age) || age < 0 || !Number.isFinite(weight) || weight <= 0) {
+                showToast('أدخل العمر والوزن بشكل صحيح أولاً', 'error');
+                return;
+            }
+
+            let bmr;
+            let group;
+
+            if (selectedEnergyEquation === 'mifflin') {
+                const height = parseFloat(document.getElementById('energyHeight').value);
+                if (!Number.isFinite(height) || height <= 0) {
+                    showToast('أدخل الطول لأن معادلة Mifflin-St Jeor تحتاج الطول', 'error');
+                    return;
+                }
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) + (gender === 'male' ? 5 : -161);
+                group = '—';
+            } else {
+                const s = schofieldBMR(gender, age, weight);
+                if (!s) {
+                    showToast('تعذر تحديد معادلة Schofield لهذه البيانات', 'error');
+                    return;
+                }
+                bmr = s.bmr;
+                group = s.group;
+            }
+
+            const tdee = Math.round(bmr * activity);
+
+            document.getElementById('resBMR').textContent = Math.round(bmr);
+            document.getElementById('resTDEE').textContent = tdee;
+            document.getElementById('resSchofieldGroup').textContent = group;
+            document.getElementById('resEquation').textContent =
+                selectedEnergyEquation === 'mifflin' ? 'Mifflin-St Jeor' : 'Schofield';
+
+            updateTargetAndMacros();
+        }
+
+        // Schofield 1985 / FAO-WHO-UNU equations, BMR from body weight.
+        // kcal/day; W = body weight in kg.
+        function schofieldBMR(gender, age, weight) {
+            let bmr = 0;
+            let group = '';
+
+            if (age < 3) {
+                if (gender === 'male') {
+                    bmr = 59.512 * weight - 30.4;
+                    group = '<3 سنوات — ذكر';
+                } else {
+                    bmr = 58.317 * weight - 31.1;
+                    group = '<3 سنوات — أنثى';
+                }
+            } else if (age < 10) {
+                if (gender === 'male') {
+                    bmr = 22.706 * weight + 504.3;
+                    group = '3–10 سنوات — ذكر';
+                } else {
+                    bmr = 20.315 * weight + 485.9;
+                    group = '3–10 سنوات — أنثى';
+                }
+            } else if (age < 18) {
+                if (gender === 'male') {
+                    bmr = 17.686 * weight + 658.2;
+                    group = '10–18 سنة — ذكر';
+                } else {
+                    bmr = 13.384 * weight + 692.6;
+                    group = '10–18 سنة — أنثى';
+                }
+            } else if (age < 30) {
+                if (gender === 'male') {
+                    bmr = 15.057 * weight + 692.2;
+                    group = '18–30 سنة — ذكر';
+                } else {
+                    bmr = 14.818 * weight + 486.6;
+                    group = '18–30 سنة — أنثى';
+                }
+            } else if (age < 60) {
+                if (gender === 'male') {
+                    bmr = 11.472 * weight + 873.1;
+                    group = '30–60 سنة — ذكر';
+                } else {
+                    bmr = 8.126 * weight + 845.6;
+                    group = '30–60 سنة — أنثى';
+                }
+            } else {
+                if (gender === 'male') {
+                    bmr = 11.711 * weight + 587.7;
+                    group = '≥60 سنة — ذكر';
+                } else {
+                    bmr = 9.082 * weight + 658.5;
+                    group = '≥60 سنة — أنثى';
+                }
+            }
+
+            return { bmr, group };
+        }
+
+        // Compatibility aliases for old saved UI references.
+        function calculateTDEE() { calculateSelectedEnergy(); }
+        function calculateSchofield() { selectEnergyEquation('schofield'); calculateSelectedEnergy(); }
+
+        function updateTargetAndMacros() {
+            const tdee = parseInt(document.getElementById('resTDEE').textContent) || 0;
+            const rawAdj = document.getElementById('calcAdjustment').value;
+            const adj = (rawAdj === '' || rawAdj === '-' || isNaN(parseInt(rawAdj, 10))) ? 0 : parseInt(rawAdj, 10);
+            
+            const targetCal = tdee > 0 ? (tdee + adj) : (adj > 0 ? adj : 0);
+            document.getElementById('finalTargetCal').textContent = Math.max(0, targetCal);
+
+            const pPercent = parseFloat(document.getElementById('macroProPercent').value) || 0;
+            const cPercent = parseFloat(document.getElementById('macroCarbPercent').value) || 0;
+            const fPercent = parseFloat(document.getElementById('macroFatPercent').value) || 0;
+            const totalPercent = pPercent + cPercent + fPercent;
+
+            const alertEl = document.getElementById('macroTotalAlert');
+            if (totalPercent !== 100) {
+                alertEl.textContent = `المجموع الحالي: ${totalPercent}% (يجب أن يكون 100%)`;
+                alertEl.className = "mt-2 text-[10px] font-bold text-center p-1 rounded bg-rose-100 text-rose-700 block";
+            } else {
+                alertEl.classList.add('hidden');
+            }
+
+            if (targetCal > 0 && totalPercent === 100) {
+                document.getElementById('macroProGrams').textContent = Math.round((targetCal * (pPercent/100)) / 4) + 'g';
+                document.getElementById('macroCarbGrams').textContent = Math.round((targetCal * (cPercent/100)) / 4) + 'g';
+                document.getElementById('macroFatGrams').textContent = Math.round((targetCal * (fPercent/100)) / 9) + 'g';
+            } else {
+                document.getElementById('macroProGrams').textContent = '0g';
+                document.getElementById('macroCarbGrams').textContent = '0g';
+                document.getElementById('macroFatGrams').textContent = '0g';
+            }
+        }
+
+        function applyCustomTargetToPatient() {
+            const targetCal = document.getElementById('finalTargetCal').textContent;
+            const proGrams = parseInt(document.getElementById('macroProGrams').textContent) || 0;
+            const carbGrams = parseInt(document.getElementById('macroCarbGrams').textContent) || 0;
+            const fatGrams = parseInt(document.getElementById('macroFatGrams').textContent) || 0;
+
+            const totalPercent = 
+                (parseFloat(document.getElementById('macroProPercent').value) || 0) + 
+                (parseFloat(document.getElementById('macroCarbPercent').value) || 0) + 
+                (parseFloat(document.getElementById('macroFatPercent').value) || 0);
+
+            if (totalPercent !== 100) {
+                showToast('يجب أن يكون مجموع نسب الماكروز 100% بالضبط', 'error');
+                return;
+            }
+
+            if (targetCal > 0) {
+                document.getElementById('patientTargetCal').value = targetCal;
+                if (document.getElementById('patientTargetPro')) document.getElementById('patientTargetPro').value = proGrams;
+                if (document.getElementById('patientTargetCarb')) document.getElementById('patientTargetCarb').value = carbGrams;
+                if (document.getElementById('patientTargetFat')) document.getElementById('patientTargetFat').value = fatGrams;
+                
+                savePatientData();
+                renderDays();
+                showToast(`تم اعتماد الهدف (${targetCal} سعر) والماكروز بنجاح`);
+                switchTab('planTab');
+            }
+        }
+
+
+
+async function loadPatientData() {
+    if (!patientId) {
+        showToast('لم يتم تحديد المريض', 'error');
+        return;
+    }
+
+    const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !authData?.user) {
+        showToast('يجب تسجيل الدخول أولاً', 'error');
+        return;
+    }
+
+    const { data, error } = await supabaseClient
+        .from('patients')
+        .select('id,name,gender,age,height')
+        .eq('id', patientId)
+        .eq('user_id', authData.user.id)
+        .maybeSingle();
+
+    if (error || !data) {
+        showToast('تعذر تحميل بيانات المريض', 'error');
+        return;
+    }
+
+    patient = data;
+    document.getElementById('patientNameDisplay').textContent = patient.name || 'مريض';
+
+    document.getElementById('energyGender').value = patient.gender || 'male';
+    document.getElementById('energyAge').value = patient.age ?? '';
+    document.getElementById('energyHeight').value = patient.height ?? '';
+
+    const { data: weights } = await supabaseClient
+        .from('weight_logs')
+        .select('weight,measurement_date,created_at')
+        .eq('patient_id', patientId)
+        .order('measurement_date', { ascending:false })
+        .order('created_at', { ascending:false })
+        .limit(1);
+
+    if (weights?.[0]?.weight != null) {
+        document.getElementById('energyWeight').value = Number(weights[0].weight);
+    }
+
+    const { data: plans } = await supabaseClient
+        .from('nutrition_plans')
+        .select('target_calories,target_protein,target_carb,target_fat')
+        .eq('patient_id', patientId)
+        .order('updated_at', { ascending:false })
+        .order('created_at', { ascending:false })
+        .limit(1);
+
+    const plan = plans?.[0];
+    if (plan) {
+        if (plan.target_calories != null) {
+            const tdee = 0;
+            document.getElementById('calcAdjustment').value = Number(plan.target_calories);
+        }
+        if (plan.target_protein && plan.target_calories) {
+            document.getElementById('macroProPercent').value = Math.round(Number(plan.target_protein) * 4 / Number(plan.target_calories) * 100);
+        }
+        if (plan.target_carb && plan.target_calories) {
+            document.getElementById('macroCarbPercent').value = Math.round(Number(plan.target_carb) * 4 / Number(plan.target_calories) * 100);
+        }
+        if (plan.target_fat && plan.target_calories) {
+            document.getElementById('macroFatPercent').value = Math.round(Number(plan.target_fat) * 9 / Number(plan.target_calories) * 100);
+        }
+    }
+
+    updateSchofieldGroupHint();
+    updateTargetAndMacros();
+}
+
+async function applyCustomTargetToPatient() {
+    const targetCal = parseInt(document.getElementById('finalTargetCal').textContent, 10) || 0;
+    const proGrams = parseInt(document.getElementById('macroProGrams').textContent, 10) || 0;
+    const carbGrams = parseInt(document.getElementById('macroCarbGrams').textContent, 10) || 0;
+    const fatGrams = parseInt(document.getElementById('macroFatGrams').textContent, 10) || 0;
+
+    const totalPercent =
+        (parseFloat(document.getElementById('macroProPercent').value) || 0) +
+        (parseFloat(document.getElementById('macroCarbPercent').value) || 0) +
+        (parseFloat(document.getElementById('macroFatPercent').value) || 0);
+
+    if (totalPercent !== 100) {
+        showToast('يجب أن يكون مجموع نسب الماكروز 100% بالضبط', 'error');
+        return;
+    }
+
+    if (!patientId || targetCal <= 0) return;
+
+    const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !authData?.user) {
+        showToast('يجب تسجيل الدخول أولاً', 'error');
+        return;
+    }
+
+    const { data: existing, error: findError } = await supabaseClient
+        .from('nutrition_plans')
+        .select('id')
+        .eq('patient_id', patientId)
+        .order('updated_at', { ascending:false })
+        .order('created_at', { ascending:false })
+        .limit(1);
+
+    if (findError) {
+        showToast('تعذر الوصول إلى خطة المريض', 'error');
+        return;
+    }
+
+    const planId = existing?.[0]?.id || crypto.randomUUID();
+
+    const { error } = await supabaseClient
+        .from('nutrition_plans')
+        .upsert({
+            id: planId,
+            patient_id: patientId,
+            plan_name: 'الخطة الغذائية',
+            start_date: new Date().toISOString().slice(0,10),
+            target_calories: targetCal,
+            target_protein: proGrams,
+            target_carb: carbGrams,
+            target_fat: fatGrams
+        }, { onConflict:'id' });
+
+    if (error) {
+        showToast('تعذر حفظ الهدف في قاعدة البيانات', 'error');
+        return;
+    }
+
+    showToast(`تم اعتماد الهدف (${targetCal} سعر) والماكروز بنجاح`);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    selectEnergyEquation('mifflin');
+    document.getElementById('backPatientBtn').href = `patient-profile.html?id=${encodeURIComponent(patientId || '')}`;
+    loadPatientData();
+});
+</script>
+</body>
+</html>
