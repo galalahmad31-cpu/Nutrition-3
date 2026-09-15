@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الحاسبة السريعة | Diet Planner</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="/protected/users.js"></script>
+<script src="/protected/auth.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background:
+        radial-gradient(circle at 10% 90%, rgba(13,148,136,.055), transparent 28%),
+        linear-gradient(180deg, #f5fbfa 0%, #f8fafc 48%, #f7fbfb 100%);
+    color: #17333a;
+}
+
+input, select, textarea {
+    width: 100%;
+    border: 1px solid #d9e7e5;
+    border-radius: 10px;
+    padding: 9px 10px;
+    background: #fff;
+    text-align: center;
+    font-size: .88rem;
+    outline: none;
+    transition: .2s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #0f8f83;
+    box-shadow: 0 0 0 3px rgba(15,143,131,.10);
+}
+
+.ltr-input {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+.ltr-block {
+    direction: ltr;
+    text-align: left;
+}
+
+.main-container {
+    border-color: #e5eeee;
+    box-shadow: 0 12px 35px rgba(20,70,70,.055);
+}
+
+.page-header {
+    background: #ffffff;
+    color: #17333a;
+    border-bottom: 1px solid #e6efee;
+    text-align: right;
+}
+
+.page-header h1 {
+    color: #16383b;
+}
+
+.page-header-icon {
+    background: #e6f6f3;
+    color: #0f8177;
+}
+
+.quick-section {
+    border: 1px solid #dcebea !important;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(20,70,70,.035);
+}
+
+.quick-section button {
+    min-height: 58px;
+}
+
+.quick-section > button {
+    background: #edf8f6 !important;
+    color: #17645f !important;
+}
+
+.quick-section > button:hover {
+    background: #e3f3f0 !important;
+}
+
+.quick-content {
+    background: #ffffff;
+}
+
+.highlight-box {
+    border-radius: 14px;
+    padding: 18px;
+}
+
+.back-btn {
+    background: #ffffff;
+    border: 1px solid #d9e7e5;
+    color: #38605f;
+}
+
+.back-btn:hover {
+    background: #f1f8f7;
+    color: #0f8177;
+}
+
+.page-footer {
+    background: #f7fbfa;
+    border-top: 1px solid #e6efee;
+}
+
+@media (max-width: 640px) {
+    body { font-size: .84rem; }
+    .page-wrap { padding: 10px !important; }
+    .main-container { border-radius: 16px !important; }
+    .page-header { padding: 15px 16px !important; }
+    .page-header h1 { font-size: 1.22rem !important; }
+    input, select, textarea {
+        font-size: .80rem !important;
+        min-height: 38px;
+        padding: 7px 8px;
+    }
+    .quick-section button {
+        min-height: 52px;
+        padding: 12px !important;
+        font-size: .82rem !important;
+    }
+}
+
+/* =========================================================
+   Diet Planner standard UI
+   Visual layer only — calculator logic unchanged.
+   ========================================================= */
+body{
+    background:radial-gradient(circle at 90% 0%,rgba(23,143,132,.08),transparent 28%),radial-gradient(circle at 5% 95%,rgba(23,143,132,.05),transparent 25%),#f7fafb;
+    color:#17252a;
+}
+.main-container{
+    border:1px solid #e2e8f0 !important;
+    border-radius:24px !important;
+    box-shadow:0 12px 35px rgba(15,71,67,.07) !important;
+}
+.page-header{
+    background:#fff !important;
+    border-bottom:1px solid #e5eceb !important;
+    color:#17252a !important;
+}
+.page-header-icon{
+    width:44px !important;height:44px !important;border-radius:14px !important;
+    background:#178f84 !important;color:#fff !important;
+    font-size:20px !important;
+    box-shadow:0 8px 18px rgba(23,143,132,.16);
+}
+.page-header h1{color:#173c39 !important;font-size:1.65rem !important}
+.page-header .text-slate-400{color:#78908d !important}
+.back-btn{
+    background:#fff !important;color:#11786f !important;
+    border:1px solid #cfe1df !important;
+    border-radius:12px !important;
+}
+.back-btn:hover{background:#eef7f6 !important;color:#0d625b !important}
+.quick-section{
+    border-color:#dfe9e7 !important;
+    border-radius:18px !important;
+    box-shadow:0 6px 20px rgba(20,60,56,.045) !important;
+}
+.quick-section>button{
+    background:#eef7f6 !important;color:#173c39 !important;
+    padding:15px 17px !important;
+}
+.quick-section>button:hover{background:#e2f2ef !important}
+.quick-content{background:#fff !important}
+.quick-content input,.quick-content select,.quick-content textarea{
+    border-color:#d9e7e5;
+    border-radius:10px;
+}
+.quick-content input:focus,.quick-content select:focus,.quick-content textarea:focus{
+    border-color:#178f84;
+    box-shadow:0 0 0 3px rgba(23,143,132,.10);
+}
+.page-footer{background:#f7fbfa !important;border-top:1px solid #e5eceb !important}
+@media(max-width:640px){
+    .page-header h1{font-size:1.18rem !important}
+    .page-header-icon{width:40px !important;height:40px !important;font-size:18px !important}
+    .back-btn{padding:8px 11px !important;font-size:.72rem !important}
+}
+
+/* =========================================================
+   Premium calculator tabs — Diet Planner visual system
+   Visual only: no calculator behavior changed.
+   ========================================================= */
+body{
+    font-family:'Cairo',sans-serif !important;
+    letter-spacing:0 !important;
+}
+.quick-section{
+    border:0 !important;
+    border-radius:18px !important;
+    overflow:hidden !important;
+    background:#fff !important;
+    box-shadow:0 8px 24px rgba(23,60,57,.055) !important;
+}
+.quick-section > button,
+.qc-tab{
+    position:relative !important;
+    min-height:66px !important;
+    padding:15px 18px !important;
+    background:#fff !important;
+    color:#193d3a !important;
+    border:1px solid #e3ecea !important;
+    border-radius:18px !important;
+    font-size:.94rem !important;
+    font-weight:800 !important;
+    box-shadow:0 3px 12px rgba(20,60,56,.035) !important;
+}
+.quick-section > button::before,
+.qc-tab::before{
+    content:'';
+    position:absolute;
+    right:0;
+    top:0;
+    bottom:0;
+    width:4px;
+    border-radius:0 18px 18px 0;
+}
+.qc-tab-1::before{background:#178f84}
+.qc-tab-2::before{background:#3b7f78}
+.qc-tab-3::before{background:#557a76}
+.qc-tab-4::before{background:#6b8d89}
+.quick-section > button:hover,
+.qc-tab:hover{
+    background:#f7fbfa !important;
+    border-color:#cfe1df !important;
+    color:#126f67 !important;
+    box-shadow:0 6px 18px rgba(23,143,132,.07) !important;
+}
+.quick-section > button svg,
+.qc-tab svg{
+    color:#6f8986 !important;
+}
+.quick-content{
+    background:#fff !important;
+    border:1px solid #e5edeb !important;
+    border-top:0 !important;
+    border-radius:0 0 18px 18px !important;
+}
+.quick-content h3,.quick-content h4{
+    font-family:'Cairo',sans-serif !important;
+}
+.quick-content label{
+    font-family:'Cairo',sans-serif !important;
+    color:#405b58;
+}
+@media(max-width:640px){
+    .quick-section > button, .qc-tab{
+        min-height:58px !important;
+        padding:12px 14px !important;
+        font-size:.82rem !important;
+    }
+}
+
+
+/* =========================================================
+   Quick Calculator — refined content UI
+   Visual/UX layer only. Calculation logic and IDs unchanged.
+   ========================================================= */
+.quick-content{font-family:Cairo,Arial,sans-serif !important;}
+.qc-panel{background:#fbfdfd !important;border:1px solid #e1ecea !important;border-radius:14px !important;padding:16px !important;box-shadow:0 2px 8px rgba(15,71,67,.035) !important;}
+.qc-panel-title{display:flex;align-items:center;gap:9px;color:#16433f;font-size:.92rem;font-weight:800;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #e7efee;}
+.qc-panel-title::before{content:"";width:4px;height:18px;border-radius:99px;background:#178f84;flex:none;}
+.qc-field{background:#fff !important;border:1px solid #e2ecea !important;border-radius:11px !important;padding:12px !important;}
+.qc-field label{color:#506663 !important;font-weight:700 !important;}
+.qc-result{background:linear-gradient(180deg,#f1faf8 0%,#ffffff 100%) !important;border:1px solid #b9ddd8 !important;border-radius:15px !important;padding:18px !important;box-shadow:0 5px 16px rgba(23,143,132,.07) !important;}
+.qc-result h4{color:#155e57 !important;font-size:1rem !important;}
+.qc-result .qc-result-value{color:#147a71 !important;}
+.qc-note{background:#f8fafb !important;border:1px solid #e2e8ec !important;border-left:4px solid #8aa5a1 !important;color:#536764 !important;border-radius:10px !important;}
+.qc-action{background:#178f84 !important;border:1px solid #178f84 !important;border-radius:9px !important;}
+.qc-action:hover{background:#11786f !important;}
+.quick-content input,.quick-content select,.quick-content textarea{font-family:Cairo,Arial,sans-serif !important;color:#263b39 !important;background:#fff !important;}
+.quick-content input::placeholder{color:#9aaba8;}
+@media(max-width:640px){
+ .qc-panel{padding:13px !important;}
+ .qc-field{padding:10px !important;}
+ .qc-result{padding:14px !important;}
+}
+</style>
+</head>
+
+<body class="p-3 md:p-6">
+<div class="max-w-6xl mx-auto main-container bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+
+    <header class="page-header px-5 py-5 md:px-7 md:py-6">
+    <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="page-header-icon w-11 h-11 rounded-xl flex items-center justify-center text-xl font-bold">
+                ⚡
+            </div>
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">
+                    الحاسبة السريعة
+                </h1>
+                <div class="text-xs text-slate-400 mt-1">
+                    حسابات التغذية العلاجية السريعة
+                </div>
+            </div>
+        </div>
+
+        <a href="app.html"
+           class="back-btn inline-flex items-center justify-center px-3 py-2 rounded-xl font-bold text-xs transition">
+            الرئيسية ←
+        </a>
+    </div>
+</header>
+            
+        </div>
+        
+    </div>
+
+    <main class="p-4 md:p-7">
+        <div class="p-1 md:p-2 bg-transparent min-h-[400px] ltr-block space-y-5" id="sub-content-quick-calc">
+
+<!-- GIR -->
+<div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+<button class="w-full p-4 font-bold flex justify-between items-center text-md transition-colors qc-tab qc-tab-1" onclick="toggleQuickAccordion('qc-gir-content', 'qc-gir-arrow')">
+<span class="flex flex-col items-start gap-0.5"><span>GIR Calculator</span><small class="font-medium text-xs text-slate-500">IV + enteral glucose contribution</small></span>
+<svg class="w-5 h-5 transform transition-transform duration-200" fill="none" id="qc-gir-arrow" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<div class="hidden p-4 md:p-6 space-y-6 bg-white" id="qc-gir-content">
+<div class="qc-panel">
+<label class="block text-sm font-bold mb-1 text-gray-700">
+                                1. Weight (kg)
+                            </label>
+<input class="bg-white ltr-input" id="qc-weight" oninput="calculateQuickGIR()" step="0.1" type="number" value="2"/>
+</div>
+<div class="qc-panel">
+<div class="flex justify-between items-center">
+<h4 class="font-bold text-slate-800">
+                                    2. Intravenous fluids (IV)
+                                </h4>
+<button class="qc-action text-white text-xs px-3 py-1.5 font-bold shadow-sm transition-all" onclick="addIVLine()">
+                                    + Add IV Line
+                                </button>
+</div>
+<div class="space-y-3" id="iv-lines-container">
+<div class="iv-line-row grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+<div class="md:col-span-3">
+<label class="block text-[10px] font-bold mb-1 text-gray-600">
+                                            Glucose conc%
+                                        </label>
+<input class="bg-white" id="qc-iv-conc-0" oninput="calculateQuickGIR()" step="0.1" type="number" value="10"/>
+</div>
+<div class="md:col-span-3">
+<label class="block text-[10px] font-bold mb-1 text-gray-600">
+                                            Glucose Rate Unit
+                                        </label>
+<select class="bg-white" id="qc-iv-unit-0" onchange="calculateQuickGIR()">
+<option value="h">
+                                                ml / h
+                                            </option>
+<option value="d">
+                                                ml / d
+                                            </option>
+</select>
+</div>
+<div class="md:col-span-5">
+<label class="block text-[10px] font-bold mb-1 text-gray-600">
+                                            Glucose Rate Value
+                                        </label>
+<input class="bg-white" id="qc-iv-rate-0" oninput="calculateQuickGIR()" step="0.1" type="number" value="10"/>
+</div>
+<div class="md:col-span-1 flex items-end justify-center"></div>
+</div>
+</div>
+</div>
+<div class="qc-panel">
+<h4 class="font-bold text-slate-800">
+                                3. Enteral Intake
+                            </h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                        Milk type
+                                    </label>
+<select class="bg-white" id="qc-milk-type" onchange="calculateQuickGIR()">
+<option value="breast">
+                                            Breastmilk 7.1%
+                                        </option>
+<option value="term">
+                                            Term Formula 7.1%
+                                        </option>
+<option value="preterm">
+                                            Preterm Formula 8.5%
+                                        </option>
+<option value="custom">
+                                            Custom
+                                        </option> </select>
+<div class="hidden mt-3" id="qc-custom-carb-box">
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                            Base carb (g / 100 ml)
+                                        </label>
+<input class="bg-white" id="qc-custom-base-carb" min="0" oninput="calculateQuickGIR()" step="0.1" type="number" value="7.1"/>
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                        Volume (ml / feed)
+                                    </label>
+<input class="bg-white" id="qc-ent-vol" oninput="calculateQuickGIR()" step="0.1" type="number" value="20"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                        Frequency (Every × h)
+                                    </label>
+<input class="bg-white" id="qc-ent-freq" oninput="calculateQuickGIR()" step="1" type="number" value="3"/>
+</div>
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                        Daily Added carb (g)
+                                    </label>
+<input class="bg-white" id="qc-ent-carb" oninput="calculateQuickGIR()" step="0.1" type="number" value="0"/>
+</div>
+</div>
+</div>
+<div class="highlight-box qc-result text-center space-y-2">
+<h4 class="font-bold text-slate-800 text-lg">
+                                Total Glucose Infusion Rate
+                            </h4>
+<div class="text-3xl font-extrabold qc-result-value" id="qc-res-total-gir">
+                                0.00
+                                <span class="text-sm font-normal">
+                                    mg/kg/min
+                                </span>
+</div>
+<div class="text-xs text-gray-600 flex justify-center gap-6 pt-2 border-t border-emerald-200">
+<span>
+                                    IV GIR:
+                                    <strong id="qc-res-iv-gir">
+                                        0.00
+                                    </strong>
+</span>
+<span>
+                                    Enteral GIR:
+                                    <strong id="qc-res-ent-gir">
+                                        0.00
+                                    </strong>
+</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Dextrose Preparation -->
+<div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+<button class="w-full p-4 font-bold flex justify-between items-center text-md transition-colors qc-tab qc-tab-2" onclick="toggleQuickAccordion('qc-dextrose-content', 'qc-dextrose-arrow')">
+<span class="flex flex-col items-start gap-0.5"><span>Dextrose Preparation Calculator</span><small class="font-medium text-xs text-slate-500">Prepare a target dextrose concentration</small></span>
+<svg class="w-5 h-5 transform transition-transform duration-200" fill="none" id="qc-dextrose-arrow" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<div class="hidden p-4 md:p-6 space-y-6 bg-white" id="qc-dextrose-content">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                    Calculation Basis
+                                </label>
+<select class="bg-white font-bold text-slate-800" id="dex-mode" onchange="toggleDexMode(); calculateDextrosePrep()">
+<option value="conc">
+                                        Required Dextrose Conc %
+                                    </option>
+<option value="gir">
+                                        Target GIR (mg/kg/min)
+                                    </option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                    Glucose Volume (mL)
+                                </label>
+<input class="bg-white" id="dex-volume" oninput="calculateDextrosePrep()" step="1" type="number" value="100"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div id="dex-input-conc-container">
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                    Required Dextrose Conc (%)
+                                </label>
+<input class="bg-white" id="dex-req-conc" oninput="calculateDextrosePrep()" step="0.1" type="number" value="12.5"/>
+</div>
+<div class="hidden" id="dex-input-weight-container">
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                    Weight (kg)
+                                </label>
+<input class="bg-white" id="dex-weight" oninput="calculateDextrosePrep()" step="0.1" type="number" value="2"/>
+</div>
+<div class="hidden" id="dex-input-gir-container">
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                    Target GIR (mg/kg/min)
+                                </label>
+<input class="bg-white" id="dex-target-gir" oninput="calculateDextrosePrep()" step="0.1" type="number" value="6"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                    Dextrose Concentration C₁ (%)
+                                </label>
+<input class="bg-white" id="dex-c1" oninput="calculateDextrosePrep()" step="0.1" type="number" value="25"/>
+</div>
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                    Dextrose Concentration C₂ (%)
+                                </label>
+<input class="bg-white" id="dex-c2" oninput="calculateDextrosePrep()" step="0.1" type="number" value="5"/>
+</div>
+</div>
+<div class="highlight-box qc-result text-center space-y-2">
+<h4 class="font-bold text-slate-800 text-md">
+                                Preparation Result
+                            </h4>
+<div class="text-lg font-bold qc-result-value" id="dex-res-text">
+                                Enter parameters to calculate
+                            </div>
+</div>
+</div>
+</div>
+<!-- =================================================
+                     FORMULA CONCENTRATION CALCULATOR
+                     Modified as requested
+                     ================================================= -->
+<div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+<button class="w-full p-4 font-bold flex justify-between items-center text-md transition-colors qc-tab qc-tab-3" onclick="toggleQuickAccordion('qc-formula-conc-content', 'qc-formula-conc-arrow')">
+<span class="flex flex-col items-start gap-0.5"><span>Formula Concentration Calculator</span><small class="font-medium text-xs text-slate-500">Adjust caloric density and preparation</small></span>
+<svg class="w-5 h-5 transform transition-transform duration-200" fill="none" id="qc-formula-conc-arrow" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<div class="hidden p-4 md:p-6 space-y-6 bg-white" id="qc-formula-conc-content">
+<!-- NORMAL PREPARATION -->
+<div class="qc-panel">
+<h4 class="font-bold text-slate-800 border-b border-purple-200 pb-2">
+                                1. Normal Preparation
+                            </h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                        Scoops
+                                    </label>
+<input class="bg-white" id="fc-normal-scoops" min="0" oninput="calculateFormulaConcentration()" step="0.01" type="number" value="1"/>
+</div>
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                        Water (mL)
+                                    </label>
+<input class="bg-white" id="fc-normal-water" min="0" oninput="calculateFormulaConcentration()" step="0.1" type="number" value="30"/>
+</div>
+</div>
+<!-- MODIFIED: Normal Caloric Density + Unit -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                        Normal Caloric Density
+                                    </label>
+<div class="grid grid-cols-2 gap-2">
+<input class="bg-white" id="fc-normal-density" min="0" oninput="calculateFormulaConcentration()" step="0.01" type="number" value="0.67"/>
+<select class="bg-white font-bold text-slate-800" id="fc-normal-density-unit" onchange="calculateFormulaConcentration()">
+<option value="kcal/ml">
+                                                kcal/mL
+                                            </option>
+<option value="kcal/oz">
+                                                kcal/oz
+                                            </option>
+</select>
+</div>
+</div>
+<div class="flex items-end">
+<div class="w-full bg-white border border-purple-100 rounded-lg p-3 text-xs qc-result-value">
+<strong>
+                                            Normal density
+                                        </strong>
+<div id="fc-normal-density-display">
+                                            0.67 kcal/mL
+                                        </div>
+</div>
+</div>
+</div>
+</div>
+<!-- REQUIRED DENSITY -->
+<div class="qc-panel">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- MODIFIED: Required Caloric Density + Unit -->
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                        Required Caloric Density
+                                    </label>
+<div class="grid grid-cols-2 gap-2">
+<input class="bg-white" id="fc-required-density" min="0" oninput="calculateFormulaConcentration()" step="0.01" type="number" value="0.8"/>
+<select class="bg-white font-bold text-slate-800" id="fc-required-density-unit" onchange="calculateFormulaConcentration()">
+<option value="kcal/ml">
+                                                kcal/mL
+                                            </option>
+<option value="kcal/oz">
+                                                kcal/oz
+                                            </option>
+</select>
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                        Adjustment Method
+                                    </label>
+<select class="bg-white font-bold text-slate-800" id="fc-method" onchange="calculateFormulaConcentration()">
+<option value="water">
+                                            Reduce Water
+                                        </option>
+<option value="powder">
+                                            Increase Powder
+                                        </option>
+</select>
+</div>
+</div>
+</div>
+<!-- VOLUME MULTIPLIER -->
+<div class="qc-panel">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                                        Volume Multiplier
+                                    </label>
+<input class="bg-white" id="fc-volume-multiplier" min="0.1" oninput="calculateFormulaConcentration()" step="0.1" type="number" value="1"/>
+</div>
+<div class="text-xs text-emerald-800 bg-emerald-100 border border-emerald-200 rounded-lg p-3">
+
+                                    Examples:
+                                    ×2, ×3, ×5
+
+                                    <br/>
+
+                                    Scales the preparation quantities while maintaining the same concentration/caloric density.
+
+                                </div>
+</div>
+</div>
+<!-- RESULT -->
+<div class="highlight-box qc-result text-center space-y-3">
+<h4 class="font-bold text-slate-800 text-lg">
+                                Formula Preparation Result
+                            </h4>
+<div class="text-lg font-bold qc-result-value leading-relaxed" id="fc-res-text">
+                                Enter parameters to calculate
+                            </div>
+<div class="text-sm font-bold text-gray-700 border-t border-purple-200 pt-2" id="fc-res-density">
+                                Required Caloric Density: —
+                            </div>
+<div class="text-xs font-semibold text-gray-600" id="fc-res-change">
+</div>
+</div>
+<!-- SAFETY NOTE -->
+<div class="qc-note p-4 text-sm">
+<strong class="block font-bold mb-1">
+                                Note:
+                            </strong>
+<p>
+                                For the exact preparation method, always follow the manufacturer’s instructions.
+                            </p>
+<p class="mt-1 font-semibold">
+                                Use caution regarding Renal Solute Load (RSL).
+                            </p>
+</div>
+</div>
+</div>
+<!-- =================================================
+             BREASTMILK FORTIFICATION CALCULATOR
+             Added as requested
+             ================================================= -->
+<div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+<button class="w-full p-4 font-bold flex justify-between items-center text-md transition-colors qc-tab qc-tab-4" onclick="toggleQuickAccordion('qc-bmf-content', 'qc-bmf-arrow')">
+<span class="flex flex-col items-start gap-0.5"><span>Breastmilk Fortification Calculator</span><small class="font-medium text-xs text-slate-500">Calculate fortifier quantity by target density</small></span>
+<svg class="w-5 h-5 transform transition-transform duration-200" fill="none" id="qc-bmf-arrow" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<div class="hidden p-4 md:p-6 space-y-6 bg-white" id="qc-bmf-content">
+<div class="qc-note text-sm leading-relaxed">
+<strong>Reference:</strong>
+                    1 leveled tsp formula + 90 mL breast milk → 24 kcal/oz,
+                    assuming breast milk = 20 kcal/oz.
+                </div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                            Required kcal/oz
+                        </label>
+<input class="bg-white" id="bmf-target-kcal" min="20" oninput="calculateBreastmilkFortification()" step="0.1" type="number" value="24"/>
+</div>
+<div>
+<label class="block text-xs font-bold mb-1 text-gray-700">
+                            Breast milk volume (mL)
+                        </label>
+<input class="bg-white" id="bmf-volume" min="0" oninput="calculateBreastmilkFortification()" step="1" type="number" value="90"/>
+</div>
+</div>
+<div class="highlight-box qc-result text-center space-y-3">
+<h4 class="font-bold text-slate-800 text-lg">
+                        Fortification Result
+                    </h4>
+<div class="text-2xl font-extrabold qc-result-value" id="bmf-res-tsp">
+                        1.00 leveled tsp
+                    </div>
+<div class="text-sm font-semibold text-gray-700 border-t border-pink-200 pt-3" id="bmf-res-instruction">
+                        Add 1.00 leveled teaspoonful of formula powder to 90 mL breast milk.
+                    </div>
+</div>
+<div class="qc-note p-4 text-sm">
+<strong class="block font-bold mb-1">
+                        Note:
+                    </strong>
+<p>
+                        For the exact preparation method, always follow the manufacturer’s instructions.
+                    </p>
+<p class="mt-1 font-semibold">
+                        Use caution regarding Renal Solute Load (RSL).
+                    </p>
+</div>
+</div>
+</div>
+</div>
+    </main>
+</div>
+
+<script>
+
+let ivLineCount = 1;
+
+function addIVLine() {
+
+        const container =
+            document.getElementById('iv-lines-container');
+
+        const index = ivLineCount++;
+
+        const row = document.createElement('div');
+
+        row.className =
+            'iv-line-row grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-white p-3 rounded-lg border border-blue-100 shadow-sm';
+
+        row.id = `iv-line-${index}`;
+
+        row.innerHTML = `
+
+            <div class="md:col-span-3">
+
+                <label class="block text-[10px] font-bold mb-1 text-gray-600">
+                    Glucose conc%
+                </label>
+
+                <input
+                    type="number"
+                    id="qc-iv-conc-${index}"
+                    value="10"
+                    step="0.1"
+                    class="bg-white"
+                    oninput="calculateQuickGIR()"
+                >
+
+            </div>
+
+            <div class="md:col-span-3">
+
+                <label class="block text-[10px] font-bold mb-1 text-gray-600">
+                    Glucose Rate Unit
+                </label>
+
+                <select
+                    id="qc-iv-unit-${index}"
+                    class="bg-white"
+                    onchange="calculateQuickGIR()"
+                >
+
+                    <option value="h">
+                        ml / h
+                    </option>
+
+                    <option value="d">
+                        ml / d
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="md:col-span-5">
+
+                <label class="block text-[10px] font-bold mb-1 text-gray-600">
+                    Glucose Rate Value
+                </label>
+
+                <input
+                    type="number"
+                    id="qc-iv-rate-${index}"
+                    value="0"
+                    step="0.1"
+                    class="bg-white"
+                    oninput="calculateQuickGIR()"
+                >
+
+            </div>
+
+            <div class="md:col-span-1 flex items-end justify-center">
+
+                <button
+                    onclick="removeIVLine(${index})"
+                    class="bg-red-50 hover:bg-red-600 text-red-600 hover:text-white font-bold px-2 py-1.5 rounded-lg text-xs transition-all border border-red-100"
+                >
+                    ✕
+                </button>
+
+            </div>
+
+        `;
+
+        container.appendChild(row);
+
+        calculateQuickGIR();
+    }
+
+function removeIVLine(index) {
+
+        const row =
+            document.getElementById(`iv-line-${index}`);
+
+        if (row) {
+
+            row.remove();
+
+            calculateQuickGIR();
+
+        }
+
+    }
+
+function calculateBreastmilkFortification() {
+
+        const targetKcal =
+            parseFloat(
+                document.getElementById('bmf-target-kcal').value
+            ) || 0;
+
+        const volume =
+            parseFloat(
+                document.getElementById('bmf-volume').value
+            ) || 0;
+
+        const requiredTsp =
+            (
+                volume / 90
+            ) *
+            (
+                (targetKcal - 20) / 4
+            );
+
+        document.getElementById('bmf-res-tsp').innerText =
+            `${requiredTsp.toFixed(2)} leveled tsp`;
+
+        document.getElementById('bmf-res-instruction').innerText =
+            `Add ${requiredTsp.toFixed(2)} leveled teaspoonful${Math.abs(requiredTsp - 1) < 0.0001 ? '' : 's'} of formula powder to ${volume.toFixed(0)} mL breast milk.`;
+
+    }
+
+function toggleQuickAccordion(contentId, arrowId) {
+
+        const content =
+            document.getElementById(contentId);
+
+        const arrow =
+            document.getElementById(arrowId);
+
+        if (content.classList.contains('hidden')) {
+
+            content.classList.remove('hidden');
+
+            arrow.classList.add('rotate-180');
+
+        } else {
+
+            content.classList.add('hidden');
+
+            arrow.classList.remove('rotate-180');
+
+        }
+
+    }
+
+function toggleDexMode() {
+
+        const mode =
+            document.getElementById('dex-mode').value;
+
+        const concContainer =
+            document.getElementById('dex-input-conc-container');
+
+        const weightContainer =
+            document.getElementById('dex-input-weight-container');
+
+        const girContainer =
+            document.getElementById('dex-input-gir-container');
+
+        if (mode === 'conc') {
+
+            concContainer.classList.remove('hidden');
+
+            weightContainer.classList.add('hidden');
+
+            girContainer.classList.add('hidden');
+
+        } else {
+
+            concContainer.classList.add('hidden');
+
+            weightContainer.classList.remove('hidden');
+
+            girContainer.classList.remove('hidden');
+
+        }
+
+    }
+
+function convertDensityToKcalPerMl(value, unit) {
+
+        if (!isFinite(value) || value <= 0) {
+            return 0;
+        }
+
+        if (unit === 'kcal/oz') {
+
+            /*
+             * 1 US fl oz = 29.5735 mL
+             *
+             * kcal/mL = kcal/oz ÷ 29.5735
+             */
+
+            return value / 29.5735;
+
+        }
+
+        return value;
+
+    }
+
+function convertKcalPerMlToUnit(value, unit) {
+
+        if (!isFinite(value) || value <= 0) {
+            return 0;
+        }
+
+        if (unit === 'kcal/oz') {
+
+            /*
+             * kcal/oz = kcal/mL × 29.5735
+             */
+
+            return value * 29.5735;
+
+        }
+
+        return value;
+
+    }
+
+function calculateFormulaConcentration() {
+
+        const normalScoops =
+            parseFloat(
+                document.getElementById('fc-normal-scoops').value
+            ) || 0;
+
+        const normalWater =
+            parseFloat(
+                document.getElementById('fc-normal-water').value
+            ) || 0;
+
+        const normalDensityInput =
+            parseFloat(
+                document.getElementById('fc-normal-density').value
+            ) || 0;
+
+        const normalDensityUnit =
+            document.getElementById('fc-normal-density-unit').value;
+
+        const requiredDensityInput =
+            parseFloat(
+                document.getElementById('fc-required-density').value
+            ) || 0;
+
+        const requiredDensityUnit =
+            document.getElementById('fc-required-density-unit').value;
+
+        const method =
+            document.getElementById('fc-method').value;
+
+        const multiplier =
+            parseFloat(
+                document.getElementById('fc-volume-multiplier').value
+            ) || 1;
+
+        const resultEl =
+            document.getElementById('fc-res-text');
+
+        const densityEl =
+            document.getElementById('fc-res-density');
+
+        const changeEl =
+            document.getElementById('fc-res-change');
+
+        const normalDisplayEl =
+            document.getElementById('fc-normal-density-display');
+
+
+        /*
+         * Basic validation
+         */
+
+        if (
+            normalScoops <= 0 ||
+            normalWater <= 0 ||
+            normalDensityInput <= 0 ||
+            requiredDensityInput <= 0 ||
+            multiplier <= 0
+        ) {
+
+            resultEl.innerText =
+                "Enter valid parameters to calculate.";
+
+            densityEl.innerText =
+                "Required Caloric Density: —";
+
+            changeEl.innerText = "";
+
+            if (normalDisplayEl) {
+                normalDisplayEl.innerText = "—";
+            }
+
+            return;
+
+        }
+
+
+        /*
+         * Convert both values to kcal/mL
+         * before performing comparison and calculation.
+         */
+
+        const normalDensity =
+            convertDensityToKcalPerMl(
+                normalDensityInput,
+                normalDensityUnit
+            );
+
+        const requiredDensity =
+            convertDensityToKcalPerMl(
+                requiredDensityInput,
+                requiredDensityUnit
+            );
+
+
+        /*
+         * Display normalized normal density.
+         */
+
+        if (normalDisplayEl) {
+
+            normalDisplayEl.innerText =
+                `${normalDensity.toFixed(3)} kcal/mL`;
+
+        }
+
+
+        /*
+         * The original calculator is intended
+         * for concentration increase.
+         */
+
+        if (requiredDensity <= normalDensity) {
+
+            resultEl.innerText =
+                "Required Caloric Density should be higher than Normal Caloric Density for this adjustment.";
+
+            densityEl.innerText =
+                `Required Caloric Density: ${requiredDensityInput.toFixed(2)} ${requiredDensityUnit}`;
+
+            changeEl.innerText = "";
+
+            return;
+
+        }
+
+
+        /*
+         * Original hidden calculation:
+         *
+         * % change = (Required − Normal) ÷ Normal × 100
+         *
+         * The calculation is performed using
+         * the common kcal/mL unit.
+         */
+
+        const percentChange =
+            (
+                (requiredDensity - normalDensity)
+                / normalDensity
+            ) * 100;
+
+
+        /*
+         * Original preparation values
+         */
+
+        let finalScoops =
+            normalScoops;
+
+        let finalWater =
+            normalWater;
+
+
+        /*
+         * Reduce Water:
+         * decrease water by the same percentage
+         */
+
+        if (method === 'water') {
+
+            finalWater =
+                normalWater *
+                (1 - percentChange / 100);
+
+            finalScoops =
+                normalScoops;
+
+        }
+
+
+        /*
+         * Increase Powder:
+         * increase scoops by the same percentage
+         */
+
+        else {
+
+            finalScoops =
+                normalScoops *
+                (1 + percentChange / 100);
+
+            finalWater =
+                normalWater;
+
+        }
+
+
+        if (finalWater <= 0) {
+
+            resultEl.innerText =
+                "The calculated water volume is not valid. Please review the selected densities.";
+
+            densityEl.innerText =
+                `Required Caloric Density: ${requiredDensityInput.toFixed(2)} ${requiredDensityUnit}`;
+
+            changeEl.innerText = "";
+
+            return;
+
+        }
+
+
+        /*
+         * Volume Multiplier:
+         * multiply ALL preparation quantities
+         * while maintaining the same concentration.
+         */
+
+        const scaledScoops =
+            finalScoops * multiplier;
+
+        const scaledWater =
+            finalWater * multiplier;
+
+
+        /*
+         * Display result.
+         */
+
+        if (method === 'water') {
+
+            resultEl.innerHTML =
+
+                `Reduce Water:<br>` +
+
+                `<span class="text-purple-700">` +
+
+                `${scaledScoops.toFixed(2)} scoop(s) + ` +
+
+                `${scaledWater.toFixed(1)} mL water` +
+
+                `</span><br>` +
+
+                `= ${requiredDensityInput.toFixed(2)} ${requiredDensityUnit}`;
+
+        } else {
+
+            resultEl.innerHTML =
+
+                `Increase Powder:<br>` +
+
+                `<span class="text-purple-700">` +
+
+                `${scaledScoops.toFixed(2)} scoop(s) + ` +
+
+                `${scaledWater.toFixed(1)} mL water` +
+
+                `</span><br>` +
+
+                `= ${requiredDensityInput.toFixed(2)} ${requiredDensityUnit}`;
+
+        }
+
+
+        densityEl.innerText =
+
+            `Required Caloric Density: ` +
+
+            `${requiredDensityInput.toFixed(2)} ${requiredDensityUnit} ` +
+
+            `| Volume Multiplier: ×${multiplier}`;
+
+
+        changeEl.innerText =
+
+            `Concentration change: ${percentChange.toFixed(1)}%`;
+
+    }
+
+function calculateQuickGIR() {
+
+        const w =
+            parseFloat(
+                document.getElementById('qc-weight').value
+            ) || 0;
+
+
+        let totalIvGIR = 0;
+
+
+        const rows =
+            document.querySelectorAll('.iv-line-row');
+
+
+        rows.forEach(row => {
+
+            const concInput =
+                row.querySelector(
+                    'input[id*="qc-iv-conc"]'
+                );
+
+            const unitSelect =
+                row.querySelector(
+                    'select[id*="qc-iv-unit"]'
+                );
+
+            const rateInput =
+                row.querySelector(
+                    'input[id*="qc-iv-rate"]'
+                );
+
+
+            if (
+                concInput &&
+                unitSelect &&
+                rateInput
+            ) {
+
+                const conc =
+                    parseFloat(concInput.value) || 0;
+
+                const unit =
+                    unitSelect.value;
+
+                const rate =
+                    parseFloat(rateInput.value) || 0;
+
+
+                if (w > 0) {
+
+                    if (unit === 'h') {
+
+                        totalIvGIR +=
+                            (rate * conc) /
+                            (w * 6);
+
+                    }
+
+                    else {
+
+                        totalIvGIR +=
+                            (rate * conc) /
+                            (w * 144);
+
+                    }
+
+                }
+
+            }
+
+        });
+
+
+        const milkType =
+            document.getElementById('qc-milk-type').value;
+
+
+        const entVol =
+            parseFloat(
+                document.getElementById('qc-ent-vol').value
+            ) || 0;
+
+
+        const entFreq =
+            parseFloat(
+                document.getElementById('qc-ent-freq').value
+            ) || 1;
+
+
+        const addedCarb =
+            parseFloat(
+                document.getElementById('qc-ent-carb').value
+            ) || 0;
+
+
+        let baseCarb =
+            7.1;
+
+
+        if (milkType === 'preterm') {
+
+            baseCarb =
+                8.5;
+
+        }
+
+        if (milkType === 'custom') {
+
+            baseCarb =
+                parseFloat(
+                    document.getElementById('qc-custom-base-carb').value
+                ) || 0;
+        }
+
+        document
+            .getElementById('qc-custom-carb-box')
+            .classList.toggle('hidden', milkType !== 'custom');
+
+
+        let entGIR =
+            0;
+
+
+        if (
+            w > 0 &&
+            entFreq > 0
+        ) {
+
+            entGIR =
+                (
+                    (
+                        entVol *
+                        24 /
+                        entFreq
+                    ) *
+                    (baseCarb * 0.01) +
+                    addedCarb
+                ) /
+                (w * 1.44);
+
+        }
+
+
+        const totalGIR =
+            totalIvGIR +
+            entGIR;
+
+
+        document.getElementById('qc-res-iv-gir').innerText =
+            totalIvGIR.toFixed(2);
+
+        document.getElementById('qc-res-ent-gir').innerText =
+            entGIR.toFixed(2);
+
+        document.getElementById('qc-res-total-gir').innerHTML =
+            `${totalGIR.toFixed(2)}
+             <span class="text-sm font-normal">
+                mg/kg/min
+             </span>`;
+
+    }
+
+function calculateDextrosePrep() {
+
+        const mode =
+            document.getElementById('dex-mode').value;
+
+
+        const vt =
+            parseFloat(
+                document.getElementById('dex-volume').value
+            ) || 0;
+
+
+        const c1 =
+            parseFloat(
+                document.getElementById('dex-c1').value
+            ) || 0;
+
+
+        const c2 =
+            parseFloat(
+                document.getElementById('dex-c2').value
+            ) || 0;
+
+
+        let dPct =
+            0;
+
+
+        if (mode === 'conc') {
+
+            dPct =
+                parseFloat(
+                    document.getElementById('dex-req-conc').value
+                ) || 0;
+
+        }
+
+        else {
+
+            const weight =
+                parseFloat(
+                    document.getElementById('dex-weight').value
+                ) || 0;
+
+
+            const targetGir =
+                parseFloat(
+                    document.getElementById('dex-target-gir').value
+                ) || 0;
+
+
+            if (vt > 0) {
+
+                dPct =
+                    (
+                        targetGir *
+                        weight *
+                        1.44
+                    ) /
+                    vt *
+                    100;
+
+            }
+
+        }
+
+
+        if (
+            c1 === c2 ||
+            c1 <= c2
+        ) {
+
+            document.getElementById('dex-res-text').innerText =
+                "C₁ must be greater than C₂";
+
+            return;
+
+        }
+
+
+        const v1 =
+            vt *
+            (dPct - c2) /
+            (c1 - c2);
+
+
+        const v2 =
+            vt -
+            v1;
+
+
+        if (
+            v1 < 0 ||
+            v2 < 0
+        ) {
+
+            document.getElementById('dex-res-text').innerText =
+                "Target concentration out of bounds for given concentrations";
+
+            return;
+
+        }
+
+
+        const nameC1 =
+            `D${c1}%`;
+
+        const nameC2 =
+            `D${c2}%`;
+
+
+        document.getElementById('dex-res-text').innerText =
+            `Making ${vt} mL of glucose ${dPct.toFixed(1)}% → ${v1.toFixed(1)} mL ${nameC1} + ${v2.toFixed(1)} mL ${nameC2}`;
+
+    }
+
+window.addEventListener("DOMContentLoaded", () => {
+    calculateQuickGIR();
+    calculateDextrosePrep();
+    toggleDexMode();
+    calculateFormulaConcentration();
+    calculateBreastmilkFortification();
+});
+
+</script>
+</body>
+</html>
