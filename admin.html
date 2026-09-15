@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة الاشتراكات - Diet Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:'Cairo',sans-serif;background:#f6f8f9;color:#173c39}
+.header{background:#fff;border-bottom:1px solid #e5eceb;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:15px;position:sticky;top:0;z-index:20}.brand{display:flex;align-items:center;gap:11px}.logo{width:42px;height:42px;border-radius:13px;background:#178f84;color:#fff;display:flex;align-items:center;justify-content:center;font-size:21px}.brand-title{font-size:18px;font-weight:800}.brand-sub{font-size:11px;color:#78908d}.header-actions{display:flex;gap:8px;align-items:center}.btn{border:0;border-radius:10px;padding:9px 14px;font-family:inherit;font-weight:700;cursor:pointer;transition:.2s}.btn:hover{transform:translateY(-1px)}.btn-outline{background:#fff;color:#11786f;border:1px solid #cfe1df}.btn-primary{background:#11786f;color:#fff}.btn-danger{background:#fff0f0;color:#b42318}
+.container{max-width:1200px;margin:0 auto;padding:30px 18px 50px}.page-title{text-align:center;margin-bottom:22px}.page-title h1{margin:0 0 6px;font-size:28px;font-weight:800}.page-title p{margin:0;color:#718683;font-size:14px}
+.toolbar{background:#fff;border:1px solid #e1e9e8;border-radius:18px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;box-shadow:0 8px 25px rgba(20,60,56,.05)}.summary{display:flex;gap:8px;flex-wrap:wrap}.stat{background:#f6faf9;border:1px solid #e3efed;border-radius:11px;padding:7px 11px;font-size:12px}.stat strong{color:#11786f;margin-inline-start:4px}.refresh{white-space:nowrap}
+.table-card{background:#fff;border:1px solid #e1e9e8;border-radius:20px;box-shadow:0 8px 25px rgba(20,60,56,.05);overflow:hidden}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:920px}th,td{padding:13px 12px;border-bottom:1px solid #edf2f1;text-align:right;vertical-align:middle;font-size:13px}th{background:#f7faf9;color:#58706c;font-size:12px;font-weight:800;white-space:nowrap}tbody tr:hover{background:#fbfdfc}tbody tr:last-child td{border-bottom:0}.doctor{font-weight:800;color:#173c39}.meta{display:block;color:#849590;font-size:10px;margin-top:3px;direction:ltr;text-align:right}.plan{font-weight:700}.date{white-space:nowrap;color:#647a76;font-size:12px}.note{max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#667d78}.proof-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:#f6faf9;border:1px solid #cfe1df;color:#11786f;border-radius:9px;padding:7px 10px;font-family:inherit;font-weight:700;cursor:pointer}.proof-btn:disabled{opacity:.5;cursor:default}.status{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:5px 10px;font-size:11px;font-weight:800;white-space:nowrap}.status.pending{background:#fff7df;color:#9a6b00}.status.paid{background:#e9f7ef;color:#137a45}.status.canceled{background:#fff0f0;color:#b42318}.status-select{border:1px solid #d6e2e0;border-radius:9px;padding:7px 8px;font-family:inherit;font-size:12px;font-weight:700;color:#173c39;background:#fff;min-width:112px;outline:none}.status-select:focus{border-color:#178f84}.loading,.empty{padding:55px 20px;text-align:center;color:#758a87}.error{padding:30px 20px;text-align:center;color:#b42318;background:#fff5f5}.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(14,40,37,.58);z-index:100;align-items:center;justify-content:center;padding:18px}.modal{width:100%;max-width:650px;max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.22)}.modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.modal h2{margin:0;font-size:19px}.close-btn{width:36px;height:36px;border-radius:10px;border:1px solid #dbe6e4;background:#fff;color:#617773;cursor:pointer}.proof-image-wrap{background:#f6f8f9;border:1px solid #e1e9e8;border-radius:14px;padding:10px;text-align:center}.proof-image{display:block;max-width:100%;max-height:65vh;margin:auto;border-radius:10px}.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}.detail{background:#f7faf9;border-radius:10px;padding:9px 11px;font-size:12px}.detail span{display:block;color:#7a8d89;font-size:10px;margin-bottom:2px}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#173c39;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:200}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:600px){.header{padding:12px 13px}.brand-sub{display:none}.brand-title{font-size:16px}.logo{width:40px;height:40px}.container{padding:22px 10px 35px}.page-title h1{font-size:23px}.page-title p{font-size:12px}.toolbar{padding:11px;align-items:stretch;flex-direction:column}.refresh{width:100%}.refresh .btn{width:100%}.table-card{border-radius:16px}th,td{padding:11px 9px}.detail-grid{grid-template-columns:1fr}.modal{padding:16px;border-radius:17px}.modal-backdrop{padding:12px}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand">
+    <div class="logo"><i class="fa-solid fa-leaf"></i></div>
+    <div><div class="brand-title">Diet Planner</div><div class="brand-sub">إدارة الاشتراكات</div></div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" id="dashboardBtn"><i class="fa-solid fa-gauge-high"></i> لوحة التحكم</button>
+    <button class="btn btn-outline" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
+  </div>
+</header>
+
+<main class="container" id="adminContent" style="display:none">
+  <div class="page-title">
+    <h1>إدارة طلبات الاشتراك</h1>
+    <p>مراجعة طلبات الأطباء وإدارة حالة الاشتراك</p>
+  </div>
+
+  <div class="toolbar">
+    <div class="summary">
+      <div class="stat">كل الطلبات <strong id="totalCount">0</strong></div>
+      <div class="stat">قيد المراجعة <strong id="pendingCount">0</strong></div>
+      <div class="stat">مفعّلة <strong id="paidCount">0</strong></div>
+      <div class="stat">ملغاة <strong id="canceledCount">0</strong></div>
+    </div>
+    <div class="refresh"><button class="btn btn-outline" id="refreshBtn"><i class="fa-solid fa-rotate"></i> تحديث</button></div>
+  </div>
+
+  <section class="table-card">
+    <div id="tableState" class="loading">جاري تحميل طلبات الاشتراك...</div>
+    <div id="tableWrap" class="table-wrap" style="display:none">
+      <table>
+        <thead>
+          <tr>
+            <th>الطبيب</th>
+            <th>الخطة المطلوبة</th>
+            <th>تاريخ الطلب</th>
+            <th>البداية / الانتهاء</th>
+            <th>الحالة</th>
+            <th>إثبات الدفع</th>
+            <th>الإجراء</th>
+            <th>ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody id="subscriptionsBody"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div id="proofModal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>إثبات الدفع</h2>
+      <button class="close-btn" id="closeProofBtn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="proofDetails" class="detail-grid"></div>
+    <div id="proofContent" class="proof-image-wrap">جاري تحميل الصورة...</div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const SUPABASE_URL='https://zwxnmnfoknfbzvptnpmv.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_A6u5kWAdL60bYpz1wRyv6w_J2p896iY';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+
+const state={subscriptions:[],plans:new Map()};
+let currentUser=null;
+
+const $=id=>document.getElementById(id);
+function escapeHtml(value){return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
+function showToast(message){const t=$('toast');t.textContent=message;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function formatDate(value){if(!value)return '—';return new Date(value+'T00:00:00').toLocaleDateString('ar-EG',{year:'numeric',month:'2-digit',day:'2-digit'})}
+function formatDateTime(value){if(!value)return '—';return new Date(value).toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'})}
+function statusLabel(status){return status==='paid'?'مفعّلة':status==='canceled'?'ملغاة':'قيد المراجعة'}
+function statusIcon(status){return status==='paid'?'fa-circle-check':status==='canceled'?'fa-circle-xmark':'fa-clock'}
+
+async function requireAdmin(){
+  const {data,error}=await sb.auth.getUser();
+  if(error||!data.user){location.replace('index.html');return false}
+  currentUser=data.user;
+
+  const {data:profile,error:profileError}=await sb.from('profiles').select('role').eq('id',currentUser.id).maybeSingle();
+  if(profileError){console.error('admin profile check error:',profileError);location.replace('index.html');return false}
+  if(profile?.role!=='admin'){location.replace('index.html');return false}
+
+  $('adminContent').style.display='block';
+  return true;
+}
+
+async function loadData(){
+  setTableState('loading','جاري تحميل طلبات الاشتراك...');
+
+  const [plansResult,subsResult]=await Promise.all([
+    sb.from('subscription_plans').select('id,name'),
+    sb.from('subscriptions').select('id,user_id,start_date,expiry_date,status,notes,created_at,updated_at,full_name,plan_id,payment_proof_path').order('created_at',{ascending:false})
+  ]);
+
+  if(plansResult.error){console.error('plans load error:',plansResult.error);showTableError('تعذر تحميل خطط الاشتراك');return}
+  if(subsResult.error){console.error('subscriptions load error:',subsResult.error);showTableError('تعذر تحميل طلبات الاشتراك');return}
+
+  state.plans=new Map((plansResult.data||[]).map(plan=>[plan.id,plan.name]));
+  state.subscriptions=subsResult.data||[];
+  renderSummary();
+  renderTable();
+}
+
+function setTableState(type,message){
+  $('tableWrap').style.display='none';
+  const el=$('tableState');el.style.display='block';el.className=type==='error'?'error':type==='empty'?'empty':'loading';el.textContent=message;
+}
+function showTableError(message){setTableState('error',message)}
+
+function renderSummary(){
+  $('totalCount').textContent=state.subscriptions.length;
+  $('pendingCount').textContent=state.subscriptions.filter(s=>s.status==='pending').length;
+  $('paidCount').textContent=state.subscriptions.filter(s=>s.status==='paid').length;
+  $('canceledCount').textContent=state.subscriptions.filter(s=>s.status==='canceled').length;
+}
+
+function renderTable(){
+  const body=$('subscriptionsBody');
+  if(!state.subscriptions.length){setTableState('empty','لا توجد طلبات اشتراك حاليًا.');renderSummary();return}
+
+  body.innerHTML=state.subscriptions.map(subscription=>{
+    const planName=state.plans.get(subscription.plan_id)||'خطة غير معروفة';
+    const proof=subscription.payment_proof_path
+      ? `<button class="proof-btn" data-action="proof" data-id="${escapeHtml(subscription.id)}"><i class="fa-solid fa-image"></i> عرض الصورة</button>`
+      : '<span style="color:#9aa9a6;font-size:12px">لا توجد صورة</span>';
+
+    return `<tr>
+      <td><span class="doctor">${escapeHtml(subscription.full_name||'بدون اسم')}</span><span class="meta">ID: ${escapeHtml(subscription.user_id)}</span></td>
+      <td><span class="plan">${escapeHtml(planName)}</span></td>
+      <td class="date">${formatDateTime(subscription.created_at)}</td>
+      <td class="date">${formatDate(subscription.start_date)}<br>${formatDate(subscription.expiry_date)}</td>
+      <td><span class="status ${escapeHtml(subscription.status)}"><i class="fa-solid ${statusIcon(subscription.status)}"></i>${statusLabel(subscription.status)}</span></td>
+      <td>${proof}</td>
+      <td><select class="status-select" data-action="status" data-id="${escapeHtml(subscription.id)}" aria-label="تغيير حالة الاشتراك">
+        <option value="pending" ${subscription.status==='pending'?'selected':''}>pending</option>
+        <option value="paid" ${subscription.status==='paid'?'selected':''}>paid</option>
+        <option value="canceled" ${subscription.status==='canceled'?'selected':''}>canceled</option>
+      </select></td>
+      <td><span class="note" title="${escapeHtml(subscription.notes||'')}">${escapeHtml(subscription.notes||'—')}</span></td>
+    </tr>`;
+  }).join('');
+
+  $('tableState').style.display='none';
+  $('tableWrap').style.display='block';
+}
+
+async function changeStatus(id,newStatus,select){
+  const subscription=state.subscriptions.find(s=>s.id===id);
+  if(!subscription||subscription.status===newStatus)return;
+
+  const oldStatus=subscription.status;
+  select.disabled=true;
+
+  const {data,error}=await sb.from('subscriptions').update({status:newStatus}).eq('id',id);
+
+  if(error){
+    console.error('subscription status update error:',error);
+    select.value=oldStatus;
+    select.disabled=false;
+    showToast(error.message||'تعذر تحديث حالة الاشتراك');
+    return;
+  }
+
+  subscription.status=newStatus;
+  if(newStatus==='paid'){
+    // The database trigger is responsible for start_date/expiry_date.
+    await loadData();
+  }else{
+    subscription.start_date=null;
+    subscription.expiry_date=null;
+    renderSummary();
+    renderTable();
+  }
+  showToast('تم تحديث حالة الاشتراك بنجاح');
+}
+
+async function openProof(id){
+  const subscription=state.subscriptions.find(s=>s.id===id);
+  if(!subscription?.payment_proof_path)return;
+
+  $('proofDetails').innerHTML=`
+    <div class="detail"><span>الطبيب</span>${escapeHtml(subscription.full_name||'بدون اسم')}</div>
+    <div class="detail"><span>الخطة</span>${escapeHtml(state.plans.get(subscription.plan_id)||'خطة غير معروفة')}</div>
+  `;
+  $('proofContent').textContent='جاري تحميل الصورة...';
+  $('proofModal').style.display='flex';
+
+  const {data,error}=await sb.storage.from('subscription-proofs').createSignedUrl(subscription.payment_proof_path,300);
+  if(error||!data?.signedUrl){
+    console.error('proof signed URL error:',error);
+    $('proofContent').innerHTML='<div style="padding:25px;color:#b42318">تعذر عرض صورة إثبات الدفع. تأكد من صلاحيات Storage.</div>';
+    return;
+  }
+
+  $('proofContent').innerHTML=`<img class="proof-image" src="${escapeHtml(data.signedUrl)}" alt="إثبات الدفع">`;
+}
+
+function closeProof(){$('proofModal').style.display='none';$('proofContent').textContent='';$('proofDetails').innerHTML=''}
+
+$('subscriptionsBody').addEventListener('change',event=>{
+  const select=event.target.closest('[data-action="status"]');
+  if(!select)return;
+  changeStatus(select.dataset.id,select.value,select);
+});
+$('subscriptionsBody').addEventListener('click',event=>{
+  const button=event.target.closest('[data-action="proof"]');
+  if(button)openProof(button.dataset.id);
+});
+$('refreshBtn').addEventListener('click',loadData);
+$('dashboardBtn').addEventListener('click',()=>location.href='app.html');
+$('logoutBtn').addEventListener('click',async()=>{await sb.auth.signOut();location.replace('index.html')});
+$('closeProofBtn').addEventListener('click',closeProof);
+$('proofModal').addEventListener('click',event=>{if(event.target===event.currentTarget)closeProof()});
+
+document.addEventListener('DOMContentLoaded',async()=>{
+  if(await requireAdmin())await loadData();
+});
+</script>
+</body>
+</html>
