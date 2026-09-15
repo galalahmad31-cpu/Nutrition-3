@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>خطط الاشتراك - Diet Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:'Cairo',sans-serif;background:#f6f8f9;color:#173c39}
+.header{background:#fff;border-bottom:1px solid #e5eceb;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:15px;position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:11px}.logo{width:42px;height:42px;border-radius:13px;background:#178f84;color:#fff;display:flex;align-items:center;justify-content:center;font-size:21px}
+.brand-title{font-size:18px;font-weight:800}.brand-sub{font-size:11px;color:#78908d}.header-actions{display:flex;gap:8px;align-items:center}
+.btn{border:0;border-radius:10px;padding:9px 14px;font-family:inherit;font-weight:700;cursor:pointer;transition:.2s}.btn:hover{transform:translateY(-1px)}
+.btn-outline{background:#fff;color:#11786f;border:1px solid #cfe1df}.btn-primary{background:#11786f;color:#fff}.btn-danger{background:#fff0f0;color:#b42318}
+.container{max-width:1100px;margin:0 auto;padding:32px 18px 50px}.page-title{text-align:center;margin-bottom:28px}.page-title h1{margin:0 0 6px;font-size:28px;font-weight:800}.page-title p{margin:0;color:#718683;font-size:14px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}.empty{background:#fff;border:1px dashed #cbdad8;border-radius:18px;padding:45px 20px;text-align:center;color:#758a87;grid-column:1/-1}
+.card{background:#fff;border:1px solid #e1e9e8;border-radius:20px;padding:24px;box-shadow:0 8px 25px rgba(20,60,56,.05);display:flex;flex-direction:column;min-height:310px}
+.card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.card h3{margin:0;font-size:20px;font-weight:800}.badge{background:#e8f6f4;color:#11786f;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.price{margin:20px 0 4px;color:#11786f;font-size:30px;font-weight:800}.duration{color:#738783;font-size:13px}.method{margin-top:18px;padding:12px;background:#f6faf9;border-radius:12px;font-size:13px}.method strong{display:block;margin-bottom:4px}
+.description{color:#687d79;font-size:13px;line-height:1.8;margin:14px 0}.card-actions{margin-top:auto;display:flex;gap:8px}.card-actions .btn{flex:1}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(14,40,37,.48);z-index:100;align-items:center;justify-content:center;padding:18px}
+.modal{width:100%;max-width:480px;background:#fff;border-radius:20px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.18)}.modal h2{margin:0 0 20px;font-size:20px}
+.form-group{margin-bottom:14px}.form-group label{display:block;margin-bottom:6px;font-size:13px;font-weight:700}.form-group input,.form-group textarea{width:100%;border:1px solid #d6e2e0;border-radius:10px;padding:11px 12px;font-family:inherit;outline:none}.form-group input:focus,.form-group textarea:focus{border-color:#178f84}.form-group textarea{min-height:85px;resize:vertical}
+.modal-actions{display:flex;gap:9px;margin-top:20px}.modal-actions .btn{flex:1}.loading{text-align:center;color:#70837f;padding:50px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#173c39;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:200}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:600px){.header{padding:12px 14px}.brand-sub{display:none}.container{padding:25px 13px 40px}.page-title h1{font-size:24px}}
+</style>
+</head>
+<body>
+<header class="header">
+<div class="brand"><div class="logo"><i class="fa-solid fa-leaf"></i></div><div><div class="brand-title">Diet Planner</div><div class="brand-sub">Developed by Dr. Ahmed Galal</div></div></div>
+<div class="header-actions">
+<button id="dashboardBtn" class="btn btn-outline" style="display:none" onclick="goDashboard()"><i class="fa-solid fa-gauge-high"></i> الرئيسية</button>
+<button id="addPlanBtn" class="btn btn-primary" style="display:none" onclick="openPlanModal()"><i class="fa-solid fa-plus"></i> إضافة خطة</button>
+</div>
+</header>
+<main class="container">
+<div class="page-title"><h1>خطط الاشتراك</h1><p>اختر الخطة المناسبة لك واستمتع بمزايا Diet Planner</p></div>
+<div id="plans" class="plans"><div class="loading">جاري تحميل الخطط...</div></div>
+</main>
+
+<div id="planModal" class="modal-backdrop">
+<div class="modal">
+<h2 id="modalTitle">إضافة خطة اشتراك</h2>
+<div class="form-group"><label>اسم الخطة</label><input id="planName" type="text" placeholder="مثال: الخطة الشهرية"></div>
+<div class="form-group"><label>المدة بالأيام</label><input id="planDuration" type="number" min="1" placeholder="30"></div>
+<div class="form-group"><label>السعر</label><input id="planPrice" type="number" min="0" step="0.01" placeholder="100"></div>
+<div class="form-group"><label>طريقة التحويل</label><input id="planPaymentMethod" type="text" placeholder="مثال: InstaPay / تحويل بنكي"></div>
+<div class="form-group"><label>الوصف</label><textarea id="planDescription" placeholder="وصف مختصر للخطة"></textarea></div>
+<div class="modal-actions"><button class="btn btn-outline" onclick="closePlanModal()">إلغاء</button><button class="btn btn-primary" onclick="savePlan()">حفظ الخطة</button></div>
+</div>
+</div>
+
+<div id="subscribeModal" class="modal-backdrop">
+<div class="modal">
+<h2>الاشتراك في الخطة</h2>
+
+<div id="selectedPlanInfo" style="background:#f6faf9;border-radius:12px;padding:13px;margin-bottom:16px;font-size:13px;line-height:1.9"></div>
+
+<div class="form-group">
+<label>صورة التحويل</label>
+<input id="paymentProof" type="file" accept="image/jpeg,image/png,image/webp">
+<div style="font-size:11px;color:#7b8d89;margin-top:6px">يفضل أن تكون الصورة واضحة. الحد الأقصى 5 ميجابايت.</div>
+</div>
+
+<div class="form-group">
+<label>ملاحظات (اختياري)</label>
+<textarea id="paymentNote" placeholder="أي ملاحظات خاصة بالتحويل"></textarea>
+</div>
+
+<div class="modal-actions">
+<button class="btn btn-outline" onclick="closeSubscribeModal()">إلغاء</button>
+<button id="submitSubscriptionBtn" class="btn btn-primary" onclick="submitSubscription()">إرسال طلب الاشتراك</button>
+</div>
+</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const SUPABASE_URL="https://zwxnmnfoknfbzvptnpmv.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_A6u5kWAdL60bYpz1wRyv6w_J2p896iY";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let currentUser=null,isAdmin=false,editingPlanId=null,selectedPlanId=null;
+const state={plans:[]};
+
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function goDashboard(){location.href='app.html'}
+function escapeHtml(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
+
+function openPlanModal(plan=null){
+ editingPlanId=plan?plan.id:null;
+ document.getElementById('modalTitle').textContent=plan?'تعديل خطة الاشتراك':'إضافة خطة اشتراك';
+ document.getElementById('planName').value=plan?.name||'';
+ document.getElementById('planDuration').value=plan?.duration_days||'';
+ document.getElementById('planPrice').value=plan?.price??'';
+ document.getElementById('planPaymentMethod').value=plan?.payment_method||'';
+ document.getElementById('planDescription').value=plan?.description||'';
+ document.getElementById('planModal').style.display='flex';
+}
+function closePlanModal(){document.getElementById('planModal').style.display='none';editingPlanId=null}
+
+async function checkUser(){
+ const {data:{user},error}=await sb.auth.getUser();
+ if(error||!user){location.replace('index.html');return false}
+
+ currentUser=user;
+
+ const {data:profile,error:pe}=await sb
+   .from('profiles')
+   .select('role')
+   .eq('id',user.id)
+   .maybeSingle();
+
+ if(pe||!profile){
+   console.error(pe);
+   location.replace('index.html');
+   return false;
+ }
+
+ isAdmin=profile.role==='admin';
+
+ if(isAdmin){
+   document.getElementById('addPlanBtn').style.display='inline-block';
+   document.getElementById('dashboardBtn').style.display='inline-block';
+ }else{
+   document.getElementById('dashboardBtn').style.display='none';
+ }
+
+ return true;
+}
+
+async function loadPlans(){
+ const c=document.getElementById('plans');
+ const {data,error}=await sb.from('subscription_plans').select('*').eq('is_active',true).order('price',{ascending:true});
+ if(error){console.error('subscription_plans load error:',error);c.innerHTML='<div class="empty"><i class="fa-solid fa-circle-exclamation"></i><div style="margin-top:8px">تعذر تحميل خطط الاشتراك</div></div>';return}
+ if(!data?.length){c.innerHTML='<div class="empty">لا توجد خطط اشتراك متاحة حاليًا.</div>';return}
+ c.innerHTML=data.map(p=>`
+ <div class="card">
+   <div class="card-top"><h3>${escapeHtml(p.name)}</h3><span class="badge">اشتراك</span></div>
+   <div class="price">${Number(p.price).toLocaleString('ar-EG')} <span style="font-size:13px;font-weight:700">جنيه</span></div>
+   <div class="duration"><i class="fa-regular fa-calendar"></i> ${Number(p.duration_days)} يوم</div>
+   <div class="method"><strong>طريقة التحويل</strong>${escapeHtml(p.payment_method)}</div>
+   ${p.description?`<div class="description">${escapeHtml(p.description)}</div>`:''}
+   <div class="card-actions">
+    ${isAdmin?`<button class="btn btn-outline" onclick="editPlan('${p.id}')"><i class="fa-solid fa-pen"></i> تعديل</button><button class="btn btn-danger" onclick="deletePlan('${p.id}')"><i class="fa-solid fa-trash"></i></button>`:''}
+    <button class="btn btn-primary" onclick="subscribeToPlan('${p.id}')">اشتراك</button>
+   </div>
+ </div>`).join('');
+ state.plans=data;
+}
+function editPlan(id){const p=state.plans.find(x=>x.id===id);if(p)openPlanModal(p)}
+
+async function savePlan(){
+ if(!isAdmin){showToast('غير مسموح');return}
+ const name=document.getElementById('planName').value.trim(),duration=Number(document.getElementById('planDuration').value),price=Number(document.getElementById('planPrice').value),paymentMethod=document.getElementById('planPaymentMethod').value.trim(),description=document.getElementById('planDescription').value.trim();
+ if(!name||!duration||duration<1||price<0||!paymentMethod){showToast('من فضلك أكمل بيانات الخطة');return}
+ const payload={name,duration_days:duration,price,payment_method:paymentMethod,description,is_active:true};
+ const isEditing=Boolean(editingPlanId);
+ const result=isEditing
+  ?await sb.from('subscription_plans').update(payload).eq('id',editingPlanId)
+  :await sb.from('subscription_plans').insert(payload);
+ if(result.error){console.error(result.error);showToast('حدث خطأ أثناء حفظ الخطة');return}
+ closePlanModal();
+ showToast(isEditing?'تم تعديل الخطة':'تمت إضافة الخطة');
+ await loadPlans();
+}
+async function deletePlan(id){
+ if(!isAdmin)return;
+ if(!confirm('هل أنت متأكد من حذف هذه الخطة؟'))return;
+ const {error}=await sb.from('subscription_plans').update({is_active:false}).eq('id',id);
+ if(error){console.error(error);showToast('تعذر حذف الخطة');return}
+ showToast('تم حذف الخطة');await loadPlans();
+}
+async function subscribeToPlan(id){
+    if(!currentUser){
+        location.replace('index.html');
+        return;
+    }
+
+    const plan = state.plans.find(x => x.id === id);
+    if(!plan) return;
+
+    selectedPlanId = id;
+
+    // Check for an existing pending request for this plan
+    const { data: existing, error } = await sb
+        .from('subscriptions')
+        .select('id,status,expiry_date')
+        .eq('user_id', currentUser.id)
+        .eq('plan_id', id)
+        .in('status', ['pending','paid'])
+        .limit(1);
+
+    if(error){
+        console.error(error);
+        showToast('تعذر التحقق من حالة الاشتراك');
+        return;
+    }
+
+    if(existing && existing.length){
+        if(existing[0].status === 'paid'){
+            showToast('لديك اشتراك مفعل بالفعل لهذه الخطة');
+        }else{
+            showToast('لديك طلب اشتراك قيد المراجعة بالفعل');
+        }
+        return;
+    }
+
+    document.getElementById('selectedPlanInfo').innerHTML = `
+        <strong>${escapeHtml(plan.name)}</strong><br>
+        المدة: ${Number(plan.duration_days)} يوم<br>
+        السعر: ${Number(plan.price).toLocaleString('ar-EG')} جنيه<br>
+        طريقة التحويل: ${escapeHtml(plan.payment_method)}
+    `;
+
+    document.getElementById('paymentProof').value = '';
+    document.getElementById('paymentNote').value = '';
+    document.getElementById('submitSubscriptionBtn').disabled = false;
+    document.getElementById('subscribeModal').style.display = 'flex';
+}
+
+function closeSubscribeModal(){
+    document.getElementById('subscribeModal').style.display = 'none';
+    selectedPlanId = null;
+}
+
+async function submitSubscription(){
+    if(!currentUser || !selectedPlanId) return;
+
+    const file = document.getElementById('paymentProof').files[0];
+    const note = document.getElementById('paymentNote').value.trim();
+    const button = document.getElementById('submitSubscriptionBtn');
+
+    if(!file){
+        showToast('من فضلك أرفق صورة التحويل');
+        return;
+    }
+
+    if(!file.type.startsWith('image/')){
+        showToast('يرجى اختيار صورة صحيحة');
+        return;
+    }
+
+    if(file.size > 5 * 1024 * 1024){
+        showToast('حجم الصورة يجب ألا يتجاوز 5 ميجابايت');
+        return;
+    }
+
+    const plan = state.plans.find(x => x.id === selectedPlanId);
+    if(!plan) return;
+
+    button.disabled = true;
+    button.textContent = 'جاري إرسال الطلب...';
+
+    const extension = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const filePath = `${currentUser.id}/transfer-${Date.now()}.${extension}`;
+
+    // Upload proof first
+    const { error: uploadError } = await sb.storage
+        .from('subscription-proofs')
+        .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+        });
+
+    if(uploadError){
+        console.error(uploadError);
+        button.disabled = false;
+        button.textContent = 'إرسال طلب الاشتراك';
+        showToast('تعذر رفع صورة التحويل');
+        return;
+    }
+
+    // Create a pending subscription request
+    const { error: insertError } = await sb
+        .from('subscriptions')
+        .insert({
+            user_id: currentUser.id,
+            plan_id: plan.id,
+            status: 'pending',
+            payment_proof_path: filePath,
+            notes: note || null
+        });
+
+    if(insertError){
+        console.error(insertError);
+
+        // Clean up the uploaded proof if the database insert fails
+        await sb.storage
+            .from('subscription-proofs')
+            .remove([filePath]);
+
+        button.disabled = false;
+        button.textContent = 'إرسال طلب الاشتراك';
+        showToast('تعذر إنشاء طلب الاشتراك');
+        return;
+    }
+
+    closeSubscribeModal();
+    button.disabled = false;
+    button.textContent = 'إرسال طلب الاشتراك';
+    showToast('تم إرسال طلب الاشتراك بنجاح، وسيتم مراجعته وتفعيله يدويًا');
+}
+document.getElementById('planModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closePlanModal()});
+document.getElementById('subscribeModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeSubscribeModal()});
+document.addEventListener('DOMContentLoaded',async()=>{if(await checkUser())await loadPlans()});
+</script>
+</body>
+</html>
