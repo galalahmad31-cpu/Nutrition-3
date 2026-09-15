@@ -266,13 +266,13 @@ async function submitSubscription(){
             upsert: false
         });
 
-    if(uploadError){
-        console.error(uploadError);
-        button.disabled = false;
-        button.textContent = 'إرسال طلب الاشتراك';
-        showToast('تعذر رفع صورة التحويل');
-        return;
-    }
+if(uploadError){
+    console.error('UPLOAD ERROR:', uploadError);
+    button.disabled = false;
+    button.textContent = 'إرسال طلب الاشتراك';
+    showToast(uploadError.message || 'تعذر رفع صورة التحويل');
+    return;
+}
 
     // Create a pending subscription request
     const { error: insertError } = await sb
