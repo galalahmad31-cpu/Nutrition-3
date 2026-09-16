@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الزيارة | Diet Planner | د. أحمد جلال</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body{font-family:'Cairo',sans-serif;background:#f8fafc;color:#0f172a}
+    .bg-brand-500{background-color:#178f84}
+    .module-card{transition:.18s ease}
+    .module-card:hover{transform:translateY(-2px)}
+  </style>
+</head>
+
+<body class="min-h-screen">
+
+<header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-lg shadow-brand-500/20">
+        <i class="fa-solid fa-leaf text-2xl"></i>
+      </div>
+      <div class="min-w-0">
+        <h1 class="font-black text-lg leading-tight">Diet Planner</h1>
+        <p class="text-xs font-bold text-emerald-400">د. أحمد جلال</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="app.html"
+         class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition">
+        لوحة التحكم
+      </a>
+      <button type="button" onclick="backToPatient()"
+         class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition">
+        ← ملف المريض
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+
+  <section id="loadingState" class="bg-white border border-slate-200 rounded-2xl shadow-sm p-8 text-center text-sm text-slate-400">
+    جاري تحميل بيانات الزيارة...
+  </section>
+
+  <section id="errorState" class="hidden bg-white border border-red-200 rounded-2xl shadow-sm p-8 text-center">
+    <div class="text-3xl mb-3">⚠️</div>
+    <p id="errorText" class="text-sm font-bold text-red-600"></p>
+    <button type="button" onclick="backToPatient()"
+      class="mt-4 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold">
+      العودة لملف المريض
+    </button>
+  </section>
+
+  <div id="visitContent" class="hidden">
+
+    <!-- VISIT HEADER -->
+    <section class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-14 h-14 shrink-0 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl">
+            📋
+          </div>
+
+          <div class="min-w-0">
+            <h2 id="patientName" class="font-black text-slate-800 text-xl">—</h2>
+            <p class="text-xs text-slate-400 mt-1">
+              زيارة رقم <span id="visitNumber" class="font-extrabold text-slate-600">—</span>
+              <span class="mx-1">•</span>
+              <span id="visitDate">—</span>
+            </p>
+          </div>
+        </div>
+
+        <button type="button" onclick="backToPatient()"
+          class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold px-4 py-2.5 rounded-xl">
+          العودة لملف المريض
+        </button>
+      </div>
+    </section>
+
+    <!-- VISIT MODULES -->
+    <section class="mt-6">
+      <div class="mb-4">
+        <h3 class="font-black text-slate-800 text-lg">محتوى الزيارة</h3>
+        <p class="text-xs text-slate-400 mt-1">اختر الأداة التي تريد استخدامها داخل هذه الزيارة.</p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-1.5 sm:gap-3 items-stretch">
+
+        <button id="assessmentCard" type="button" onclick="toggleModule('assessment')"
+           class="module-card w-full text-right block bg-white border border-slate-200 rounded-2xl p-2 sm:p-4 shadow-sm hover:border-amber-300 hover:shadow-md">
+          <div class="flex flex-col sm:flex-row items-center sm:items-center gap-1.5 sm:gap-3">
+            <div class="w-9 h-9 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-base sm:text-xl">🩺</div>
+            <div class="min-w-0 text-center sm:text-right">
+              <h4 class="font-black text-slate-800 text-[10px] sm:text-base leading-snug">التقييم الغذائي</h4>
+              <p class="hidden sm:block text-[10px] text-slate-400 mt-1 leading-snug">تقييم الحالة الغذائية والقياسات والتحاليل.</p>
+            </div>
+          </div>
+        </button>
+
+        <button id="calculatorCard" type="button" onclick="toggleModule('calculator')"
+           class="module-card w-full text-right block bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-5 shadow-sm hover:border-sky-300 hover:shadow-md">
+          <div class="flex items-center gap-2 sm:gap-4">
+            <div class="w-9 h-9 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-base sm:text-xl">🧮</div>
+            <div class="min-w-0">
+              <h4 class="font-black text-slate-800 text-[11px] sm:text-base leading-snug">حاسبة السعرات والماكروز</h4>
+              <p class="text-[9px] sm:text-[11px] text-slate-400 mt-1 leading-snug">حساب الاحتياجات الغذائية وأهداف الماكروز للزيارة.</p>
+            </div>
+          </div>
+        </button>
+
+        <button id="dietPlanCard" type="button" onclick="toggleModule('dietPlan')"
+           class="module-card w-full text-right block bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-5 shadow-sm hover:border-emerald-300 hover:shadow-md">
+          <div class="flex items-center gap-2 sm:gap-4">
+            <div class="w-9 h-9 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-base sm:text-xl">🍽️</div>
+            <div class="min-w-0">
+              <h4 class="font-black text-slate-800 text-[11px] sm:text-base leading-snug">الخطة الغذائية</h4>
+              <p class="text-[9px] sm:text-[11px] text-slate-400 mt-1 leading-snug">إنشاء ومتابعة الخطة الغذائية الخاصة بهذه الزيارة.</p>
+            </div>
+          </div>
+        </button>
+
+      </div>
+
+      <div id="moduleContent" class="mt-4 w-full">
+
+        <div id="assessmentContent" class="hidden w-full bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6">
+          <div class="flex items-center justify-between gap-3 mb-5">
+            <div>
+              <h3 class="font-black text-slate-800 text-lg">التقييم الغذائي</h3>
+              <p class="text-xs text-slate-400 mt-1">سجل التقييم الغذائي الخاص بهذه الزيارة.</p>
+            </div>
+            <span id="assessmentStatus" class="text-[10px] font-bold text-slate-400"></span>
+          </div>
+
+          <div class="space-y-4">
+            <section class="border border-slate-200 rounded-2xl p-4">
+              <h4 class="font-black text-slate-800 mb-4">القياسات البدنية</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div><label class="block text-xs font-bold text-slate-600 mb-1.5">الطول (سم)</label><input id="heightCm" type="number" step="0.1" min="0" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-amber-400"></div>
+                <div><label class="block text-xs font-bold text-slate-600 mb-1.5">الوزن (كجم)</label><input id="weightKg" type="number" step="0.1" min="0" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-amber-400"></div>
+                <div><label class="block text-xs font-bold text-slate-600 mb-1.5">BMI</label><div class="flex gap-2"><input id="bmi" type="text" readonly class="w-1/2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm"><input id="bmiCategory" type="text" readonly class="w-1/2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs"></div></div>
+              </div>
+            </section>
+
+            <section class="border border-slate-200 rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-4"><h4 class="font-black text-slate-800">التحاليل الطبية</h4><button type="button" onclick="addLab()" class="bg-slate-900 text-white text-[11px] font-bold px-3 py-2 rounded-xl">+ إضافة تحليل</button></div>
+              <div id="labsList" class="space-y-2"></div>
+              <p id="noLabs" class="text-xs text-slate-400 text-center py-3">لم تتم إضافة تحاليل بعد.</p>
+            </section>
+
+            <section class="border border-slate-200 rounded-2xl p-4">
+              <h4 class="font-black text-slate-800 mb-4">التقييم الإكلينيكي</h4>
+              <div class="grid grid-cols-1 gap-3">
+                <textarea id="medicalHistory" rows="3" placeholder="التاريخ المرضي" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></textarea>
+                <textarea id="currentDiagnosis" rows="3" placeholder="التشخيص الحالي" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></textarea>
+                <textarea id="currentMedications" rows="3" placeholder="الأدوية الحالية" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></textarea>
+                <div class="border-t border-slate-100 pt-4"><h5 class="font-extrabold text-slate-700 text-sm mb-3">NFPE</h5><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div><label class="block text-xs font-bold text-slate-600 mb-1.5">المظهر العام</label><select id="nfpeGeneral" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"><option value="">اختر</option><option>جيد التغذية</option><option>سوء تغذية خفيفة</option><option>سوء تغذية متوسطة</option><option>سوء تغذية شديدة</option></select></div>
+                  <textarea id="nfpeFat" rows="2" placeholder="الدهون" class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></textarea>
+                  <textarea id="nfpeMuscle" rows="2" placeholder="العضلات" class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></textarea>
+                  <textarea id="nfpeFluid" rows="2" placeholder="الماء / السوائل" class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></textarea>
+                  <textarea id="nfpeMicronutrients" rows="2" placeholder="علامات نقص المغذيات الدقيقة" class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm sm:col-span-2"></textarea>
+                </div></div>
+              </div>
+            </section>
+
+            <section class="border border-slate-200 rounded-2xl p-4">
+              <h4 class="font-black text-slate-800 mb-4">التاريخ الغذائي</h4>
+              <textarea id="dietaryHistory" rows="5" placeholder="سجل التاريخ الغذائي كما ذكره المريض..." class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm"></textarea>
+            </section>
+
+            <div class="flex justify-end"><button id="saveAssessmentBtn" type="button" onclick="saveAssessment()" class="bg-brand-500 hover:opacity-90 text-white font-extrabold text-sm px-6 py-3 rounded-xl">حفظ التقييم الغذائي</button></div>
+          </div>
+        </div>
+
+        <div id="calculatorContent" class="hidden w-full bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <iframe id="calculatorFrame" class="w-full border-0 block" style="height:900px;" loading="lazy"></iframe>
+        </div>
+
+        <div id="dietPlanContent" class="hidden w-full bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <iframe id="dietPlanFrame" class="w-full border-0 block" style="height:900px;" loading="lazy"></iframe>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+
+<!-- DELETE LAB CONFIRMATION -->
+<div id="deleteLabModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm items-center justify-center p-4">
+  <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-5 text-center">
+    <div class="mx-auto w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-xl"><i class="fa-solid fa-trash"></i></div>
+    <h3 class="font-black text-slate-800 mt-4">تأكيد حذف التحليل</h3>
+    <p id="deleteLabText" class="text-xs text-slate-500 mt-2 leading-6"></p>
+    <div class="flex gap-2 mt-5">
+      <button type="button" onclick="closeDeleteLabModal()" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-extrabold">إلغاء</button>
+      <button type="button" onclick="confirmDeleteLab()" class="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white text-xs font-extrabold">نعم، حذف</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://zwxnmnfoknfbzvptnpmv.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_A6u5kWAdL60bYpz1wRyv6w_J2p896iY";
+
+  const db = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+  const visitId = new URLSearchParams(window.location.search).get('id');
+
+  let visit = null;
+
+  function showError(message) {
+    document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('visitContent').classList.add('hidden');
+    document.getElementById('errorState').classList.remove('hidden');
+    document.getElementById('errorText').textContent = message;
+  }
+
+  async function getCurrentUser() {
+    const { data, error } = await db.auth.getUser();
+    if (error) return null;
+    return data?.user || null;
+  }
+
+  function formatVisitDate(date) {
+    if (!date) return 'بدون تاريخ';
+    const d = new Date(date + 'T00:00:00');
+    return new Intl.DateTimeFormat('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(d);
+  }
+
+  async function loadVisit() {
+    if (!visitId) {
+      showError('لم يتم تحديد الزيارة.');
+      return;
+    }
+
+    const user = await getCurrentUser();
+
+    if (!user) {
+      showError('يجب تسجيل الدخول أولاً.');
+      return;
+    }
+
+    const { data, error } = await db
+      .from('patient_visits')
+      .select(`
+        id,
+        patient_id,
+        visit_number,
+        visit_date,
+        patients (
+          id,
+          name
+        )
+      `)
+      .eq('id', visitId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error(error);
+      showError('تعذر تحميل بيانات الزيارة.');
+      return;
+    }
+
+    if (!data) {
+      showError('الزيارة غير موجودة أو لا تملك صلاحية الوصول إليها.');
+      return;
+    }
+
+    visit = data;
+
+    document.getElementById('patientName').textContent =
+      data.patients?.name || 'بدون اسم';
+
+    document.getElementById('visitNumber').textContent =
+      data.visit_number ?? '—';
+
+    document.getElementById('visitDate').textContent =
+      formatVisitDate(data.visit_date);
+
+    document.getElementById('calculatorFrame').src =
+      'nutrition-calculator.html?visit_id=' + encodeURIComponent(data.id);
+
+    document.getElementById('dietPlanFrame').src =
+      'diet-plan.html?visit_id=' + encodeURIComponent(data.id);
+
+    document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('visitContent').classList.remove('hidden');
+  }
+
+  function toggleModule(module) {
+    const contents = {
+      assessment: document.getElementById('assessmentContent'),
+      calculator: document.getElementById('calculatorContent'),
+      dietPlan: document.getElementById('dietPlanContent')
+    };
+
+    const content = contents[module];
+    if (!content) return;
+
+    const isOpen = !content.classList.contains('hidden');
+    Object.values(contents).forEach(el => el.classList.add('hidden'));
+
+    if (isOpen) return;
+
+    content.classList.remove('hidden');
+    if (module === 'assessment') loadAssessment();
+    content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  let assessmentId = null;
+  let labs = [];
+
+  function calculateBMI() {
+    const h = parseFloat(document.getElementById('heightCm').value);
+    const w = parseFloat(document.getElementById('weightKg').value);
+    const bmiEl = document.getElementById('bmi');
+    const catEl = document.getElementById('bmiCategory');
+    if (!h || !w || h <= 0 || w <= 0) { bmiEl.value = ''; catEl.value = ''; return; }
+    const value = w / Math.pow(h / 100, 2);
+    bmiEl.value = value.toFixed(2);
+    catEl.value = value < 18.5 ? 'نقص الوزن' : value < 25 ? 'وزن طبيعي' : value < 30 ? 'زيادة الوزن' : value < 35 ? 'سمنة درجة أولى' : value < 40 ? 'سمنة درجة ثانية' : 'سمنة درجة ثالثة';
+  }
+
+  function renderLabs() {
+    const list = document.getElementById('labsList');
+    const empty = document.getElementById('noLabs');
+    list.innerHTML = '';
+    empty.classList.toggle('hidden', labs.length > 0);
+    labs.forEach((lab, index) => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 border border-slate-100 bg-slate-50 rounded-xl p-2';
+      row.innerHTML = `<div class="flex-1 min-w-0"><div class="text-xs font-extrabold text-slate-700 truncate">${escapeHtml(lab.name || 'تحليل بدون اسم')}</div><div class="text-xs text-slate-500 mt-0.5">${escapeHtml(lab.value || '—')}</div></div><button type="button" onclick="editLab(${index})" class="w-8 h-8 rounded-lg bg-white text-sky-600 border border-slate-200 text-xs"><i class="fa-solid fa-pen"></i></button><button type="button" onclick="deleteLab(${index})" class="w-8 h-8 rounded-lg bg-white text-red-600 border border-slate-200 text-xs"><i class="fa-solid fa-trash"></i></button>`;
+      list.appendChild(row);
+    });
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  }
+
+  function addLab() {
+    const name = prompt('اسم التحليل:');
+    if (name === null) return;
+    const cleanName = name.trim();
+    if (!cleanName) return;
+    const value = prompt('قيمة التحليل:');
+    if (value === null) return;
+    labs.push({ id: crypto.randomUUID(), name: cleanName, value: value.trim() });
+    renderLabs();
+  }
+
+  function editLab(index) {
+    const lab = labs[index];
+    if (!lab) return;
+    const name = prompt('اسم التحليل:', lab.name || '');
+    if (name === null) return;
+    const value = prompt('قيمة التحليل:', lab.value || '');
+    if (value === null) return;
+    labs[index] = { ...lab, name: name.trim(), value: value.trim() };
+    renderLabs();
+  }
+
+  function deleteLab(index) {
+    const lab = labs[index];
+    if (!lab) return;
+    if (!confirm(`هل تريد حذف التحليل "${lab.name || 'هذا التحليل'}"؟`)) return;
+    labs.splice(index, 1);
+    renderLabs();
+  }
+
+  function setAssessmentForm(data) {
+    assessmentId = data?.id || null;
+    document.getElementById('heightCm').value = data?.height_cm ?? '';
+    document.getElementById('weightKg').value = data?.weight_kg ?? '';
+    document.getElementById('medicalHistory').value = data?.medical_history ?? '';
+    document.getElementById('currentDiagnosis').value = data?.current_diagnosis ?? '';
+    document.getElementById('currentMedications').value = data?.current_medications ?? '';
+    document.getElementById('nfpeGeneral').value = data?.nfpe_general ?? '';
+    document.getElementById('nfpeFat').value = data?.nfpe_fat ?? '';
+    document.getElementById('nfpeMuscle').value = data?.nfpe_muscle ?? '';
+    document.getElementById('nfpeFluid').value = data?.nfpe_fluid ?? '';
+    document.getElementById('nfpeMicronutrients').value = data?.nfpe_micronutrients ?? '';
+    document.getElementById('dietaryHistory').value = data?.dietary_history ?? '';
+    labs = Array.isArray(data?.labs) ? data.labs : [];
+    renderLabs();
+    calculateBMI();
+  }
+
+  async function loadAssessment() {
+    if (!visitId) return;
+    document.getElementById('assessmentStatus').textContent = 'جاري التحميل...';
+    const { data, error } = await db.from('assessment').select('*').eq('visit_id', visitId).eq('user_id', visit.user_id || (await getCurrentUser()).id).maybeSingle();
+    if (error) {
+      console.error(error);
+      document.getElementById('assessmentStatus').textContent = 'تعذر تحميل التقييم';
+      return;
+    }
+    setAssessmentForm(data);
+    document.getElementById('assessmentStatus').textContent = data ? 'تم تحميل التقييم' : 'تقييم جديد';
+  }
+
+  async function saveAssessment() {
+    const user = await getCurrentUser();
+    if (!user || !visit) return;
+    calculateBMI();
+    const payload = {
+      user_id: user.id, visit_id: visit.id,
+      height_cm: parseFloat(document.getElementById('heightCm').value) || null,
+      weight_kg: parseFloat(document.getElementById('weightKg').value) || null,
+      bmi: parseFloat(document.getElementById('bmi').value) || null,
+      bmi_category: document.getElementById('bmiCategory').value || null,
+      labs, medical_history: document.getElementById('medicalHistory').value.trim() || null,
+      current_diagnosis: document.getElementById('currentDiagnosis').value.trim() || null,
+      current_medications: document.getElementById('currentMedications').value.trim() || null,
+      nfpe_general: document.getElementById('nfpeGeneral').value || null,
+      nfpe_fat: document.getElementById('nfpeFat').value.trim() || null,
+      nfpe_muscle: document.getElementById('nfpeMuscle').value.trim() || null,
+      nfpe_fluid: document.getElementById('nfpeFluid').value.trim() || null,
+      nfpe_micronutrients: document.getElementById('nfpeMicronutrients').value.trim() || null,
+      dietary_history: document.getElementById('dietaryHistory').value.trim() || null
+    };
+    const btn = document.getElementById('saveAssessmentBtn');
+    btn.disabled = true; btn.textContent = 'جاري الحفظ...';
+    let result;
+    if (assessmentId) {
+      result = await db.from('assessment').update(payload).eq('id', assessmentId).eq('user_id', user.id).select().single();
+    } else {
+      result = await db.from('assessment').insert(payload).select().single();
+    }
+    btn.disabled = false; btn.textContent = 'حفظ التقييم الغذائي';
+    if (result.error) {
+      console.error(result.error);
+      alert('تعذر حفظ التقييم الغذائي.');
+      return;
+    }
+    assessmentId = result.data.id;
+    document.getElementById('assessmentStatus').textContent = 'تم الحفظ بنجاح';
+  }
+
+  function backToPatient() {
+    if (visit?.patient_id) {
+      window.location.href =
+        'patient-profile.html?id=' + encodeURIComponent(visit.patient_id);
+      return;
+    }
+
+    window.history.back();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('heightCm').addEventListener('input', calculateBMI);
+    document.getElementById('weightKg').addEventListener('input', calculateBMI);
+    loadVisit();
+  });
+</script>
+
+</body>
+</html>
