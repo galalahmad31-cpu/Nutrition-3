@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>الإشعارات | Diet Planner</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{cairo:['Cairo','sans-serif']},colors:{brand:{50:'#eef7f6',100:'#d9efec',500:'#178f84',600:'#11786f',700:'#0d625b',800:'#0b504b'}}}}}
+</script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Cairo,sans-serif;background:radial-gradient(circle at 90% 0%,rgba(23,143,132,.10),transparent 28%),radial-gradient(circle at 5% 95%,rgba(23,143,132,.07),transparent 25%),#f7fafb;color:#17252a}
+.glass{background:rgba(255,255,255,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(226,232,240,.9)}
+.card{transition:.2s}
+.card:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(15,71,67,.08)}
+.tab-btn.active{background:#fff;color:#11786f;box-shadow:0 4px 12px rgba(15,71,67,.08)}
+.loading{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:#f7fafb}
+.spinner{width:36px;height:36px;border:3px solid #d9efec;border-top-color:#178f84;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+
+<body class="min-h-screen">
+
+<div id="loading" class="loading">
+  <div class="flex flex-col items-center gap-3">
+    <div class="spinner"></div>
+    <div class="text-sm font-semibold text-slate-500">جاري تحميل الإشعارات...</div>
+  </div>
+</div>
+
+<main class="min-h-screen px-4 py-5 sm:px-6 lg:px-8">
+<div class="mx-auto max-w-4xl">
+
+<header class="glass rounded-3xl px-5 py-5 sm:px-7 sm:py-6 shadow-sm">
+  <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center gap-4">
+      <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-lg">
+        <i class="fa-solid fa-bell text-2xl"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-extrabold text-slate-800 sm:text-3xl">الإشعارات</h1>
+        <p class="mt-1 text-sm font-medium text-slate-500">تنبيهات الاشتراكات ومواعيد المتابعة</p>
+      </div>
+    </div>
+
+    <a href="app.html" class="flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600">
+      <i class="fa-solid fa-arrow-right"></i>
+      الرئيسية
+    </a>
+  </div>
+</header>
+
+<section class="mt-6 glass rounded-3xl p-3 sm:p-4">
+  <div class="grid grid-cols-3 gap-2 rounded-2xl bg-slate-100 p-1.5">
+    <button data-tab="today" class="tab-btn active rounded-xl px-2 py-3 text-xs sm:text-sm font-extrabold transition">
+      <i class="fa-solid fa-calendar-day ml-1"></i> متابعات اليوم
+      <span id="todayCount" class="mr-1 inline-flex min-w-6 items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[10px]">0</span>
+    </button>
+    <button data-tab="tomorrow" class="tab-btn rounded-xl px-2 py-3 text-xs sm:text-sm font-extrabold text-slate-500 transition">
+      <i class="fa-solid fa-calendar-plus ml-1"></i> متابعات الغد
+      <span id="tomorrowCount" class="mr-1 inline-flex min-w-6 items-center justify-center rounded-full bg-white/70 px-1.5 py-0.5 text-[10px]">0</span>
+    </button>
+    <button data-tab="subscriptions" class="tab-btn rounded-xl px-2 py-3 text-xs sm:text-sm font-extrabold text-slate-500 transition">
+      <i class="fa-solid fa-credit-card ml-1"></i> الاشتراكات
+      <span id="subscriptionCount" class="mr-1 inline-flex min-w-6 items-center justify-center rounded-full bg-white/70 px-1.5 py-0.5 text-[10px]">0</span>
+    </button>
+  </div>
+  <div class="mt-4 flex items-center justify-between gap-3 px-1">
+    <div>
+      <h2 id="tabTitle" class="font-extrabold text-slate-800">متابعات اليوم</h2>
+      <p id="tabSubtitle" class="mt-1 text-xs text-slate-500">المرضى الذين موعد متابعتهم اليوم.</p>
+    </div>
+    <div id="count" class="flex h-9 min-w-9 items-center justify-center rounded-full bg-brand-50 px-3 text-sm font-extrabold text-brand-700">0</div>
+  </div>
+</section>
+
+<section class="mt-5">
+  <div id="notifications" class="space-y-3"></div>
+  <div id="empty" class="hidden glass rounded-3xl p-12 text-center">
+    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-500">
+      <i class="fa-regular fa-calendar-check text-2xl"></i>
+    </div>
+    <h3 id="emptyTitle" class="mt-4 font-extrabold text-slate-800">لا توجد متابعات اليوم</h3>
+    <p id="emptyText" class="mt-2 text-sm text-slate-500">لا توجد مواعيد متابعة مسجلة لهذا اليوم.</p>
+  </div>
+</section>
+
+<footer class="py-8 text-center text-xs text-slate-400">Diet Planner • Clinical Nutrition</footer>
+</div>
+</main>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const supabase = createClient(
+  'https://zwxnmnfoknfbzvptnpmv.supabase.co',
+  'sb_publishable_A6u5kWAdL60bYpz1wRyv6w_J2p896iY'
+);
+
+const $ = (id) => document.getElementById(id);
+
+const state = {
+  notifications: {
+    today: [],
+    tomorrow: [],
+    subscriptions: []
+  },
+  activeTab: 'today'
+};
+
+const TAB_INFO = {
+  today: {
+    title: 'متابعات اليوم',
+    subtitle: 'المرضى الذين موعد متابعتهم اليوم.',
+    emptyTitle: 'لا توجد متابعات اليوم',
+    emptyText: 'لا توجد مواعيد متابعة مسجلة لهذا اليوم.'
+  },
+  tomorrow: {
+    title: 'متابعات الغد',
+    subtitle: 'المرضى الذين موعد متابعتهم غدًا.',
+    emptyTitle: 'لا توجد متابعات غدًا',
+    emptyText: 'لا توجد مواعيد متابعة مسجلة للغد.'
+  },
+  subscriptions: {
+    title: 'الاشتراكات',
+    subtitle: 'الاشتراكات التي يقترب موعد انتهائها.',
+    emptyTitle: 'لا توجد تنبيهات اشتراكات',
+    emptyText: 'لا توجد اشتراكات تنتهي خلال يومين أو أسبوع.'
+  }
+};
+
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  }[char]));
+}
+
+/*
+ * PostgreSQL date fields are handled as calendar dates.
+ * We deliberately avoid new Date('YYYY-MM-DD') because it can
+ * introduce timezone-related off-by-one errors.
+ */
+function dateKey(value) {
+  return String(value ?? '').slice(0, 10);
+}
+
+function todayKey() {
+  const now = new Date();
+
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
+function shiftDate(dateKeyValue, days) {
+  const [year, month, day] = dateKeyValue.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + days);
+
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
+function daysUntil(targetDate, referenceDate) {
+  const target = dateKey(targetDate);
+  const reference = dateKey(referenceDate);
+
+  const [ty, tm, td] = target.split('-').map(Number);
+  const [ry, rm, rd] = reference.split('-').map(Number);
+
+  const targetUtc = Date.UTC(ty, tm - 1, td);
+  const referenceUtc = Date.UTC(ry, rm - 1, rd);
+
+  return Math.round((targetUtc - referenceUtc) / 86400000);
+}
+
+function formatDate(value) {
+  const key = dateKey(value);
+  if (!key) return '—';
+
+  const [year, month, day] = key.split('-');
+  return `${day}/${month}/${year}`;
+}
+
+function addNotification(list, row, details) {
+  list.push({
+    patientName: row.patients?.name || 'المريض',
+    ...details
+  });
+}
+
+function buildNotifications(rows) {
+  const result = {
+    today: [],
+    tomorrow: [],
+    subscriptions: []
+  };
+
+  const today = todayKey();
+
+  (rows || []).forEach((row) => {
+    const nextFollowUp = dateKey(row.next_follow_up_date);
+    const subscriptionEnd = dateKey(row.subscription_end_date);
+
+    /*
+     * Follow-up logic:
+     * - Today      -> next_follow_up_date = today
+     * - Tomorrow   -> next_follow_up_date = tomorrow
+     * Past dates remain overdue and are NOT automatically rolled forward.
+     */
+    if (nextFollowUp) {
+      const followUpDays = daysUntil(nextFollowUp, today);
+
+      if (followUpDays === 0) {
+        addNotification(result.today, row, {
+          type: 'متابعة اليوم',
+          title: 'موعد المتابعة اليوم',
+          text: 'المريض لديه موعد متابعة اليوم.',
+          icon: 'fa-solid fa-calendar-check',
+          box: 'bg-sky-50 text-sky-700',
+          date: nextFollowUp
+        });
+      }
+
+      if (followUpDays === 1) {
+        addNotification(result.tomorrow, row, {
+          type: 'متابعة الغد',
+          title: 'موعد المتابعة غدًا',
+          text: 'المريض لديه موعد متابعة غدًا.',
+          icon: 'fa-solid fa-calendar-plus',
+          box: 'bg-indigo-50 text-indigo-700',
+          date: nextFollowUp
+        });
+      }
+    }
+
+    /*
+     * Subscription logic:
+     * - 7 days before expiry
+     * - 2 days before expiry
+     * Expired subscriptions are not shown as upcoming notifications.
+     */
+    if (subscriptionEnd) {
+      const subscriptionDays = daysUntil(subscriptionEnd, today);
+
+      if (subscriptionDays === 7) {
+        addNotification(result.subscriptions, row, {
+          type: 'ينتهي خلال أسبوع',
+          title: 'الاشتراك يقترب من الانتهاء',
+          text: 'يتبقى أسبوع واحد على انتهاء الاشتراك.',
+          icon: 'fa-solid fa-calendar-days',
+          box: 'bg-amber-50 text-amber-700',
+          date: subscriptionEnd
+        });
+      }
+
+      if (subscriptionDays === 2) {
+        addNotification(result.subscriptions, row, {
+          type: 'ينتهي خلال يومين',
+          title: 'الاشتراك يقترب من الانتهاء',
+          text: 'يتبقى يومان على انتهاء الاشتراك.',
+          icon: 'fa-solid fa-triangle-exclamation',
+          box: 'bg-red-50 text-red-700',
+          date: subscriptionEnd
+        });
+      }
+    }
+  });
+
+  return result;
+}
+
+function render() {
+  const list = state.notifications[state.activeTab] || [];
+  const info = TAB_INFO[state.activeTab];
+
+  $('count').textContent = list.length;
+  $('tabTitle').textContent = info.title;
+  $('tabSubtitle').textContent = info.subtitle;
+  $('emptyTitle').textContent = info.emptyTitle;
+  $('emptyText').textContent = info.emptyText;
+
+  $('notifications').innerHTML = '';
+  $('empty').classList.toggle('hidden', list.length > 0);
+
+  list.forEach((notification) => {
+    const element = document.createElement('div');
+
+    element.className = 'card glass rounded-3xl p-4 sm:p-5';
+
+    element.innerHTML = `
+      <div class="flex items-start gap-4">
+        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${notification.box}">
+          <i class="${notification.icon}"></i>
+        </div>
+
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 class="font-extrabold text-slate-800">
+              ${esc(notification.patientName)}
+            </h3>
+
+            <span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${notification.box}">
+              ${esc(notification.type)}
+            </span>
+          </div>
+
+          <p class="mt-1 text-sm font-extrabold text-slate-700">
+            ${esc(notification.title)}
+          </p>
+
+          <p class="mt-1 text-sm leading-6 text-slate-500">
+            ${esc(notification.text)}
+          </p>
+
+          ${
+            notification.date
+              ? `
+                <div class="mt-2 text-xs font-bold text-slate-400">
+                  <i class="fa-regular fa-calendar ml-1"></i>
+                  ${formatDate(notification.date)}
+                </div>
+              `
+              : ''
+          }
+        </div>
+      </div>
+    `;
+
+    $('notifications').appendChild(element);
+  });
+}
+
+function updateTabButtons() {
+  document.querySelectorAll('[data-tab]').forEach((button) => {
+    const isActive = button.dataset.tab === state.activeTab;
+
+    button.classList.toggle('active', isActive);
+    button.classList.toggle('text-slate-500', !isActive);
+  });
+}
+
+function showError(error) {
+  console.error('Notifications error:', error);
+
+  $('loading').innerHTML = `
+    <div class="rounded-2xl bg-white p-6 text-center shadow-sm">
+      <div class="text-red-600 font-bold">تعذر تحميل الإشعارات</div>
+      <div class="mt-2 text-xs text-slate-400">
+        ${esc(error?.message || 'حدث خطأ غير معروف')}
+      </div>
+    </div>
+  `;
+}
+
+async function loadNotifications() {
+  const {
+    data: { session },
+    error: sessionError
+  } = await supabase.auth.getSession();
+
+  if (sessionError) throw sessionError;
+
+  if (!session) {
+    location.replace('index.html');
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('patient_finances')
+    .select(`
+      patient_id,
+      subscription_end_date,
+      next_follow_up_date,
+      follow_up_days,
+      patients(name)
+    `)
+    .eq('user_id', session.user.id);
+
+  if (error) throw error;
+
+  state.notifications = buildNotifications(data);
+
+  $('todayCount').textContent = state.notifications.today.length;
+  $('tomorrowCount').textContent = state.notifications.tomorrow.length;
+  $('subscriptionCount').textContent = state.notifications.subscriptions.length;
+
+  updateTabButtons();
+  render();
+
+  $('loading').style.display = 'none';
+}
+
+document.querySelectorAll('[data-tab]').forEach((button) => {
+  button.addEventListener('click', () => {
+    state.activeTab = button.dataset.tab;
+    updateTabButtons();
+    render();
+  });
+});
+
+(async () => {
+  try {
+    await loadNotifications();
+  } catch (error) {
+    showError(error);
+  }
+})();
+</script>
+</body>
+</html>
