@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة الاشتراكات - Diet Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:'Cairo',sans-serif;background:#f6f8f9;color:#173c39}
+.header{background:#fff;border-bottom:1px solid #e5eceb;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:15px;position:sticky;top:0;z-index:20}.brand{display:flex;align-items:center;gap:11px}.logo{width:42px;height:42px;border-radius:13px;background:#178f84;color:#fff;display:flex;align-items:center;justify-content:center;font-size:21px}.brand-title{font-size:18px;font-weight:800}.brand-sub{font-size:11px;color:#78908d}.header-actions{display:flex;gap:8px;align-items:center}.btn{border:0;border-radius:10px;padding:9px 14px;font-family:inherit;font-weight:700;cursor:pointer;transition:.2s}.btn:hover{transform:translateY(-1px)}.btn-outline{background:#fff;color:#11786f;border:1px solid #cfe1df}.btn-primary{background:#11786f;color:#fff}.btn-danger{background:#fff0f0;color:#b42318}
+.container{max-width:1200px;margin:0 auto;padding:30px 18px 50px}.page-title{text-align:center;margin-bottom:22px}.page-title h1{margin:0 0 6px;font-size:28px;font-weight:800}.page-title p{margin:0;color:#718683;font-size:14px}
+.toolbar{background:#fff;border:1px solid #e1e9e8;border-radius:18px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;box-shadow:0 8px 25px rgba(20,60,56,.05)}.summary{display:flex;gap:8px;flex-wrap:wrap}.stat{background:#f6faf9;border:1px solid #e3efed;border-radius:11px;padding:7px 11px;font-size:12px}.stat strong{color:#11786f;margin-inline-start:4px}.refresh{white-space:nowrap}
+.table-card{background:#fff;border:1px solid #e1e9e8;border-radius:20px;box-shadow:0 8px 25px rgba(20,60,56,.05);overflow:hidden}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:920px}th,td{padding:13px 12px;border-bottom:1px solid #edf2f1;text-align:right;vertical-align:middle;font-size:13px}th{background:#f7faf9;color:#58706c;font-size:12px;font-weight:800;white-space:nowrap}tbody tr:hover{background:#fbfdfc}tbody tr:last-child td{border-bottom:0}.doctor{font-weight:800;color:#173c39}.meta{display:block;color:#849590;font-size:10px;margin-top:3px;direction:ltr;text-align:right}.plan{font-weight:700}.date{white-space:nowrap;color:#647a76;font-size:12px}.note{max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#667d78}.proof-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:#f6faf9;border:1px solid #cfe1df;color:#11786f;border-radius:9px;padding:7px 10px;font-family:inherit;font-weight:700;cursor:pointer}.proof-btn:disabled{opacity:.5;cursor:default}.status{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:5px 10px;font-size:11px;font-weight:800;white-space:nowrap}.status.pending{background:#fff7df;color:#9a6b00}.status.paid{background:#e9f7ef;color:#137a45}.status.canceled{background:#fff0f0;color:#b42318}.status-select{border:1px solid #d6e2e0;border-radius:9px;padding:7px 8px;font-family:inherit;font-size:12px;font-weight:700;color:#173c39;background:#fff;min-width:112px;outline:none}.status-select:focus{border-color:#178f84}.loading,.empty{padding:55px 20px;text-align:center;color:#758a87}.error{padding:30px 20px;text-align:center;color:#b42318;background:#fff5f5}.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(14,40,37,.58);z-index:100;align-items:center;justify-content:center;padding:18px}.modal{width:100%;max-width:650px;max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.22)}.modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.modal h2{margin:0;font-size:19px}.close-btn{width:36px;height:36px;border-radius:10px;border:1px solid #dbe6e4;background:#fff;color:#617773;cursor:pointer}.proof-image-wrap{background:#f6f8f9;border:1px solid #e1e9e8;border-radius:14px;padding:10px;text-align:center}.proof-image{display:block;max-width:100%;max-height:65vh;margin:auto;border-radius:10px}.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}.detail{background:#f7faf9;border-radius:10px;padding:9px 11px;font-size:12px}.detail span{display:block;color:#7a8d89;font-size:10px;margin-bottom:2px}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#173c39;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:200}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:600px){.header{padding:12px 13px}.brand-sub{display:none}.brand-title{font-size:16px}.logo{width:40px;height:40px}.container{padding:22px 10px 35px}.page-title h1{font-size:23px}.page-title p{font-size:12px}.toolbar{padding:11px;align-items:stretch;flex-direction:column}.refresh{width:100%}.refresh .btn{width:100%}.table-card{border-radius:16px}th,td{padding:11px 9px}.detail-grid{grid-template-columns:1fr}.modal{padding:16px;border-radius:17px}.modal-backdrop{padding:12px}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand">
+    <div class="logo"><i class="fa-solid fa-leaf"></i></div>
+    <div><div class="brand-title">Diet Planner</div><div class="brand-sub">إدارة الاشتراكات</div></div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" id="dashboardBtn"><i class="fa-solid fa-gauge-high"></i> لوحة التحكم</button>
+    <button class="btn btn-outline" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
+  </div>
+</header>
+
+<main class="container" id="adminContent" style="display:none">
+  <div class="page-title">
+    <h1>إدارة طلبات الاشتراك</h1>
+    <p>مراجعة طلبات الأطباء وإدارة حالة الاشتراك</p>
+  </div>
+
+  <div class="toolbar">
+    <div class="summary">
+      <div class="stat">كل الطلبات <strong id="totalCount">0</strong></div>
+      <div class="stat">قيد المراجعة <strong id="pendingCount">0</strong></div>
+      <div class="stat">مفعّلة <strong id="paidCount">0</strong></div>
+      <div class="stat">ملغاة <strong id="canceledCount">0</strong></div>
+    </div>
+    <div class="refresh"><button class="btn btn-outline" id="refreshBtn"><i class="fa-solid fa-rotate"></i> تحديث</button></div>
+  </div>
+
+  <section class="table-card">
+    <div id="tableState" class="loading">جاري تحميل طلبات الاشتراك...</div>
+    <div id="tableWrap" class="table-wrap" style="display:none">
+      <table>
+        <thead>
+          <tr>
+            <th>الطبيب</th>
+            <th>الخطة المطلوبة</th>
+            <th>تاريخ الطلب</th>
+            <th>البداية / الانتهاء</th>
+            <th>الحالة</th>
+            <th>إثبات الدفع</th>
+            <th>الإجراء</th>
+            <th>ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody id="subscriptionsBody"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div id="proofModal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>إثبات الدفع</h2>
+      <button class="close-btn" id="closeProofBtn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="proofDetails" class="detail-grid"></div>
+    <div id="proofContent" class="proof-image-wrap">جاري تحميل الصورة...</div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/auth-access.js"></script>
+<script src="js/admin.js"></script>
+
+</body>
+</html>
