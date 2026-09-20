@@ -123,22 +123,49 @@
   async function hasActiveSubscription(userId) {
     if (!userId) return null;
 
-    const { data, error } = await supabaseClient
-      .from("subscriptions")
-      .select("id,status,start_date,expiry_date")
-      .eq("user_id", userId)
-      .eq("status", "paid")
-      .lte("start_date", getToday())
-      .gte("expiry_date", getToday())
-      .order("expiry_date", { ascending: false })
-      .limit(1);
+    const role = await getUserRole(userId);
+    if (role === "admin") return true;
+
+    const { data, error } = await supabaseClient.rpc(
+      "has_active_subscription",
+      { p_user_id: userId }
+    );
 
     if (error) {
       console.error("Subscription check failed:", error);
       return null;
     }
 
-    return Array.isArray(data) && data.length > 0;
+    return data === true;
+  }
+
+  async function canAddPatient(userId) {
+    if (!userId) return false;
+
+    const role = await getUserRole(userId);
+    if (role === "admin") return true;
+
+    const { data, error } = await supabaseClient.rpc(
+      "can_add_patient",
+      { p_user_id: userId }
+    );
+
+    if (error) {
+      console.error("Patient quota check failed:", error);
+      return false;
+    }
+
+    return data === true;
+  }
+
+  async function canWrite(userId) {
+    if (!userId) return false;
+
+    const role = await getUserRole(userId);
+    if (role === "admin") return true;
+
+    const active = await hasActiveSubscription(userId);
+    return active === true;
   }
 
   // ---------------------------------------------------------
@@ -453,6 +480,8 @@
     getCurrentUser,
     getUserRole,
     hasActiveSubscription,
+    canAddPatient,
+    canWrite,
     hasFeature,
     getAccessStatus,
     logout: logoutUser
