@@ -4,6 +4,33 @@
   let patients = [];
   let currentUser = null;
   let supabase = null;
+  let isAdmin = false;
+  let hasActiveSubscription = false;
+  let hasNutritionSupportFeature = false;
+
+  async function refreshNutritionSupportAccess() {
+    try {
+      const user = await access?.getCurrentUser?.();
+      if (!user) return;
+      const role = await access?.getUserRole?.(user.id);
+      isAdmin = role === 'admin';
+      hasActiveSubscription = isAdmin
+        ? true
+        : (await access?.hasActiveSubscription?.(user.id)) === true;
+      hasNutritionSupportFeature = isAdmin
+        ? true
+        : (await access?.hasFeature?.(user.id, 'nutrition_support')) === true;
+    } catch (error) {
+      console.error('Nutrition support access check failed:', error);
+      isAdmin = false;
+      hasActiveSubscription = false;
+      hasNutritionSupportFeature = false;
+    }
+  }
+
+  function canWriteNutritionSupport() {
+    return isAdmin || (hasActiveSubscription && hasNutritionSupportFeature);
+  }
 
   const $ = (id) => document.getElementById(id);
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -76,6 +103,10 @@
 
   async function savePatient(event) {
     event.preventDefault();
+    if (!canWriteNutritionSupport()) {
+      alert('إدارة بيانات التغذية العلاجية تتطلب اشتراكًا مدفوعًا فعالًا وتوفر الخاصية في خطتك.');
+      return;
+    }
     if (!currentUser || !supabase) { location.replace('index.html'); return; }
 
     const id = $('patientId').value.trim();
@@ -172,6 +203,11 @@
     const grid = $('patientGrid');
     const search = $('patientSearch');
     const addButton = $('addPatientBtn');
+    if (addButton) {
+      addButton.disabled = !canWriteNutritionSupport();
+      addButton.classList.toggle('opacity-50', !canWriteNutritionSupport());
+      addButton.classList.toggle('cursor-not-allowed', !canWriteNutritionSupport());
+    }
     const form = $('patientForm');
     const closeButton = $('patientModalClose');
     const cancelButton = $('patientCancelBtn');
@@ -251,6 +287,7 @@
   }
 
   async function init() {
+    await refreshNutritionSupportAccess();
     // Bind all UI events first. A database/auth delay must never disable the page controls.
     bindEvents();
     renderPatients();
