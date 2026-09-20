@@ -461,14 +461,6 @@
 
       state.user = await access.getCurrentUser();
 
-      if (state.user) {
-        const role = await access.getUserRole?.(state.user.id);
-        if (role === 'admin') {
-          window.location.replace('app.html');
-          return;
-        }
-      }
-
       await loadPlans();
     } catch (error) {
       console.error('Subscription plans initialization failed:', error);
