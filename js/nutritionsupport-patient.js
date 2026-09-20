@@ -1681,6 +1681,17 @@ async function loadPatientData(){
     const sessionUser = await access.getCurrentUser();
     if (sessionUser) await refreshSupportDayAccess(sessionUser.id);
     if(!sessionUser){location.replace('index.html');return;}
+
+    const supportAccess = window.__dpNutritionSupportDayAccess || {};
+    if (
+      supportAccess.isAdmin !== true &&
+      supportAccess.hasActiveSubscription === true &&
+      supportAccess.hasFeature !== true
+    ) {
+      location.replace('nutritionsupport.html');
+      return;
+    }
+
     const id=new URLSearchParams(location.search).get('patient');
     if(!id){location.replace('nutritionsupport.html');return;}
     const {data:p,error:pe}=await supabaseClient.from('patients')
