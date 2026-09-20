@@ -333,6 +333,14 @@ async function loadCalculatorPatientData() {
 }
 
 async function applyCustomTargetToPatient() {
+    const user = await window.DietPlannerAccess?.getCurrentUser?.();
+    const role = user ? await window.DietPlannerAccess?.getUserRole?.(user.id) : null;
+    const canWrite = role === 'admin' ||
+      (user && (await window.DietPlannerAccess?.hasActiveSubscription?.(user.id)) === true);
+    if (!canWrite) {
+        calcShowToast('حفظ أهداف المريض متاح أثناء الاشتراك المدفوع فقط', 'error');
+        return;
+    }
     const targetCal = parseInt(document.getElementById('finalTargetCal').textContent, 10) || 0;
     const proGrams = parseInt(document.getElementById('macroProGrams').textContent, 10) || 0;
     const carbGrams = parseInt(document.getElementById('macroCarbGrams').textContent, 10) || 0;
