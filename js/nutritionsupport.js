@@ -39,8 +39,10 @@
     return isAdmin || (hasActiveSubscription && hasNutritionSupportFeature);
   }
 
+  // Adding a patient is controlled by the patient quota only.
+  // The Nutrition Support page itself is already gated by the feature.
   function canAddNutritionSupportPatient() {
-    return isAdmin || (hasActiveSubscription && hasNutritionSupportFeature && canAddPatientByQuota);
+    return isAdmin || canAddPatientByQuota;
   }
 
   const $ = (id) => document.getElementById(id);
@@ -114,8 +116,13 @@
 
   async function savePatient(event) {
     event.preventDefault();
-    if (!canWriteNutritionSupport()) {
-      alert('إدارة بيانات التغذية العلاجية تتطلب اشتراكًا مدفوعًا فعالًا وتوفر الخاصية في خطتك.');
+    if (id) {
+      if (!canWriteNutritionSupport()) {
+        alert('تعديل بيانات المريض في الدعم الغذائي يتطلب اشتراكًا مدفوعًا فعالًا وتوفر الخاصية في خطتك.');
+        return;
+      }
+    } else if (!canAddNutritionSupportPatient()) {
+      alert('إضافة مريض جديد غير متاحة حاليًا: تحقق من حصة المرضى.');
       return;
     }
     if (!currentUser || !supabase) { location.replace('index.html'); return; }
