@@ -1,15 +1,86 @@
-*{box-sizing:border-box} body{margin:0;font-family:Cairo,sans-serif;background:#f7fafb;color:#17252a}
+*{box-sizing:border-box}
+body{margin:0;font-family:Cairo,sans-serif;background:#f7fafb;color:#17252a}
 .glass{background:rgba(255,255,255,.9);border:1px solid #e5edf0;box-shadow:0 8px 30px rgba(15,71,67,.05)}
-.table-wrap{scrollbar-width:thin}.modal-bg{background:rgba(15,23,42,.62);backdrop-filter:blur(5px)}
-.spinner{width:30px;height:30px;border:3px solid #d9efec;border-top-color:#178f84;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:thin;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+}
+
+.table-wrap::-webkit-scrollbar{height:9px}
+.table-wrap::-webkit-scrollbar-track{background:#eef3f4;border-radius:999px}
+.table-wrap::-webkit-scrollbar-thumb{background:#b7c9cc;border-radius:999px}
+.table-wrap::-webkit-scrollbar-thumb:hover{background:#91aaad}
+
+.products-table{
+  min-width:900px;
+  width:100%;
+}
+
+.products-table th,
+.products-table td{
+  white-space:nowrap;
+}
+
+.products-table th:first-child,
+.products-table td:first-child{
+  position:sticky;
+  right:0;
+  z-index:2;
+  background:#fff;
+}
+
+.products-table thead th:first-child{
+  background:#f8fafb;
+  z-index:3;
+}
+
+.products-table th:nth-child(2),
+.products-table td:nth-child(2){
+  min-width:180px;
+}
+
+.products-table th:nth-child(7),
+.products-table td:nth-child(7){
+  min-width:220px;
+  white-space:normal;
+}
+
+.modal-bg{background:rgba(15,23,42,.62);backdrop-filter:blur(5px)}
+.spinner{width:30px;height:30px;border:3px solid #d9efec;border-top-color:#178f84;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 input:focus,textarea:focus{outline:none;border-color:#178f84;box-shadow:0 0 0 3px rgba(23,143,132,.1)}
 
 .exchange-cell{white-space:pre-line;line-height:1.9}
-.exchange-table th,.exchange-table td{vertical-align:top} 
+.exchange-table th,.exchange-table td{vertical-align:top}
+
 @media(max-width:640px){
-  .exchange-table th,.exchange-table td,.products-table th,.products-table td{padding:6px 7px}
+  .table-wrap{
+    margin-inline:0;
+    padding-bottom:4px;
+  }
+
+  .products-table{
+    min-width:900px;
+  }
+
+  .products-table th,
+  .products-table td{
+    padding:7px 8px;
+  }
+
+  .exchange-table th,
+  .exchange-table td{
+    padding:6px 7px;
+  }
+
   .exchange-table{font-size:11px}
   .exchange-cell{line-height:1.55}
 }
+
 .tab-btn{transition:.2s}
 .tab-btn.active{background:#11786f;color:#fff;box-shadow:0 8px 20px rgba(17,120,111,.16)}
