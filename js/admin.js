@@ -1,7 +1,8 @@
 (function(){
 'use strict';
 const access=window.DietPlannerAccess, sb=access?.supabaseClient;
-const state={plans:[],subs:[],profiles:[],patients:[],activeTab:'requests',featureKeys:new Set(['articles','nutrition_support','diet_builder','quick_calc'])};
+const PLAN_FEATURES=[{key:'nutrition_support',label:'الدعم الغذائي'},{key:'diet',label:'الدايت المتقدم'},{key:'article',label:'المقال المتقدم'},{key:'product',label:'المنتجات الغذائية'}];
+const state={plans:[],subs:[],profiles:[],patients:[],activeTab:'requests'};
 let confirmAction=null;
 
 const $=id=>document.getElementById(id);
@@ -84,7 +85,7 @@ function renderDoctors(){
 }
 
 function planForm(p){
- const f=p?.features||{},keys=[...state.featureKeys].sort();
+ const f=p?.features||{},keys=PLAN_FEATURES.map(x=>x.key);
  return `<form id="planForm"><div class="grid">
  <div class="field"><label>اسم الخطة *</label><input id="f_name" required value="${esc(p?.name||'')}"></div>
  <div class="field"><label>السعر (جنيه) *</label><input id="f_price" type="number" min="0" step="0.01" required value="${p?.price??0}"></div>
@@ -94,12 +95,12 @@ function planForm(p){
  <div class="field"><label>الحالة</label><select id="f_active"><option value="true" ${p?.is_active!==false?'selected':''}>متاحة للاشتراك</option><option value="false" ${p?.is_active===false?'selected':''}>غير متاحة</option></select></div>
  <div class="field"><label class="check"><input id="f_trial" type="checkbox" ${p?.is_free_trial?'checked':''}> خطة تجربة مجانية</label></div>
  <div class="field full"><label>الوصف</label><textarea id="f_desc">${esc(p?.description||'')}</textarea></div>
- <div class="field full"><label>المميزات</label><div class="check-grid">${keys.map(k=>`<label class="check"><input type="checkbox" class="feature-check" data-key="${esc(k)}" ${f[k]===true?'checked':''}> ${esc(featureLabel(k))}</label>`).join('')}</div></div>
+ <div class="field full"><label>المميزات</label><div class="check-grid">${keys.map(k=>{const meta=PLAN_FEATURES.find(x=>x.key===k);return '<label class="check"><input type="checkbox" class="feature-check" data-key="'+esc(k)+'" '+(f[k]===true?'checked':'')+'> '+esc(meta?.label||k)+'</label>'}).join('')}</div></div>
  </div><div class="modal-foot"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ الخطة</button><button class="btn btn-outline" type="button" id="cancelModal">إلغاء</button></div></form>`
 }
 function openPlan(p){openModal(p?'تعديل الخطة':'إنشاء خطة جديدة',planForm(p));$('planForm').addEventListener('submit',async e=>{e.preventDefault();await savePlan(p?.id||null)});$('cancelModal').onclick=closeModal}
 async function savePlan(id){
- const features={};document.querySelectorAll('.feature-check').forEach(x=>features[x.dataset.key]=x.checked);
+ const features={};document.querySelectorAll('.feature-check:checked').forEach(x=>features[x.dataset.key]=true);
  const payload={name:$('f_name').value.trim(),price:Number($('f_price').value),duration_days:Number($('f_duration').value),max_patients:$('f_max').value?Number($('f_max').value):null,payment_method:$('f_payment').value.trim(),description:$('f_desc').value.trim()||null,is_active:$('f_active').value==='true',is_free_trial:$('f_trial').checked,features};
  if(!payload.name||payload.duration_days<1||payload.price<0||payload.max_patients===0){toast('راجع بيانات الخطة');return}
  let r=id?await sb.from('subscription_plans').update(payload).eq('id',id):await sb.from('subscription_plans').insert(payload);
