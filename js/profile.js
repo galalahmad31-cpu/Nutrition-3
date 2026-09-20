@@ -181,7 +181,7 @@
 
   async function saveProfile() {
     if (!(await canWriteProfile())) {
-        showToast?.('تعديل الملف الشخصي متاح أثناء الاشتراك المدفوع فقط.', true);
+        showToast('تعديل الملف الشخصي متاح أثناء الاشتراك المدفوع فقط.');
         return;
     }
 
