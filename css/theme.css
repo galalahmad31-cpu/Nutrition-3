@@ -643,3 +643,128 @@ html[data-theme="dark"] body:has(#selectedPatientName) .border-gray-200,html[dat
 @media print{
   html[data-theme="dark"] body,html[data-theme="dark"] body *{color-scheme:light!important}
 }
+
+
+/* === DARK MODE FINAL LEGACY PAGE POLISH v2 === */
+/* One centralized compatibility layer for legacy page palettes. No JS/layout/calculation changes. */
+
+/* Complete the semantic color map used across Tailwind-style pages. */
+html[data-theme="dark"] .text-cyan-600,html[data-theme="dark"] .text-cyan-700,
+html[data-theme="dark"] .text-teal-600,html[data-theme="dark"] .text-teal-700,
+html[data-theme="dark"] .text-green-600,html[data-theme="dark"] .text-green-700{color:#6ee7b7!important}
+html[data-theme="dark"] .text-orange-500,html[data-theme="dark"] .text-orange-600,
+html[data-theme="dark"] .text-yellow-600,html[data-theme="dark"] .text-yellow-700{color:#fbbf24!important}
+html[data-theme="dark"] .text-indigo-600,html[data-theme="dark"] .text-indigo-700{color:#a5b4fc!important}
+html[data-theme="dark"] .text-violet-600,html[data-theme="dark"] .text-violet-700{color:#c4b5fd!important}
+html[data-theme="dark"] .text-rose-600,html[data-theme="dark"] .text-rose-700{color:#fda4af!important}
+html[data-theme="dark"] .border-brand-100,html[data-theme="dark"] .border-brand-200,
+html[data-theme="dark"] .border-emerald-100,html[data-theme="dark"] .border-sky-100,
+html[data-theme="dark"] .border-red-100,html[data-theme="dark"] .border-amber-100{border-color:#30413e!important}
+html[data-theme="dark"] .bg-slate-50\/60,html[data-theme="dark"] .bg-brand-50\/60{background:#1d2927!important}
+html[data-theme="dark"] .bg-white\/15{background:rgba(255,255,255,.10)!important}
+html[data-theme="dark"] .text-white\/85{color:rgba(255,255,255,.90)!important}
+
+/* Legacy controls and loading states. */
+html[data-theme="dark"] .btn-outline{background:#1a2624!important;color:#8fe0d5!important;border-color:#3b514d!important}
+html[data-theme="dark"] .btn-danger{background:#351d23!important;color:#fda4af!important;border-color:#64313b!important}
+html[data-theme="dark"] .btn-warning{background:#3a2d18!important;color:#fbbf24!important;border-color:#675022!important}
+html[data-theme="dark"] .btn:disabled{background:#263330!important;color:#7f9691!important;border-color:#30413e!important}
+html[data-theme="dark"] .loading{background:#0d1514!important;color:#b7c9c5!important}
+html[data-theme="dark"] .spinner{border-color:#24443f!important;border-top-color:#31b8aa!important}
+
+/* About / feedback / app / article / notifications. */
+html[data-theme="dark"] body:has(#addSectionBtn),
+html[data-theme="dark"] body:has(#feedbackPage),
+html[data-theme="dark"] body:has(#loadingScreen):has(#adminCard),
+html[data-theme="dark"] body:has(#toolbar):has(#editModal),
+html[data-theme="dark"] body:has(#notifications){background:#0d1514!important;color:#edf6f4!important}
+html[data-theme="dark"] body:has(#addSectionBtn) .toolbar button{background:#1a2624!important;color:#b7c9c5!important;border-color:#3b514d!important}
+html[data-theme="dark"] body:has(#addSectionBtn) .toolbar button:hover{background:#203532!important;color:#8fe0d5!important}
+html[data-theme="dark"] body:has(#toolbar):has(#editModal) .editor table th,
+html[data-theme="dark"] body:has(#toolbar):has(#editModal) .content table th{background:#1d3430!important;color:#edf6f4!important;border-color:#3b514d!important}
+html[data-theme="dark"] body:has(#toolbar):has(#editModal) .editor table td,
+html[data-theme="dark"] body:has(#toolbar):has(#editModal) .content table td{background:#17211f!important;color:#dbe9e6!important;border-color:#30413e!important}
+html[data-theme="dark"] body:has(#toolbar):has(#editModal) blockquote{background:#17322f!important;color:#dbe9e6!important;border-color:#178f84!important}
+html[data-theme="dark"] body:has(#notifications) .tab-btn.active{background:#1a302d!important;color:#8fe0d5!important}
+html[data-theme="dark"] body:has(#notifications) .card{background:#17211f!important;border-color:#30413e!important}
+
+/* Diet / food. */
+html[data-theme="dark"] body:has(#dietGrid),html[data-theme="dark"] body:has(#foodTools){background:#0d1514!important;color:#edf6f4!important}
+html[data-theme="dark"] body:has(#dietGrid) .food-row{border-color:#30413e!important}
+html[data-theme="dark"] body:has(#dietGrid) .modal-bg,html[data-theme="dark"] body:has(#foodTools) .modal-bg{background:rgba(3,9,8,.76)!important}
+html[data-theme="dark"] body:has(#foodTools) .tab-btn.active{background:#11786f!important;color:#fff!important}
+html[data-theme="dark"] body:has(#foodTools) .exchange-table th,html[data-theme="dark"] body:has(#foodTools) .exchange-table td,
+html[data-theme="dark"] body:has(#foodTools) .products-table th,html[data-theme="dark"] body:has(#foodTools) .products-table td{border-color:#30413e!important}
+
+/* Admin dashboard. */
+html[data-theme="dark"] body:has(#adminContent) .header,
+html[data-theme="dark"] body:has(#adminContent) .tabs,
+html[data-theme="dark"] body:has(#adminContent) .toolbar,
+html[data-theme="dark"] body:has(#adminContent) .card{background:#17211f!important;border-color:#30413e!important;color:#edf6f4!important}
+html[data-theme="dark"] body:has(#adminContent) .title p,
+html[data-theme="dark"] body:has(#adminContent) .state,
+html[data-theme="dark"] body:has(#adminContent) .confirm-text,
+html[data-theme="dark"] body:has(#adminContent) .meta{color:#91a8a3!important}
+html[data-theme="dark"] body:has(#adminContent) .stat,
+html[data-theme="dark"] body:has(#adminContent) .check-grid{background:#1d2927!important;border-color:#30413e!important}
+html[data-theme="dark"] body:has(#adminContent) .field label{color:#b7c9c5!important}
+html[data-theme="dark"] body:has(#adminContent) .modal{background:#17211f!important;color:#edf6f4!important;border:1px solid #30413e!important}
+html[data-theme="dark"] body:has(#adminContent) .toast{background:#edf6f4!important;color:#10201e!important}
+
+/* Subscription plans / index. */
+html[data-theme="dark"] body:has(#plans) .header,
+html[data-theme="dark"] body:has(#plans) .card,
+html[data-theme="dark"] body:has(#plans) .modal,
+html[data-theme="dark"] body:has(#plans) .confirm-modal,
+html[data-theme="dark"] body:has(#plans) .error-modal{background:#17211f!important;border-color:#30413e!important;color:#edf6f4!important}
+html[data-theme="dark"] body:has(#plans) .page-title p,
+html[data-theme="dark"] body:has(#plans) .duration,
+html[data-theme="dark"] body:has(#plans) .description,
+html[data-theme="dark"] body:has(#plans) .field-help,
+html[data-theme="dark"] body:has(#plans) .confirm-message,
+html[data-theme="dark"] body:has(#plans) .empty,
+html[data-theme="dark"] body:has(#plans) .loading{color:#91a8a3!important}
+html[data-theme="dark"] body:has(#plans) .method,html[data-theme="dark"] body:has(#plans) .selected-plan-info{background:#1d2927!important;color:#dbe9e6!important;border-color:#30413e!important}
+html[data-theme="dark"] body:has(#plans) .badge{background:#17322f!important;color:#8fe0d5!important}
+html[data-theme="dark"] body:has(#plans) .error-details{background:#351d23!important;color:#fecdd3!important;border-color:#64313b!important}
+html[data-theme="dark"] body:has(#plans) .confirm-icon{background:#351d23!important;color:#fda4af!important}
+html[data-theme="dark"] body:has(#plans) .toast{background:#edf6f4!important;color:#10201e!important}
+
+/* Profile, patient, patient-profile. */
+html[data-theme="dark"] body:has(#subscriptionCard) .glass,
+html[data-theme="dark"] body:has(#patientContent) .module-card,
+html[data-theme="dark"] body:has(#patientsList) .glass{background:#17211f!important;border-color:#30413e!important;color:#edf6f4!important}
+html[data-theme="dark"] body:has(#subscriptionCard) .text-slate-400,
+html[data-theme="dark"] body:has(#patientContent) .text-slate-400,
+html[data-theme="dark"] body:has(#patientsList) .text-slate-400{color:#91a8a3!important}
+html[data-theme="dark"] body:has(#patientContent) .visit-delete-popup{background:#17211f!important;color:#edf6f4!important;border-color:#30413e!important}
+html[data-theme="dark"] body:has(#patientContent) .visit-delete-text,
+html[data-theme="dark"] body:has(#patientsList) .state{color:#b7c9c5!important}
+
+/* Weight chart: readable grid, labels and tooltip. */
+html[data-theme="dark"] body:has(#weightTab){background:#0d1514!important;color:#edf6f4!important}
+html[data-theme="dark"] body:has(#weightTab) .custom-scrollbar::-webkit-scrollbar-track{background:#1d2927!important}
+html[data-theme="dark"] body:has(#weightTab) .custom-scrollbar::-webkit-scrollbar-thumb{background:#3b514d!important}
+html[data-theme="dark"] body:has(#weightTab) .chart-grid{stroke:#30413e!important}
+html[data-theme="dark"] body:has(#weightTab) .chart-axis,html[data-theme="dark"] body:has(#weightTab) .chart-date{fill:#91a8a3!important}
+html[data-theme="dark"] body:has(#weightTab) .chart-tooltip{background:#edf6f4!important;color:#10201e!important}
+html[data-theme="dark"] body:has(#weightTab) .chart-tooltip strong{color:#087f70!important}
+html[data-theme="dark"] body:has(#weightTab) .chart-dot{stroke:#17211f!important}
+
+/* Nutrition support patient. */
+html[data-theme="dark"] body:has(#selectedPatientName) .day-card,
+html[data-theme="dark"] body:has(#selectedPatientName) .module-card{background:#17211f!important;color:#edf6f4!important;border-color:#30413e!important}
+html[data-theme="dark"] body:has(#selectedPatientName) .text-gray-500,
+html[data-theme="dark"] body:has(#selectedPatientName) .text-slate-500{color:#91a8a3!important}
+html[data-theme="dark"] body:has(#selectedPatientName) .text-gray-400,
+html[data-theme="dark"] body:has(#selectedPatientName) .text-slate-400{color:#78908d!important}
+
+/* Privacy. */
+html[data-theme="dark"] body:has(.max-w-3xl){background:#0d1514!important;color:#edf6f4!important}
+html[data-theme="dark"] body:has(.max-w-3xl) .glass{background:#17211f!important;border-color:#30413e!important}
+html[data-theme="dark"] body:has(.max-w-3xl) .bg-slate-800{background:#1a2624!important}
+
+/* Keep the final theme layer out of print output. */
+@media print{
+  html[data-theme="dark"] body,html[data-theme="dark"] body *{color-scheme:light!important}
+}
