@@ -1334,3 +1334,206 @@ html[data-theme="dark"] body:has(#supportDays) .delete-confirm-cancel{
   background:#26332f!important;
   color:#c7d6d2!important;
 }
+
+
+/* === DARK MODE GLUCOSE MIX + DIET LIBRARY DEEP POLISH v1 === */
+/* Exact component fixes only. Keep all calculator/library logic untouched. */
+
+/* Nutrition Support → Glucose Mixing Tool */
+html[data-theme="dark"] body:has(#mix-result) #section-tpn .bg-emerald-50{
+  background:#142b27!important;
+  border-color:#315a53!important;
+  color:#e8f5f2!important;
+}
+html[data-theme="dark"] body:has(#mix-result) #section-tpn .bg-emerald-50 h4{
+  color:#83dfcf!important;
+  border-color:#315a53!important;
+}
+html[data-theme="dark"] body:has(#mix-result) #mix-target-conc,
+html[data-theme="dark"] body:has(#mix-result) #mix-target-vol,
+html[data-theme="dark"] body:has(#mix-result) #mix-c1,
+html[data-theme="dark"] body:has(#mix-result) #mix-c2{
+  background:#0d1816!important;
+  border-color:#3c5b55!important;
+  color:#edf7f4!important;
+}
+html[data-theme="dark"] body:has(#mix-result) #mix-target-conc::placeholder,
+html[data-theme="dark"] body:has(#mix-result) #mix-target-vol::placeholder{
+  color:#718b85!important;
+}
+html[data-theme="dark"] body:has(#mix-result) #mix-result{
+  background:#194238!important;
+  border:1px solid #3e887c!important;
+  color:#b9eee5!important;
+}
+
+/* Diet Library: meal editor + open/edit state */
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor .diet-table{
+  background:#121c1a!important;
+  color:#e8f2ef!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor .diet-table thead{
+  background:#1d2927!important;
+  color:#c9d8d4!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor .diet-table tbody tr,
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor .food-row{
+  background:#151f1d!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor .diet-table td{
+  background:#151f1d!important;
+  color:#dce9e6!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor .diet-table tbody tr:hover td{
+  background:#20312d!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-meal-name],
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-qty],
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-frequency]{
+  background:#0f1917!important;
+  border-color:#3b514d!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-meal-name]::placeholder,
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-frequency]::placeholder{
+  color:#708681!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-qty]{
+  color:#83dfcf!important;
+  border-color:#3c7169!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-frequency]{
+  border-color:#3b5e72!important;
+  color:#8fd2f4!important;
+  background:#10202a!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-pick]{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-pick]:hover{
+  color:#83dfcf!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-remove-meal],
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-remove-item]{
+  background:#3a2025!important;
+  color:#ffb8c0!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor [data-add-item]{
+  background:#17312d!important;
+  border-color:#3e756d!important;
+  color:#83dfcf!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor .text-slate-400{
+  color:#8fa6a1!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #mealsEditor .text-slate-500{
+  color:#a8bbb6!important;
+}
+
+/* Diet Library: editor shell and daily-summary header */
+html[data-theme="dark"] body:has(#dietGrid) #editor > div{
+  background:#101917!important;
+  color:#e8f2ef!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor > div > .sticky{
+  background:#151f1d!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor > div > .sticky h2{
+  color:#f1f7f5!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor > div > .sticky .bg-slate-100{
+  background:#26332f!important;
+  color:#c7d6d2!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor > div > .p-4,
+html[data-theme="dark"] body:has(#dietGrid) #editor > div > .p-4 > section{
+  color:#e8f2ef!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary{
+  background:transparent!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div{
+  color:#edf6f4!important;
+  border-color:#3a4d49!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div:nth-child(1){
+  background:#3a2d12!important;color:#f9d56e!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div:nth-child(2){
+  background:#1d2826!important;color:#dce9e6!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div:nth-child(3){
+  background:#302711!important;color:#f4d27a!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div:nth-child(4){
+  background:#173027!important;color:#8fe0c0!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div:nth-child(5){
+  background:#152d3a!important;color:#8fd5f5!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div:nth-child(6){
+  background:#173027!important;color:#8fe0c0!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div:nth-child(7){
+  background:#28213a!important;color:#cdbdff!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div .text-amber-900,
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div .text-slate-800,
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div .text-emerald-900,
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div .text-sky-900,
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div .text-purple-900{
+  color:inherit!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div .text-slate-800{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor #dailySummary > div .text-slate-200{
+  color:#dce9e6!important;
+}
+
+/* Diet Library: food picker when opening/editing a meal item */
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker > div{
+  background:#151f1d!important;
+  color:#edf6f4!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker > div > div{
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker #foodSearch{
+  background:#0f1917!important;
+  border-color:#3b514d!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker #selectedFoodBox{
+  background:#17312d!important;
+  border-color:#3d756c!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker #selectedFoodName{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker #selectedFoodGrams{
+  background:#0f1917!important;
+  border-color:#3b7169!important;
+  color:#83dfcf!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker #pickerList > button{
+  background:#151f1d!important;
+  border-color:#30443f!important;
+  color:#dce9e6!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker #pickerList > button:hover{
+  background:#20312d!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker #pickerList .text-slate-700{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker #pickerList .text-slate-400{
+  color:#91a7a2!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker #pickerList .text-slate-300{
+  color:#718984!important;
+}
