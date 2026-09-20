@@ -10,6 +10,46 @@ let selected = null;
 let pendingFollowUpPatient = null;
 let toastTimer = null;
 
+async function refreshFinanceWriteAccess() {
+    try {
+        const currentUser = await window.DietPlannerAccess?.getCurrentUser?.();
+        if (!currentUser) {
+            window.__dpFinanceAccess = { isAdmin:false, hasActiveSubscription:false };
+            applyFinanceWriteAccessUI();
+            return;
+        }
+        const role = await window.DietPlannerAccess?.getUserRole?.(currentUser.id);
+        const isAdmin = role === 'admin';
+        const hasActiveSubscription = isAdmin
+            ? true
+            : (await window.DietPlannerAccess?.hasActiveSubscription?.(currentUser.id)) === true;
+        window.__dpFinanceAccess = { isAdmin, hasActiveSubscription };
+        applyFinanceWriteAccessUI();
+    } catch (error) {
+        console.error('Finance access check failed:', error);
+        window.__dpFinanceAccess = { isAdmin:false, hasActiveSubscription:false };
+        applyFinanceWriteAccessUI();
+    }
+}
+
+function canWriteFinance() {
+    const accessState = window.__dpFinanceAccess || {};
+    return accessState.isAdmin === true || accessState.hasActiveSubscription === true;
+}
+
+function applyFinanceWriteAccessUI() {
+    const canWrite = canWriteFinance();
+    document.querySelectorAll('[data-finance-write]').forEach((element) => {
+        element.disabled = !canWrite;
+        element.classList.toggle('opacity-50', !canWrite);
+        element.classList.toggle('cursor-not-allowed', !canWrite);
+    });
+}
+
+function showFinanceAccessMessage() {
+    showToast('تعديل البيانات المالية متاح أثناء الاشتراك المدفوع فقط.', true);
+}
+
 /* =========================================================
    Date helpers
    ========================================================= */
@@ -395,6 +435,7 @@ function closeFollowUpConfirmation() {
 }
 
 async function recordAttendance(patientId, actualVisitDate) {
+    if (!canWriteFinance()) { showFinanceAccessMessage(); return; }
     const row = rows.find((item) => item.id === patientId);
 
     if (!row) return;
@@ -433,6 +474,7 @@ async function recordAttendance(patientId, actualVisitDate) {
    ========================================================= */
 
 async function saveFinance() {
+    if (!canWriteFinance()) { showFinanceAccessMessage(); return; }
     if (!selected) return;
 
     const startDate = $('startDate').value || null;
@@ -528,6 +570,7 @@ function closeDeleteConfirmation() {
 }
 
 async function deleteFinance() {
+    if (!canWriteFinance()) { showFinanceAccessMessage(); return; }
     if (!selected) return;
 
     $('deleteYes').disabled = true;
@@ -592,6 +635,7 @@ function bindEvents() {
         }
     });
 
+    $('deleteYes').setAttribute('data-finance-write','true');
     $('deleteYes').addEventListener('click', deleteFinance);
 
     $('editModal').addEventListener('click', (event) => {
@@ -635,6 +679,7 @@ function bindEvents() {
         await recordAttendance(patientId, visitDate);
     });
 
+    $('save').setAttribute('data-finance-write','true');
     $('save').addEventListener('click', saveFinance);
 }
 
@@ -643,6 +688,7 @@ function bindEvents() {
    ========================================================= */
 
 async function init() {
+    await refreshFinanceWriteAccess();
     try {
         if (!supabase || !window.DietPlannerAccess?.getCurrentUser) {
             throw new Error('تعذر تهيئة الاتصال الآمن بالتطبيق.');
