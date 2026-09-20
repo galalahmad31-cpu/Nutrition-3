@@ -43,6 +43,13 @@ function scaleHouseholdMeasure(measure,grams){
 function formatHouseholdNumber(v){if(!Number.isFinite(v))return'—';if(Math.abs(v-Math.round(v))<.0001)return String(Math.round(v));return String(Math.round(v*100)/100).replace(/\.0+$/,'').replace(/(\.\d*?)0+$/,'$1');}
 
 async function currentUser(){return await window.DietPlannerAccess?.getCurrentUser?.()||null;}
+async function canWriteVisitData(){
+  const user=await currentUser();
+  if(!user)return false;
+  const role=await window.DietPlannerAccess?.getUserRole?.(user.id);
+  if(role==='admin')return true;
+  return (await window.DietPlannerAccess?.hasActiveSubscription?.(user.id))===true;
+}
 
 async function loadPatient(){
  const user=await currentUser();
@@ -408,6 +415,8 @@ function newCloudUuid(){
 }
 
 async function savePlan(){
+  if(!(await canWriteVisitData())){showToast('حفظ الخطة الغذائية متاح أثناء الاشتراك المدفوع فقط','error');return false;}
+
  const user=await currentUser();
  if(!user||!(window.currentPatientId||patientId)){showToast('لم يتم تحديد المريض أو المستخدم','error');return false;}
 
