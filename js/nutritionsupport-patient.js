@@ -1527,7 +1527,30 @@ function showDeleteConfirm(dayText){
     overlay.onclick=e=>{if(e.target===overlay)close(false);};
   });
 }
+function canWriteSupportDays() {
+  const a = window.__dpNutritionSupportDayAccess || {};
+  return a.isAdmin === true || (a.hasActiveSubscription === true && a.hasFeature === true);
+}
+
+async function refreshSupportDayAccess(userId) {
+  try {
+    const role = await access?.getUserRole?.(userId);
+    const isAdmin = role === 'admin';
+    const hasActiveSubscription = isAdmin
+      ? true
+      : (await access?.hasActiveSubscription?.(userId)) === true;
+    const hasFeature = isAdmin
+      ? true
+      : (await access?.hasFeature?.(userId, 'nutrition_support')) === true;
+    window.__dpNutritionSupportDayAccess = { isAdmin, hasActiveSubscription, hasFeature };
+  } catch (error) {
+    console.error('Nutrition support day access check failed:', error);
+    window.__dpNutritionSupportDayAccess = { isAdmin:false, hasActiveSubscription:false, hasFeature:false };
+  }
+}
+
 async function deleteSupportDay(id){
+  if (!canWriteSupportDays()) { alert('تعديل أيام الدعم الغذائي متاح أثناء الاشتراك المدفوع وخاصية التغذية الداعمة فقط.'); return; }
   const d=supportDays.find(x=>x.id===id); if(!d)return;
   if(!(await showDeleteConfirm(formatDayDate(d.day_date))))return;
   const {error}=await supabaseClient.from('nutrition_support_days').delete()
@@ -1542,6 +1565,7 @@ async function deleteSupportDay(id){
   renderSupportDays();
 }
 async function saveCurrentSupportDay(){
+  if (!canWriteSupportDays()) { alert('تعديل أيام الدعم الغذائي متاح أثناء الاشتراك المدفوع وخاصية التغذية الداعمة فقط.'); return false; }
   if(!supportPatientId||!supportUserId||!currentSupportDayId){
     alert('أضف يومًا أولاً ثم اضغط تعديل.');
     return false;
@@ -1581,6 +1605,7 @@ async function selectSupportDay(id){
   setDayEditMode(false);
 }
 async function addSupportDay(){
+  if (!canWriteSupportDays()) { alert('إضافة أيام الدعم الغذائي متاحة أثناء الاشتراك المدفوع وخاصية التغذية الداعمة فقط.'); return; }
   const date=$('newDayDate')?.value;
   if(!date){alert('اختر تاريخ اليوم أولاً.');return;}
   if(!supportPatientId||!supportUserId){alert('لم يتم تحميل المريض بعد.');return;}
@@ -1625,6 +1650,7 @@ async function initSupportDays(patientId,userId){
 async function loadPatientData(){
   try{
     const sessionUser = await access.getCurrentUser();
+    if (sessionUser) await refreshSupportDayAccess(sessionUser.id);
     if(!sessionUser){location.replace('index.html');return;}
     const id=new URLSearchParams(location.search).get('patient');
     if(!id){location.replace('nutritionsupport.html');return;}
