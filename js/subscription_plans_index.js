@@ -28,6 +28,12 @@ async function checkUser(){
     return false;
   }
 
+  const role = await access.getUserRole?.(currentUser.id);
+  if(role === 'admin'){
+    window.location.replace('app.html');
+    return false;
+  }
+
   const {data:subscription,error} = await sb
     .from('subscriptions')
     .select('status,start_date,expiry_date')
