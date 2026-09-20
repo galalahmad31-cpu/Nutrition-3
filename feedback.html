@@ -29,44 +29,7 @@
       }
     };
   </script>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Cairo, sans-serif;
-      background:
-        radial-gradient(circle at 90% 0%, rgba(23,143,132,.10), transparent 28%),
-        radial-gradient(circle at 5% 95%, rgba(23,143,132,.07), transparent 25%),
-        #f7fafb;
-      color: #17252a;
-    }
-    .glass {
-      background: rgba(255,255,255,.90);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(226,232,240,.85);
-    }
-    .star-button { transition: transform .15s ease, color .15s ease; }
-    .star-button:hover { transform: scale(1.12); }
-    .loading {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f7fafb;
-    }
-    .spinner {
-      width: 34px;
-      height: 34px;
-      border: 3px solid #d9efec;
-      border-top-color: #178f84;
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+  <link rel="stylesheet" href="css/feedback.css">
 </head>
 <body class="min-h-screen">
   <div id="loadingScreen" class="loading">
