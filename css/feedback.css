@@ -1,4 +1,4 @@
-/* Feedback page — compact responsive layout. */
+/* Feedback page — compact typography and controls, full original page width. */
 *{box-sizing:border-box}
 
 body{
@@ -18,9 +18,7 @@ body{
   border:1px solid rgba(226,232,240,.85);
 }
 
-.star-button{
-  transition:transform .15s ease,color .15s ease;
-}
+.star-button{transition:transform .15s ease,color .15s ease}
 .star-button:hover{transform:scale(1.08)}
 
 .loading{
@@ -44,144 +42,75 @@ body{
 
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Compact page shell */
+/* Keep the page width/space similar to the original layout */
 #feedbackPage{
-  padding:1rem 1rem 1.5rem;
+  padding:1.5rem 1rem 2rem;
 }
 
 #feedbackPage > div{
   width:100%;
-  max-width:36rem;
+  max-width:42rem;
 }
 
-#feedbackPage section{
-  border-radius:1.25rem;
-}
+#feedbackPage section{border-radius:1.25rem}
 
-#feedbackPage section:first-of-type > div:first-child{
-  padding:1.15rem 1.35rem;
-}
-
-#feedbackPage section:first-of-type > div:last-child{
-  padding:1.15rem 1.35rem 1.25rem;
-}
-
-#feedbackPage section:last-of-type{
-  margin-top:1rem;
-}
-
-#feedbackPage section:last-of-type > div:first-child{
-  padding:.9rem 1.35rem;
-}
-
-#feedbackPage section:last-of-type > div:last-child{
-  padding:1rem 1.35rem;
-}
-
+/* Slightly smaller typography/controls without shrinking the layout */
 #feedbackPage h1{
   font-size:1.55rem;
   line-height:1.4;
 }
 
-#feedbackPage h2{
-  font-size:1.1rem;
-}
+#feedbackPage h2{font-size:1.1rem}
 
 #feedbackPage textarea{
   min-height:6.5rem;
   max-height:14rem;
 }
 
-#feedbackPage .star-button{
-  padding:.05rem;
+#feedbackPage .star-button{padding:.05rem}
+#feedbackPage .star-button i{font-size:1.45rem}
+
+#feedbackPage #saveFeedbackBtn,
+#feedbackPage #deleteFeedbackBtn{
+  height:2.75rem;
+  padding-left:1.1rem;
+  padding-right:1.1rem;
 }
 
-#feedbackPage .star-button i{
-  font-size:1.45rem;
-}
-
-#feedbackPage .mt-6{
-  margin-top:1rem;
-}
-
-#feedbackPage .mt-5{
-  margin-top:.85rem;
-}
+#feedbackPage .mt-6{margin-top:1rem}
+#feedbackPage .mt-5{margin-top:.85rem}
 
 @media (min-width:768px){
   #feedbackPage{
-    padding:1.25rem 1.5rem 1.75rem;
+    padding:1.5rem 1.5rem 2rem;
   }
 
-  #feedbackPage > div{
-    max-width:38rem;
-  }
-
-  #feedbackPage section:first-of-type > div:first-child{
-    padding:1.25rem 1.5rem;
-  }
-
-  #feedbackPage section:first-of-type > div:last-child{
-    padding:1.25rem 1.5rem 1.35rem;
-  }
-
-  #feedbackPage section:last-of-type > div:first-child{
-    padding:1rem 1.5rem;
-  }
-
-  #feedbackPage section:last-of-type > div:last-child{
-    padding:1.1rem 1.5rem;
-  }
+  #feedbackPage > div{max-width:42rem}
 }
 
 @media (min-width:1024px){
-  #feedbackPage > div{
-    max-width:40rem;
-  }
-
-  #feedbackPage{
-    padding-top:1.5rem;
-  }
+  #feedbackPage{padding-top:1.75rem}
+  #feedbackPage > div{max-width:42rem}
 }
 
 @media (max-width:480px){
   #feedbackPage{
-    padding:.6rem .7rem 1rem!important;
+    padding:.8rem .7rem 1.25rem!important;
   }
 
-  #feedbackPage > div{
-    max-width:100%;
-  }
+  #feedbackPage > div{max-width:100%}
 
-  #feedbackPage section{
-    border-radius:1.05rem;
-  }
+  #feedbackPage section{border-radius:1.05rem}
 
-  #feedbackPage section:first-of-type > div:first-child{
-    padding:.85rem .9rem;
-  }
+  #feedbackPage h1{font-size:1.3rem}
+  #feedbackPage h2{font-size:1rem}
 
-  #feedbackPage section:first-of-type > div:last-child{
-    padding:.9rem;
-  }
+  #feedbackPage .star-button i{font-size:1.3rem}
 
-  #feedbackPage section:last-of-type > div:first-child{
-    padding:.75rem .9rem;
-  }
-
-  #feedbackPage section:last-of-type > div:last-child{
-    padding:.85rem .9rem;
-  }
-
-  #feedbackPage h1{
-    font-size:1.3rem;
-  }
-
-  #feedbackPage h2{
-    font-size:1rem;
-  }
-
-  #feedbackPage .star-button i{
-    font-size:1.3rem;
+  #feedbackPage #saveFeedbackBtn,
+  #feedbackPage #deleteFeedbackBtn{
+    height:2.6rem;
+    padding-left:.9rem;
+    padding-right:.9rem;
   }
 }
