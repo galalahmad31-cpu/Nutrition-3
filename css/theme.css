@@ -379,6 +379,51 @@ html[data-theme="dark"] body:has(#grid) .text-slate-600,
 html[data-theme="dark"] body:has(#grid) .text-slate-700{
   color:#b7c9c5!important;
 }
+html[data-theme="dark"] body:has(#grid) .loading{
+  background:#0d1514!important;
+}
+html[data-theme="dark"] body:has(#grid) .spinner{
+  border-color:#24443f!important;
+  border-top-color:#178f84!important;
+}
+html[data-theme="dark"] body:has(#grid) .bg-amber-50{
+  background:#3a2d18!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-amber-600,
+html[data-theme="dark"] body:has(#grid) .text-amber-700{
+  color:#fbbf24!important;
+}
+html[data-theme="dark"] body:has(#grid) .bg-emerald-50{
+  background:#173027!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-emerald-600{
+  color:#6ee7b7!important;
+}
+html[data-theme="dark"] body:has(#grid) .bg-brand-50{
+  background:#17322f!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-brand-600,
+html[data-theme="dark"] body:has(#grid) .text-brand-700{
+  color:#8fe0d5!important;
+}
+html[data-theme="dark"] body:has(#grid) .bg-red-50{
+  background:#351d23!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-red-600,
+html[data-theme="dark"] body:has(#grid) .text-red-700{
+  color:#fda4af!important;
+}
+html[data-theme="dark"] body:has(#grid) .bg-sky-50{
+  background:#172b36!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-sky-700{
+  color:#7dd3fc!important;
+}
+html[data-theme="dark"] body:has(#grid) .follow-btn{
+  background:#17322f!important;
+  color:#8fe0d5!important;
+}
+
 
 /* ---------------------------------------------------------
    Visit
