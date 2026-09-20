@@ -910,3 +910,427 @@ html[data-theme="dark"] body:has(#dietGrid) #pickerList > button:hover{
 html[data-theme="dark"] body:has(#dietGrid) .modal-bg{
   background:rgba(3,9,8,.78)!important;
 }
+
+
+/* === DARK MODE NUTRITION SUPPORT + EN/TPN FIX v1 === */
+/* Page-scoped only: Nutrition Support list + EN/TPN patient workspace.
+   No calculator logic, access rules, IDs, or print rules are changed. */
+
+html[data-theme="dark"] body:has(#supportPatientArea){
+  background:#0b1211!important;
+  color:#e8f2ef!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .support-header,
+html[data-theme="dark"] body:has(#supportPatientArea) .support-patient-area,
+html[data-theme="dark"] body:has(#supportPatientArea) .selected-patient-area{
+  background:#151f1d!important;
+  border-color:#2d403c!important;
+  color:#e8f2ef!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .support-brand h1,
+html[data-theme="dark"] body:has(#supportPatientArea) .support-patient-top h2,
+html[data-theme="dark"] body:has(#supportPatientArea) .selected-patient-head h2{
+  color:#f1f7f5!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .support-brand p,
+html[data-theme="dark"] body:has(#supportPatientArea) .support-patient-top p,
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-empty{
+  color:#91a7a2!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .home-btn,
+html[data-theme="dark"] body:has(#supportPatientArea) .change-btn{
+  background:#1b2926!important;
+  border-color:#39504b!important;
+  color:#8ee0d3!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-search input{
+  background:#101a18!important;
+  border-color:#354b47!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-search input::placeholder{
+  color:#718984!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-search input:focus{
+  background:#121f1c!important;
+  border-color:#58bdb0!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-card{
+  background:#17221f!important;
+  border-color:#30443f!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-card:hover{
+  background:#1d2b28!important;
+  border-color:#4a7770!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-card strong{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-card span{
+  color:#8ea5a0!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-card .pc-icon{
+  background:#16312d!important;
+  color:#71d2c5!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-management-actions .add-patient-btn{
+  background:#178f84!important;
+  color:#fff!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-modal-overlay,
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-delete-confirm{
+  background:rgba(2,8,7,.80)!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-modal,
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-delete-box{
+  background:#17221f!important;
+  border-color:#30443f!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-modal-header{
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-modal-title,
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-delete-box h3{
+  color:#f1f7f5!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-form-field label{
+  color:#b8cbc7!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-modal input,
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-modal select,
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-modal textarea{
+  background:#101a18!important;
+  border-color:#3a514c!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-modal input::placeholder,
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-modal textarea::placeholder{
+  color:#718984!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-cancel-btn{
+  background:#26332f!important;
+  color:#c5d3d0!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-delete-cancel{
+  background:#26332f!important;
+  color:#c5d3d0!important;
+}
+html[data-theme="dark"] body:has(#supportPatientArea) .patient-delete-text{
+  color:#aabdb8!important;
+}
+
+/* Detailed Nutrition Support workspace. */
+html[data-theme="dark"] body:has(#supportDays){
+  background:#0b1211!important;
+  color:#e8f2ef!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .support-header,
+html[data-theme="dark"] body:has(#supportDays) .patient-readonly-card,
+html[data-theme="dark"] body:has(#supportDays) .support-days,
+html[data-theme="dark"] body:has(#supportDays) .support-tabs,
+html[data-theme="dark"] body:has(#supportDays) .day-edit-toolbar{
+  background:#151f1d!important;
+  border-color:#2d403c!important;
+  color:#e8f2ef!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .support-brand h1,
+html[data-theme="dark"] body:has(#supportDays) .selected-patient-head h2,
+html[data-theme="dark"] body:has(#supportDays) .days-toolbar h3{
+  color:#f1f7f5!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .support-brand p,
+html[data-theme="dark"] body:has(#supportDays) .pdata span,
+html[data-theme="dark"] body:has(#supportDays) .day-empty{
+  color:#91a7a2!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .home-btn,
+html[data-theme="dark"] body:has(#supportDays) .change-btn{
+  background:#1b2926!important;
+  border-color:#39504b!important;
+  color:#8ee0d3!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .patient-data-toggle{
+  background:#16312d!important;
+  color:#8ee0d3!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .patient-data-content{
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .pdata{
+  border-color:#2b3d39!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .pdata strong{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .days-add input,
+html[data-theme="dark"] body:has(#supportDays) .day-item{
+  background:#101a18!important;
+  border-color:#3a514c!important;
+  color:#c7d6d2!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .day-item:hover,
+html[data-theme="dark"] body:has(#supportDays) .day-item.active{
+  background:#173a35!important;
+  border-color:#4d9d91!important;
+  color:#8ee0d3!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .day-edit-toolbar{
+  background:#121c1a!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .day-edit-title{
+  color:#8ee0d3!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .day-edit-btn{
+  background:#26332f!important;
+  color:#c7d6d2!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .day-edit-btn:hover{
+  background:#31413d!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .support-tab{
+  background:#101a18!important;
+  color:#9aada8!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .support-tab:hover{
+  background:#1b2926!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .support-tab.active{
+  background:#173a35!important;
+  color:#8ee0d3!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .support-tab.tpn.active{
+  background:#22214a!important;
+  color:#c7c9ff!important;
+}
+
+/* EN / TPN content surfaces. */
+html[data-theme="dark"] body:has(#supportDays) #section-en,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn{
+  color:#dce9e6!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-white,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .bg-white{
+  background:#151f1d!important;
+  color:#e8f2ef!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-gray-50,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .bg-gray-50{
+  background:#182522!important;
+  color:#e8f2ef!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-purple-50,
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-blue-50,
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-indigo-50{
+  background:#152b28!important;
+  border-color:#31534e!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .bg-blue-50,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .bg-blue-100{
+  background:#20234a!important;
+  border-color:#464a82!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-green-50,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .bg-green-50{
+  background:#153027!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-yellow-50,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .bg-yellow-50{
+  background:#332b17!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-red-50,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .bg-red-50{
+  background:#351d21!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-orange-50,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .bg-orange-50{
+  background:#352618!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-sky-50,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .bg-sky-50{
+  background:#152d3a!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-emerald-50,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .bg-emerald-50{
+  background:#153027!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .bg-violet-50,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .bg-violet-50{
+  background:#25203b!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .text-slate-900,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .text-slate-900,
+html[data-theme="dark"] body:has(#supportDays) #section-en .text-gray-900,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .text-gray-900{
+  color:#f1f7f5!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .text-slate-800,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .text-slate-800,
+html[data-theme="dark"] body:has(#supportDays) #section-en .text-gray-800,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .text-gray-800{
+  color:#e5f0ed!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .text-slate-700,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .text-slate-700,
+html[data-theme="dark"] body:has(#supportDays) #section-en .text-gray-700,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .text-gray-700{
+  color:#c0d1cc!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .text-slate-600,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .text-slate-600,
+html[data-theme="dark"] body:has(#supportDays) #section-en .text-gray-600,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .text-gray-600{
+  color:#a9bdb8!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .text-slate-500,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .text-slate-500,
+html[data-theme="dark"] body:has(#supportDays) #section-en .text-gray-500,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .text-gray-500{
+  color:#8fa6a1!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en label,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn label{
+  color:#c6d5d1!important;
+}
+
+/* Inputs/selects/textareas and locked state. */
+html[data-theme="dark"] body:has(#supportDays) #section-en input,
+html[data-theme="dark"] body:has(#supportDays) #section-en select,
+html[data-theme="dark"] body:has(#supportDays) #section-en textarea,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn input,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn select,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn textarea{
+  background:#0f1917!important;
+  border-color:#3b514d!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en input::placeholder,
+html[data-theme="dark"] body:has(#supportDays) #section-en textarea::placeholder,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn input::placeholder,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn textarea::placeholder{
+  color:#708681!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en input:disabled,
+html[data-theme="dark"] body:has(#supportDays) #section-en select:disabled,
+html[data-theme="dark"] body:has(#supportDays) #section-en textarea:disabled,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn input:disabled,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn select:disabled,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn textarea:disabled{
+  background:#141f1d!important;
+  color:#829a95!important;
+  border-color:#2f433f!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en input:focus,
+html[data-theme="dark"] body:has(#supportDays) #section-en select:focus,
+html[data-theme="dark"] body:has(#supportDays) #section-en textarea:focus,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn input:focus,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn select:focus,
+html[data-theme="dark"] body:has(#supportDays) #section-tpn textarea:focus{
+  background:#14231f!important;
+  border-color:#55bdb1!important;
+  box-shadow:0 0 0 3px rgba(85,189,177,.14)!important;
+}
+
+/* EN/TPN tables: readable dark rows while retaining their identity. */
+html[data-theme="dark"] body:has(#supportDays) .table-custom{
+  background:#151f1d!important;
+  border-color:#30443f!important;
+  color:#e8f2ef!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .table-custom td{
+  background:#151f1d!important;
+  border-color:#30443f!important;
+  color:#dce9e6!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .table-custom tbody tr:nth-child(even) td{
+  background:#1b2926!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-en .table-custom tbody tr:hover td{
+  background:#203733!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #section-tpn .table-custom tbody tr:hover td{
+  background:#292b52!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .table-custom th{
+  color:#fff!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .table-custom .text-slate-500,
+html[data-theme="dark"] body:has(#supportDays) .table-custom .text-gray-500{
+  color:#9eb2ad!important;
+}
+
+/* Clinical callouts / warnings. */
+html[data-theme="dark"] body:has(#supportDays) .bg-low-risk{
+  background:#123026!important;
+  color:#b9ead9!important;
+  border-color:#2d8d72!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .bg-mod-risk{
+  background:#332b17!important;
+  color:#f4d98b!important;
+  border-color:#b88725!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .bg-high-risk{
+  background:#351d21!important;
+  color:#ffb8c0!important;
+  border-color:#c55260!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .highlight-box{
+  background:#15302d!important;
+  border-color:#3f837a!important;
+  color:#d9efeb!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .monitoring-section{
+  background:#142a24!important;
+  border-color:#31554c!important;
+}
+
+/* Existing small controls + modals. */
+html[data-theme="dark"] body:has(#supportDays) #patient-collapse-btn{
+  background:#182522!important;
+  border-color:#3a514c!important;
+  color:#b9cbc7!important;
+}
+html[data-theme="dark"] body:has(#supportDays) #glu-remaining-info{
+  background:#162320!important;
+  border-color:#334844!important;
+  color:#a9bdb8!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .delete-confirm-overlay,
+html[data-theme="dark"] body:has(#supportDays) .print-settings-overlay,
+html[data-theme="dark"] body:has(#supportDays) .print-completion-overlay{
+  background:rgba(2,8,7,.82)!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .delete-confirm-box,
+html[data-theme="dark"] body:has(#supportDays) .print-settings-modal,
+html[data-theme="dark"] body:has(#supportDays) .print-completion-modal{
+  background:#17221f!important;
+  color:#edf6f4!important;
+  border:1px solid #30443f!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .delete-confirm-title,
+html[data-theme="dark"] body:has(#supportDays) .print-settings-head h3,
+html[data-theme="dark"] body:has(#supportDays) .print-completion-modal h3{
+  color:#f1f7f5!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .delete-confirm-text,
+html[data-theme="dark"] body:has(#supportDays) .print-settings-head p,
+html[data-theme="dark"] body:has(#supportDays) .print-completion-modal p,
+html[data-theme="dark"] body:has(#supportDays) .print-field label{
+  color:#a9bdb8!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .print-settings-head,
+html[data-theme="dark"] body:has(#supportDays) .print-settings-actions{
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .print-field input{
+  background:#101a18!important;
+  border-color:#3a514c!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#supportDays) .print-cancel-btn,
+html[data-theme="dark"] body:has(#supportDays) .delete-confirm-cancel{
+  background:#26332f!important;
+  color:#c7d6d2!important;
+}
