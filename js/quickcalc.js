@@ -901,13 +901,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (el) el.innerText = message;
   }
 
-  function validatePositive(ids) {
-    return ids.every(id => {
-      const v = num(id);
-      return Number.isFinite(v) && v > 0;
-    });
-  }
-
   // Prevent negative values in numeric fields at input level.
   document.addEventListener('input', function (e) {
     const el = e.target;
