@@ -180,6 +180,11 @@
   }
 
   async function saveProfile() {
+    if (!(await canWriteProfile())) {
+        showToast?.('تعديل الملف الشخصي متاح أثناء الاشتراك المدفوع فقط.', true);
+        return;
+    }
+
     const name = $('editDoctorName').value.trim();
     const specialty = $('editDoctorSpecialty').value.trim();
     const phone = $('editDoctorPhone').value.trim();
