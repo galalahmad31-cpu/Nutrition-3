@@ -81,7 +81,7 @@
           <div><strong>${esc(patient.name || 'بدون اسم')}</strong><span>${esc(patient.diagnosis || 'بدون تشخيص')}</span></div>
         </button>
         <div class="patient-card-actions">
-          <button type="button" class="patient-action patient-edit" data-edit="${esc(patient.id)}" title="تعديل" aria-label="تعديل"><i class="fa-solid fa-pen"></i><span>تعديل</span></button>
+          <button type="button" class="patient-action patient-edit${canWriteNutritionSupport() ? '' : ' opacity-50 cursor-not-allowed'}" data-edit="${esc(patient.id)}" title="${canWriteNutritionSupport() ? 'تعديل' : 'التعديل غير متاح حاليًا'}" aria-label="تعديل" ${canWriteNutritionSupport() ? '' : 'disabled'}><i class="fa-solid fa-pen"></i><span>تعديل</span></button>
           <button type="button" class="patient-action patient-delete" data-delete="${esc(patient.id)}" title="حذف" aria-label="حذف"><i class="fa-solid fa-trash"></i><span>حذف</span></button>
         </div>`;
       grid.appendChild(card);
