@@ -118,7 +118,21 @@ function subForm(s){
 }
 function openSub(s){openModal('تعديل الاشتراك',subForm(s));$('subForm').addEventListener('submit',async e=>{e.preventDefault();await saveSub(s)});$('cancelModal').onclick=closeModal}
 async function saveSub(s){
- const payload={full_name:$('s_name').value.trim()||null,plan_id:$('s_plan').value,status:$('s_status').value,notes:$('s_notes').value.trim()||null};
+ const selectedPlan=state.plans.find(p=>p.id===$('s_plan').value);
+ if(!selectedPlan){toast('الخطة المحددة غير موجودة');return}
+ const payload={
+  full_name:$('s_name').value.trim()||null,
+  plan_id:selectedPlan.id,
+  status:$('s_status').value,
+  notes:$('s_notes').value.trim()||null
+ };
+ // If the admin changes the plan, explicitly refresh the entitlement snapshot
+ // so the existing paid/pending subscription receives the selected plan's terms.
+ if(selectedPlan.id!==s.plan_id){
+  payload.duration_days_snapshot=selectedPlan.duration_days;
+  payload.max_patients_snapshot=selectedPlan.max_patients;
+  payload.features_snapshot=selectedPlan.features||{};
+ }
  const r=await sb.from('subscriptions').update(payload).eq('id',s.id);
  if(r.error){toast(r.error.message||'تعذر تعديل الاشتراك');return}
  closeModal();toast('تم تعديل الاشتراك');await loadAll()
