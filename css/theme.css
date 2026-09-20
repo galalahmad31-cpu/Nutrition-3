@@ -1537,3 +1537,135 @@ html[data-theme="dark"] body:has(#dietGrid) #foodPicker #pickerList .text-slate-
 html[data-theme="dark"] body:has(#dietGrid) #foodPicker #pickerList .text-slate-300{
   color:#718984!important;
 }
+
+
+/* === DARK MODE GRAM PLAN SUMMARY + FIXED MEALS v1 === */
+/* Visit → Gram-based diet: exact day summary and meal editor. */
+html[data-theme="dark"] body:has(.day-card) .day-card{
+  background:#121c1a!important;
+  border-color:#30443f!important;
+  color:#e8f2ef!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body{
+  color:#dce9e6!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:first-of-type{
+  background:linear-gradient(to bottom,#172320,#121c1a)!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:first-of-type .bg-white{
+  background:#182522!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:first-of-type .bg-amber-50{
+  background:#3a2d12!important;
+  border-color:#765e20!important;
+  color:#f9d56e!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:first-of-type .bg-slate-50{
+  background:#1d2826!important;
+  border-color:#30443f!important;
+  color:#dce9e6!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:first-of-type .bg-sky-50{
+  background:#152d3a!important;
+  border-color:#315b70!important;
+  color:#8fd5f5!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:first-of-type .bg-emerald-50{
+  background:#173027!important;
+  border-color:#326b5c!important;
+  color:#8fe0c0!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:first-of-type .bg-emerald-100{
+  background:#21483e!important;
+  color:#9be7d1!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:first-of-type .text-slate-800{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:first-of-type .text-slate-600{
+  color:#aebfbb!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:first-of-type .text-emerald-800{
+  color:#9be7d1!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:first-of-type .bg-white\/60{
+  background:rgba(255,255,255,.10)!important;
+}
+
+/* Gram-plan meal rows beneath the summary. */
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) .bg-white{
+  background:#151f1d!important;
+  color:#e8f2ef!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) .bg-slate-50{
+  background:#182522!important;
+  color:#dce9e6!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) .bg-slate-100{
+  background:#26332f!important;
+  color:#c7d6d2!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) .border-slate-50,
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) .border-slate-100,
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) .border-slate-200{
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) .text-slate-800{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) .text-slate-600{
+  color:#b8c9c5!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) .text-slate-400{
+  color:#8fa6a1!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) input{
+  background:#0f1917!important;
+  color:#edf6f4!important;
+  border-color:#3b514d!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) input.bg-emerald-50{
+  background:#153027!important;
+  color:#8fe0c0!important;
+  border-color:#326b5c!important;
+}
+html[data-theme="dark"] body:has(.day-card) .day-card .collapsible-body:not(:first-of-type) input.bg-sky-50{
+  background:#152d3a!important;
+  color:#8fd5f5!important;
+  border-color:#315b70!important;
+}
+
+/* Fixed meals library modal inside the gram-based plan. */
+html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsModal > div{
+  background:#151f1d!important;
+  color:#e8f2ef!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsList > div{
+  background:#17221f!important;
+  color:#dce9e6!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsList .bg-slate-50{
+  background:#1d2927!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsList .border-slate-100,
+html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsList .border-slate-200{
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsList .text-slate-800,
+html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsList .text-slate-700{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsList .text-slate-500,
+html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsList .text-slate-400{
+  color:#91a7a2!important;
+}
+html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsList table{
+  color:#dce9e6!important;
+}
