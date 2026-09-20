@@ -1472,14 +1472,23 @@ function restoreDayState(state){
   switchTab(st.__tab==='tpn'?'tpn':'en');
 }
 function setDayEditMode(editing){
-  dayEditMode=!!editing;
-  document.body.classList.toggle('support-day-locked',!dayEditMode);
+  const writable = canWriteSupportDays();
+  dayEditMode = writable && !!editing;
+  document.body.classList.toggle('support-day-locked', !dayEditMode);
   dayControls().forEach(el=>{
-    el.disabled=!dayEditMode;
+    el.disabled = !dayEditMode;
   });
-  const edit=$('editDayBtn'),save=$('saveDayBtn');
-  if(edit) edit.disabled=dayEditMode;
-  if(save) save.disabled=!dayEditMode || !currentSupportDayId;
+  const edit=$('editDayBtn'),save=$('saveDayBtn'),add=$('addDayBtn');
+  if(edit) edit.disabled = !writable || dayEditMode || !currentSupportDayId;
+  if(save) save.disabled = !writable || !dayEditMode || !currentSupportDayId;
+  if(add) add.disabled = !writable;
+  if(add) add.classList.toggle('opacity-50', !writable);
+  if(add) add.classList.toggle('cursor-not-allowed', !writable);
+  document.querySelectorAll('.day-delete').forEach(btn=>{
+    btn.disabled = !writable;
+    btn.classList.toggle('opacity-50', !writable);
+    btn.classList.toggle('cursor-not-allowed', !writable);
+  });
 }
 function formatDayDate(v){
   if(!v)return'—';
@@ -1488,6 +1497,7 @@ function formatDayDate(v){
 }
 function renderSupportDays(){
   const list=$('dayList'); if(!list)return;
+  const writable = canWriteSupportDays();
   list.innerHTML='';
   if(!supportDays.length){list.innerHTML='<div class="day-empty">لا توجد أيام مضافة بعد.</div>';return;}
   [...supportDays].sort((a,b)=>String(a.day_date).localeCompare(String(b.day_date))).forEach(d=>{
@@ -1497,7 +1507,7 @@ function renderSupportDays(){
     b.textContent=formatDayDate(d.day_date); b.title='فتح هذا اليوم';
     b.addEventListener('click',()=>selectSupportDay(d.id));
     const del=document.createElement('button');
-    del.type='button'; del.className='day-delete'; del.title='حذف هذا اليوم'; del.setAttribute('aria-label','حذف هذا اليوم');
+    del.type='button'; del.className='day-delete'; del.title=writable?'حذف هذا اليوم':'الحذف غير متاح حاليًا'; del.setAttribute('aria-label','حذف هذا اليوم'); del.disabled=!writable;
     del.innerHTML='🗑️';
     del.addEventListener('click',e=>{e.stopPropagation();deleteSupportDay(d.id);});
     row.appendChild(b); row.appendChild(del); list.appendChild(row);
@@ -1532,6 +1542,23 @@ function canWriteSupportDays() {
   return a.isAdmin === true || (a.hasActiveSubscription === true && a.hasFeature === true);
 }
 
+function applySupportDayAccessUI() {
+  setDayEditMode(false);
+  const writable = canWriteSupportDays();
+  const note = $('supportAccessNotice');
+  if (note) {
+    note.textContent = writable
+      ? ''
+      : 'الوضع للقراءة فقط: تعديل أو إضافة أيام الدعم والحاسبات يتطلب اشتراكًا فعالًا مع خاصية الدعم الغذائي.';
+    note.style.display = writable ? 'none' : 'block';
+  }
+  document.querySelectorAll('.day-delete').forEach(btn=>{
+    btn.disabled = !writable;
+    btn.classList.toggle('opacity-50', !writable);
+    btn.classList.toggle('cursor-not-allowed', !writable);
+  });
+}
+
 async function refreshSupportDayAccess(userId) {
   try {
     const role = await access?.getUserRole?.(userId);
@@ -1543,9 +1570,11 @@ async function refreshSupportDayAccess(userId) {
       ? true
       : (await access?.hasFeature?.(userId, 'nutrition_support')) === true;
     window.__dpNutritionSupportDayAccess = { isAdmin, hasActiveSubscription, hasFeature };
+    applySupportDayAccessUI();
   } catch (error) {
     console.error('Nutrition support day access check failed:', error);
     window.__dpNutritionSupportDayAccess = { isAdmin:false, hasActiveSubscription:false, hasFeature:false };
+    applySupportDayAccessUI();
   }
 }
 
@@ -1811,8 +1840,20 @@ function initializePage(){
     arrow.className=isOpen?'fa-solid fa-chevron-down':'fa-solid fa-chevron-up';
   });
 
-  $('addDayBtn')?.addEventListener('click',addSupportDay);
-  $('editDayBtn')?.addEventListener('click',()=>{if(currentSupportDayId)setDayEditMode(true);});
+  $('addDayBtn')?.addEventListener('click',()=>{
+    if (!canWriteSupportDays()) {
+      alert('إضافة يوم دعم غذائي تتطلب اشتراكًا فعالًا مع خاصية الدعم الغذائي.');
+      return;
+    }
+    addSupportDay();
+  });
+  $('editDayBtn')?.addEventListener('click',()=>{
+    if (!canWriteSupportDays()) {
+      alert('تعديل يوم الدعم الغذائي يتطلب اشتراكًا فعالًا مع خاصية الدعم الغذائي.');
+      return;
+    }
+    if(currentSupportDayId)setDayEditMode(true);
+  });
   $('saveDayBtn')?.addEventListener('click',saveCurrentSupportDay);
 
   $('printCompletionOverlay')?.addEventListener('click',e=>{
