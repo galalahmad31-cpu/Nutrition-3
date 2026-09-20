@@ -1,36 +1,43 @@
-* { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Cairo, sans-serif;
-      background:
-        radial-gradient(circle at 90% 0%, rgba(23,143,132,.10), transparent 28%),
-        radial-gradient(circle at 5% 95%, rgba(23,143,132,.07), transparent 25%),
-        #f7fafb;
-      color: #17252a;
-    }
-    .glass {
-      background: rgba(255,255,255,.90);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(226,232,240,.85);
-    }
-    .star-button { transition: transform .15s ease, color .15s ease; }
-    .star-button:hover { transform: scale(1.12); }
-    .loading {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f7fafb;
-    }
-    .spinner {
-      width: 34px;
-      height: 34px;
-      border: 3px solid #d9efec;
-      border-top-color: #178f84;
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+/* Feedback page — compact responsive layout. */
+*{box-sizing:border-box}
+body{margin:0;font-family:Cairo,sans-serif;background:radial-gradient(circle at 90% 0%,rgba(23,143,132,.10),transparent 28%),radial-gradient(circle at 5% 95%,rgba(23,143,132,.07),transparent 25%),#f7fafb;color:#17252a}
+.glass{background:rgba(255,255,255,.90);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(226,232,240,.85)}
+.star-button{transition:transform .15s ease,color .15s ease}.star-button:hover{transform:scale(1.12)}
+.loading{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:#f7fafb}
+.spinner{width:34px;height:34px;border:3px solid #d9efec;border-top-color:#178f84;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Keep the feedback page intentionally narrow on desktop and comfortable on phones. */
+#feedbackPage{padding-top:1.25rem;padding-bottom:1.5rem}
+#feedbackPage > div{max-width:38rem}
+#feedbackPage section{border-radius:1.35rem}
+#feedbackPage section:first-of-type > div:first-child{padding:1.35rem 1.5rem}
+#feedbackPage section:first-of-type > div:last-child{padding:1.35rem 1.5rem}
+#feedbackPage section:last-of-type > div:first-child{padding:1.1rem 1.5rem}
+#feedbackPage section:last-of-type > div:last-child{padding:1.15rem 1.5rem}
+#feedbackPage textarea{min-height:7.5rem;max-height:16rem}
+#feedbackPage .star-button i{font-size:1.65rem}
+#feedbackPage .mt-6{margin-top:1.15rem}
+#feedbackPage .mt-5{margin-top:1rem}
+
+@media (min-width:1024px){
+  #feedbackPage{padding-top:1.5rem;padding-bottom:2rem}
+  #feedbackPage > div{max-width:40rem}
+  #feedbackPage section:first-of-type > div:first-child{padding:1.5rem 1.75rem}
+  #feedbackPage section:first-of-type > div:last-child{padding:1.5rem 1.75rem}
+}
+
+@media (max-width:480px){
+  #feedbackPage{padding-left:.75rem!important;padding-right:.75rem!important;padding-top:.75rem;padding-bottom:1rem}
+  #feedbackPage > div{max-width:100%}
+  #feedbackPage section{border-radius:1.1rem}
+  #feedbackPage section:first-of-type > div:first-child{padding:1rem 1rem}
+  #feedbackPage section:first-of-type > div:last-child{padding:1rem}
+  #feedbackPage section:last-of-type > div:first-child{padding:.9rem 1rem}
+  #feedbackPage section:last-of-type > div:last-child{padding:1rem}
+  #feedbackPage h1{font-size:1.35rem;line-height:1.5}
+  #feedbackPage h2{font-size:1.05rem}
+  #feedbackPage .star-button i{font-size:1.45rem}
+  #feedbackPage .star-button{padding:.1rem}
+  #feedbackPage .mt-6{margin-top:1rem}
+}
