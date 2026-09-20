@@ -7,29 +7,40 @@
   let isAdmin = false;
   let hasActiveSubscription = false;
   let hasNutritionSupportFeature = false;
+  let canAddPatientByQuota = false;
 
   async function refreshNutritionSupportAccess() {
     try {
-      const user = await access?.getCurrentUser?.();
+      const accessApi = window.DietPlannerAccess;
+      const user = await accessApi?.getCurrentUser?.();
       if (!user) return;
-      const role = await access?.getUserRole?.(user.id);
+      const userId = user.id;
+      const role = await accessApi?.getUserRole?.(userId);
       isAdmin = role === 'admin';
       hasActiveSubscription = isAdmin
         ? true
-        : (await access?.hasActiveSubscription?.(user.id)) === true;
+        : (await accessApi?.hasActiveSubscription?.(userId)) === true;
       hasNutritionSupportFeature = isAdmin
         ? true
-        : (await access?.hasFeature?.(user.id, 'nutrition_support')) === true;
+        : (await accessApi?.hasFeature?.(userId, 'nutrition_support')) === true;
+      canAddPatientByQuota = isAdmin
+        ? true
+        : (await accessApi?.canAddPatient?.(userId)) === true;
     } catch (error) {
       console.error('Nutrition support access check failed:', error);
       isAdmin = false;
       hasActiveSubscription = false;
       hasNutritionSupportFeature = false;
+      canAddPatientByQuota = false;
     }
   }
 
   function canWriteNutritionSupport() {
     return isAdmin || (hasActiveSubscription && hasNutritionSupportFeature);
+  }
+
+  function canAddNutritionSupportPatient() {
+    return isAdmin || (hasActiveSubscription && hasNutritionSupportFeature && canAddPatientByQuota);
   }
 
   const $ = (id) => document.getElementById(id);
@@ -204,9 +215,11 @@
     const search = $('patientSearch');
     const addButton = $('addPatientBtn');
     if (addButton) {
-      addButton.disabled = !canWriteNutritionSupport();
-      addButton.classList.toggle('opacity-50', !canWriteNutritionSupport());
-      addButton.classList.toggle('cursor-not-allowed', !canWriteNutritionSupport());
+      const canAdd = canAddNutritionSupportPatient();
+      addButton.disabled = !canAdd;
+      addButton.title = canAdd ? 'إضافة مريض' : 'إضافة مريض غير متاحة حاليًا';
+      addButton.classList.toggle('opacity-50', !canAdd);
+      addButton.classList.toggle('cursor-not-allowed', !canAdd);
     }
     const form = $('patientForm');
     const closeButton = $('patientModalClose');
@@ -225,6 +238,10 @@
         const edit = event.target.closest('[data-edit]');
         if (edit) {
           event.stopPropagation();
+          if (!canWriteNutritionSupport()) {
+            alert('تعديل بيانات المريض في الدعم الغذائي يتطلب اشتراكًا فعالًا وتوفر خاصية الدعم الغذائي.');
+            return;
+          }
           const patient = patients.find((item) => item.id === edit.dataset.edit);
           if (patient) openPatientModal(patient);
           return;
@@ -245,7 +262,13 @@
 
     if (addButton && !addButton.dataset.bound) {
       addButton.dataset.bound = 'true';
-      addButton.addEventListener('click', () => openPatientModal());
+      addButton.addEventListener('click', () => {
+        if (!canAddNutritionSupportPatient()) {
+          alert('إضافة مريض جديد غير متاحة حاليًا: تحقق من الاشتراك والخاصية وحصة المرضى.');
+          return;
+        }
+        openPatientModal();
+      });
     }
 
     if (form && !form.dataset.bound) {
@@ -287,11 +310,6 @@
   }
 
   async function init() {
-    await refreshNutritionSupportAccess();
-    // Bind all UI events first. A database/auth delay must never disable the page controls.
-    bindEvents();
-    renderPatients();
-
     const access = window.DietPlannerAccess;
     supabase = access?.supabaseClient || null;
 
@@ -307,13 +325,26 @@
 
     try {
       currentUser = await access.getCurrentUser();
-
       if (!currentUser) {
         location.replace('index.html');
         return;
       }
 
-      await loadPatients();
+      await refreshNutritionSupportAccess();
+
+      // Active subscription without the feature: the service itself is unavailable.
+      // Expired doctors retain read/delete access to their own historical patients.
+      if (!isAdmin && hasActiveSubscription && !hasNutritionSupportFeature) {
+        const area = $('supportPatientArea');
+        if (area) {
+          area.innerHTML = '<div style="padding:28px;text-align:center;color:#475569">خاصية الدعم الغذائي غير متاحة في باقتك الحالية.</div>';
+        }
+        return;
+      }
+
+      // Bind all UI events only after the access snapshot is ready.
+      bindEvents();
+      renderPatients();
     } catch (error) {
       console.error('Nutrition Support initialization error:', error);
       const empty = $('patientEmpty');
@@ -321,7 +352,10 @@
         empty.textContent = 'تعذر تحميل قائمة المرضى';
         empty.style.display = 'block';
       }
+      return;
     }
+
+    await loadPatients();
   }
 
 
