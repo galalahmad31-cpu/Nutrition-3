@@ -179,6 +179,16 @@
     $('editProfileModal').classList.remove('flex');
   }
 
+  async function canWriteProfile() {
+    const user = state.user || await access?.getCurrentUser?.();
+    if (!user) return false;
+
+    const role = await access?.getUserRole?.(user.id);
+    if (role === 'admin') return true;
+
+    return (await access?.hasActiveSubscription?.(user.id)) === true;
+  }
+
   async function saveProfile() {
     if (!(await canWriteProfile())) {
         showToast('تعديل الملف الشخصي متاح أثناء الاشتراك المدفوع فقط.');
