@@ -42,8 +42,7 @@ async function loadAll(){
  ]);
  if(p.error)throw p.error;if(s.error)throw s.error;if(prof.error)throw prof.error;if(pat.error)throw pat.error;
  state.plans=p.data||[];state.subs=s.data||[];state.profiles=prof.data||[];state.patients=pat.data||[];
- state.plans.forEach(p=>Object.keys(p.features||{}).forEach(k=>state.featureKeys.add(k)));
- renderRequests();renderPlans();renderDoctors();
+  renderRequests();renderPlans();renderDoctors();
 }
 function renderRequests(){
  const body=$('requestsBody');$('totalCount').textContent=state.subs.length;$('pendingCount').textContent=state.subs.filter(s=>s.status==='pending').length;$('paidCount').textContent=state.subs.filter(s=>s.status==='paid').length;$('canceledCount').textContent=state.subs.filter(s=>s.status==='canceled').length;
@@ -57,8 +56,8 @@ function renderRequests(){
  <button class="icon-btn danger" title="حذف" data-del-sub="${esc(s.id)}"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
  setState('request','',true)
 }
-function featureLabel(k){return ({nutrition_support:'الدعم الغذائي',articles:'المقالات',diet_builder:'مكتبة الدايت',quick_calc:'الحاسبة السريعة'})[k]||k}
-function featuresText(f){const a=Object.entries(f||{}).filter(x=>x[1]).map(x=>featureLabel(x[0]));return a.length?a.join('، '):'—'}
+const featureLabel=k=>PLAN_FEATURES.find(x=>x.key===k)?.label||k;
+function featuresText(f){const a=PLAN_FEATURES.filter(x=>f?.[x.key]===true).map(x=>x.label);return a.length?a.join('، '):'—'}
 function renderPlans(){
  $('planCount').textContent=state.plans.length;$('activePlanCount').textContent=state.plans.filter(p=>p.is_active).length;
  const body=$('plansBody');if(!state.plans.length){setState('plan','لا توجد خطط.');return}
