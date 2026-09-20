@@ -27,6 +27,14 @@ const db = window.DietPlannerAccess?.supabaseClient;
     return await window.DietPlannerAccess?.getCurrentUser?.() || null;
   }
 
+  async function refreshVisitWriteAccess() {
+    const user = await getCurrentUser();
+    if (!user) return false;
+    const role = await window.DietPlannerAccess?.getUserRole?.(user.id);
+    if (role === 'admin') return true;
+    return (await window.DietPlannerAccess?.hasActiveSubscription?.(user.id)) === true;
+  }
+
   function formatVisitDate(date) {
     if (!date) return 'بدون تاريخ';
     const d = new Date(date + 'T00:00:00');
@@ -151,6 +159,7 @@ function setAssessmentEditMode(editing){
   function deleteAssessment(){if(!assessmentId)return;const m=document.getElementById('deleteAssessmentModal');if(m){m.classList.remove('hidden');m.classList.add('flex');document.body.classList.add('overflow-hidden');}}
   function closeDeleteAssessmentModal(){const m=document.getElementById('deleteAssessmentModal');if(m){m.classList.add('hidden');m.classList.remove('flex');document.body.classList.remove('overflow-hidden');}}
   async function confirmDeleteAssessment(){
+    if (!(await refreshVisitWriteAccess())) { alert('حذف التقييم متاح أثناء الاشتراك المدفوع فقط.'); return; }
     if(!assessmentId)return;
     const btn=document.getElementById('confirmDeleteAssessmentBtn');if(btn){btn.disabled=true;btn.textContent='جاري الحذف...';}
     const {error}=await db.from('assessment').delete().eq('id',assessmentId);
@@ -328,6 +337,10 @@ function setAssessmentEditMode(editing){
   }
 
   async function saveAssessment() {
+    if (!(await refreshVisitWriteAccess())) {
+      alert('تعديل التقييم متاح أثناء الاشتراك المدفوع فقط.');
+      return;
+    }
     const user = await getCurrentUser();
     if (!user || !visit) return;
     calculateBMI();
