@@ -432,10 +432,33 @@
   }
 
   async function init() {
-    bindEvents();
-    await refreshWriteAccess();
-    await loadPatient();
+    try {
+      bindEvents();
+
+      if (!access || !supabase) {
+        throw new Error('تعذر تهيئة الاتصال بقاعدة البيانات.');
+      }
+
+      state.user = await access.getCurrentUser?.();
+      if (!state.user) {
+        showError('انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول مرة أخرى.');
+        return;
+      }
+
+      await loadPatient();
+    } catch (error) {
+      console.error('Patient profile initialization failed:', error);
+      showError(error?.message || 'تعذر تحميل ملف المريض.');
+    }
   }
 
-  document.addEventListener('DOMContentLoaded', init, { once: true });
+  function boot() {
+    init();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
 })();
