@@ -768,3 +768,145 @@ html[data-theme="dark"] body:has(.max-w-3xl) .bg-slate-800{background:#1a2624!im
 @media print{
   html[data-theme="dark"] body,html[data-theme="dark"] body *{color-scheme:light!important}
 }
+
+
+/* === DARK MODE DIET TAB + DIET LIBRARY FIX v1 === */
+/* Only page-scoped fixes. No JS, formulas, IDs or component markup changed. */
+
+/* Visit → Gram Diet: daily total summary and its cards. */
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary > div{
+  background-color:#17211f!important;
+  border-color:#30413e!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary .text-amber-900{
+  color:#fcd34d!important;
+}
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary .text-slate-800{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary .text-emerald-900{
+  color:#6ee7b7!important;
+}
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary .text-sky-900{
+  color:#7dd3fc!important;
+}
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary .text-purple-900{
+  color:#c4b5fd!important;
+}
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary .border-amber-200,
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary .border-slate-200,
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary .border-emerald-200,
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary .border-sky-200,
+html[data-theme="dark"] body:has(#dailySummary) #dailySummary .border-purple-200{
+  border-color:#30413e!important;
+}
+
+/* Diet Library: cards, editor, summary, meal editor and food picker. */
+html[data-theme="dark"] body:has(#dietGrid) .glass{
+  background:#17211f!important;
+  border-color:#30413e!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #loading{
+  background:#0d1514!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor > div,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker > div,
+html[data-theme="dark"] body:has(#dietGrid) #deleteConfirmModal > div{
+  background:#17211f!important;
+  color:#edf6f4!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor .bg-white,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker .bg-white,
+html[data-theme="dark"] body:has(#dietGrid) #deleteConfirmModal .bg-white{
+  background:#17211f!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor .bg-slate-50,
+html[data-theme="dark"] body:has(#dietGrid) #editor .bg-slate-50\/60,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker .bg-slate-50,
+html[data-theme="dark"] body:has(#dietGrid) #deleteConfirmModal .bg-slate-50{
+  background:#1d2927!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor .border-slate-100,
+html[data-theme="dark"] body:has(#dietGrid) #editor .border-slate-200,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker .border-slate-100,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker .border-slate-200,
+html[data-theme="dark"] body:has(#dietGrid) #deleteConfirmModal .border-slate-100,
+html[data-theme="dark"] body:has(#dietGrid) #deleteConfirmModal .border-slate-200{
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor input,
+html[data-theme="dark"] body:has(#dietGrid) #editor select,
+html[data-theme="dark"] body:has(#dietGrid) #editor textarea,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker input{
+  background:#121c1b!important;
+  color:#edf6f4!important;
+  border-color:#3b514d!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor input::placeholder,
+html[data-theme="dark"] body:has(#dietGrid) #editor textarea::placeholder,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker input::placeholder{
+  color:#78908d!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor .text-slate-800,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker .text-slate-800,
+html[data-theme="dark"] body:has(#dietGrid) #deleteConfirmModal .text-slate-800{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor .text-slate-700,
+html[data-theme="dark"] body:has(#dietGrid) #editor .text-slate-600,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker .text-slate-700,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker .text-slate-600,
+html[data-theme="dark"] body:has(#dietGrid) #deleteConfirmModal .text-slate-600{
+  color:#b7c9c5!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor .text-slate-500,
+html[data-theme="dark"] body:has(#dietGrid) #editor .text-slate-400,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker .text-slate-500,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker .text-slate-400,
+html[data-theme="dark"] body:has(#dietGrid) #deleteConfirmModal .text-slate-500{
+  color:#91a8a3!important;
+}
+
+/* Daily summary inside Diet Library editor: preserve semantic accents, remove white cards. */
+html[data-theme="dark"] body:has(#dietGrid) #dailySummary > div{
+  background:#17211f!important;
+  border-color:#30413e!important;
+  color:#edf6f4!important;
+}
+
+/* Meal rows / table / food picker results. */
+html[data-theme="dark"] body:has(#dietGrid) .food-row,
+html[data-theme="dark"] body:has(#dietGrid) .diet-table tbody tr{
+  background:#17211f!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) .diet-table thead{
+  background:#1d2927!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) .diet-table th,
+html[data-theme="dark"] body:has(#dietGrid) .diet-table td{
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) .hover\\:bg-slate-50\\/80:hover,
+html[data-theme="dark"] body:has(#dietGrid) .hover\\:bg-brand-50:hover{
+  background:#20302d!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #pickerList > button{
+  background:#17211f!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #pickerList > button:hover{
+  background:#20302d!important;
+}
+
+/* Keep modal backdrops dark, without changing their z-index/display behavior. */
+html[data-theme="dark"] body:has(#dietGrid) .modal-bg{
+  background:rgba(3,9,8,.78)!important;
+}
