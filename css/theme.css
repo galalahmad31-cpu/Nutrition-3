@@ -558,3 +558,88 @@ html[data-theme="dark"] body:has(#assessmentContent) .lab-modal-panel{
     color-scheme:light!important;
   }
 }
+
+
+/* =========================================================
+   DARK MODE COMPATIBILITY LAYER
+   One controlled block for legacy page palettes.
+   Do not add page-specific dark rules outside this section.
+   ========================================================= */
+
+/* Semantic utility colors */
+html[data-theme="dark"] .bg-brand-50{background:#17322f!important}
+html[data-theme="dark"] .bg-brand-100{background:#1c3e3a!important}
+html[data-theme="dark"] .bg-brand-500,html[data-theme="dark"] .bg-brand-600{background:#11786f!important}
+html[data-theme="dark"] .text-brand-500,html[data-theme="dark"] .text-brand-600,html[data-theme="dark"] .text-brand-700{color:#8fe0d5!important}
+html[data-theme="dark"] .bg-blue-50,html[data-theme="dark"] .bg-sky-50,html[data-theme="dark"] .bg-cyan-50{background:#172b36!important}
+html[data-theme="dark"] .bg-blue-100,html[data-theme="dark"] .bg-sky-100{background:#1d3947!important}
+html[data-theme="dark"] .text-blue-600,html[data-theme="dark"] .text-blue-700,html[data-theme="dark"] .text-blue-800,html[data-theme="dark"] .text-blue-900,html[data-theme="dark"] .text-sky-600,html[data-theme="dark"] .text-sky-700,html[data-theme="dark"] .text-sky-800{color:#7dd3fc!important}
+html[data-theme="dark"] .bg-emerald-50,html[data-theme="dark"] .bg-green-50{background:#173027!important}
+html[data-theme="dark"] .bg-emerald-100{background:#1d3d31!important}
+html[data-theme="dark"] .text-emerald-400,html[data-theme="dark"] .text-emerald-500,html[data-theme="dark"] .text-emerald-600,html[data-theme="dark"] .text-emerald-700,html[data-theme="dark"] .text-emerald-800,html[data-theme="dark"] .text-emerald-900{color:#6ee7b7!important}
+html[data-theme="dark"] .bg-red-50,html[data-theme="dark"] .bg-rose-50{background:#351d23!important}
+html[data-theme="dark"] .bg-red-100{background:#45252d!important}
+html[data-theme="dark"] .text-red-600,html[data-theme="dark"] .text-red-700,html[data-theme="dark"] .text-rose-600,html[data-theme="dark"] .text-rose-700{color:#fda4af!important}
+html[data-theme="dark"] .bg-amber-50,html[data-theme="dark"] .bg-yellow-50,html[data-theme="dark"] .bg-orange-50{background:#3a2d18!important}
+html[data-theme="dark"] .bg-amber-100,html[data-theme="dark"] .bg-yellow-100{background:#4a3a1d!important}
+html[data-theme="dark"] .text-amber-500,html[data-theme="dark"] .text-amber-600,html[data-theme="dark"] .text-amber-800,html[data-theme="dark"] .text-amber-900,html[data-theme="dark"] .text-orange-600,html[data-theme="dark"] .text-orange-800{color:#fbbf24!important}
+html[data-theme="dark"] .bg-purple-50,html[data-theme="dark"] .bg-violet-50,html[data-theme="dark"] .bg-indigo-50{background:#28213a!important}
+html[data-theme="dark"] .bg-purple-100,html[data-theme="dark"] .bg-violet-100,html[data-theme="dark"] .bg-indigo-100{background:#352b4b!important}
+html[data-theme="dark"] .text-purple-700,html[data-theme="dark"] .text-purple-800,html[data-theme="dark"] .text-purple-900,html[data-theme="dark"] .text-violet-500,html[data-theme="dark"] .text-violet-600,html[data-theme="dark"] .text-violet-800,html[data-theme="dark"] .text-indigo-900{color:#c4b5fd!important}
+
+/* Legacy surfaces/forms */
+html[data-theme="dark"] .header,html[data-theme="dark"] .toolbar,html[data-theme="dark"] .tabs,html[data-theme="dark"] .support-header,html[data-theme="dark"] .support-patient-area,html[data-theme="dark"] .selected-patient-area{background:var(--dp-surface)!important;border-color:var(--dp-border)!important;color:var(--dp-text)!important}
+html[data-theme="dark"] .search,html[data-theme="dark"] .patient-search input,html[data-theme="dark"] .field input,html[data-theme="dark"] .field select,html[data-theme="dark"] .field textarea,html[data-theme="dark"] .form-group input,html[data-theme="dark"] .form-group textarea{background:var(--dp-input)!important;color:var(--dp-text)!important;border-color:var(--dp-input-border)!important}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:#7f9691!important}
+html[data-theme="dark"] .method,html[data-theme="dark"] .check-grid,html[data-theme="dark"] .selected-plan-info,html[data-theme="dark"] .empty,html[data-theme="dark"] .error-details{background:#1d2927!important;color:var(--dp-text-2)!important;border-color:var(--dp-border)!important}
+html[data-theme="dark"] .modal-bg,html[data-theme="dark"] .modal-backdrop,html[data-theme="dark"] .confirm-backdrop,html[data-theme="dark"] .error-overlay{background:rgba(3,9,8,.74)!important}
+html[data-theme="dark"] body:not(:has(#grid)) .modal,html[data-theme="dark"] .confirm-modal,html[data-theme="dark"] .error-modal{background:var(--dp-surface)!important;color:var(--dp-text)!important;border-color:var(--dp-border)!important}
+html[data-theme="dark"] .close,html[data-theme="dark"] .icon-btn{background:#1a2624!important;color:#b7c9c5!important;border-color:var(--dp-border)!important}
+html[data-theme="dark"] table{color:var(--dp-text)!important}
+html[data-theme="dark"] thead,html[data-theme="dark"] th{background:#1d2927!important;color:var(--dp-text)!important;border-color:var(--dp-border)!important}
+html[data-theme="dark"] td{border-color:var(--dp-border)!important}
+html[data-theme="dark"] tbody tr:nth-child(even){background:#182321!important}
+html[data-theme="dark"] tbody tr:hover{background:#20302d!important}
+html[data-theme="dark"] option{background:#17211f;color:#edf6f4}
+
+/* Admin + subscription screens */
+html[data-theme="dark"] body:has(#adminContent) .btn-outline,html[data-theme="dark"] body:has(#adminContent) .icon-btn,html[data-theme="dark"] body:has(#adminContent) .close,html[data-theme="dark"] body:has(#plans) .btn-outline{background:#1a2624!important;color:#8fe0d5!important;border-color:#3b514d!important}
+html[data-theme="dark"] body:has(#adminContent) .pending{background:#3a2d18!important;color:#fbbf24!important}
+html[data-theme="dark"] body:has(#adminContent) .paid,html[data-theme="dark"] body:has(#adminContent) .active{background:#173027!important;color:#6ee7b7!important}
+html[data-theme="dark"] body:has(#adminContent) .canceled{background:#351d23!important;color:#fda4af!important}
+html[data-theme="dark"] body:has(#adminContent) .expired,html[data-theme="dark"] body:has(#adminContent) .off{background:#263330!important;color:#b7c9c5!important}
+html[data-theme="dark"] body:has(#plans) .subscription-status-card{background:#173027!important;border-color:#356b4c!important;color:#edf6f4!important}
+html[data-theme="dark"] body:has(#plans) .subscription-status-card .status-icon{background:#244936!important;color:#6ee7b7!important}
+
+/* Nutrition Support main screen */
+html[data-theme="dark"] body:has(#supportPatientArea) .container-main{background:#0d1514!important;color:#edf6f4!important}
+html[data-theme="dark"] body:has(#supportPatientArea) .support-brand h1,html[data-theme="dark"] body:has(#supportPatientArea) .support-patient-top h2,html[data-theme="dark"] body:has(#supportPatientArea) .selected-patient-head h2{color:#edf6f4!important}
+html[data-theme="dark"] body:has(#supportPatientArea) input,html[data-theme="dark"] body:has(#supportPatientArea) select,html[data-theme="dark"] body:has(#supportPatientArea) textarea{background:#121c1b!important;color:#edf6f4!important;border-color:#3b514d!important}
+html[data-theme="dark"] body:has(#supportPatientArea) .table-custom th{background:#203f70!important;color:#fff!important}
+html[data-theme="dark"] body:has(#supportPatientArea) .table-custom td,html[data-theme="dark"] body:has(#supportPatientArea) .ref-table td{border-color:#30413e!important;color:#dbe9e6!important}
+html[data-theme="dark"] body:has(#supportPatientArea) .ref-table th{background:#0f5b46!important;border-color:#1f765f!important;color:#fff!important}
+html[data-theme="dark"] body:has(#supportPatientArea) .ref-table tr:nth-child(even){background:#172d24!important}
+html[data-theme="dark"] body:has(#supportPatientArea) .bg-low-risk{background:#173027!important;border-left-color:#10b981!important;color:#b7f7d5!important}
+html[data-theme="dark"] body:has(#supportPatientArea) .bg-mod-risk{background:#3a2d18!important;border-left-color:#f59e0b!important;color:#fde68a!important}
+html[data-theme="dark"] body:has(#supportPatientArea) .bg-high-risk{background:#351d23!important;border-left-color:#ef4444!important;color:#fecdd3!important}
+html[data-theme="dark"] body:has(#supportPatientArea) .highlight-box{background:#172b36!important;border-color:#176b91!important;color:#d9f2ff!important}
+html[data-theme="dark"] body:has(#supportPatientArea) .monitoring-section{background:#172d24!important;border-color:#356b4c!important}
+html[data-theme="dark"] body:has(#supportPatientArea) .component-select,html[data-theme="dark"] body:has(#supportPatientArea) #glu-remaining-info,html[data-theme="dark"] body:has(#supportPatientArea) #patient-collapse-btn{background:#1d2927!important;color:#edf6f4!important;border-color:#30413e!important}
+
+/* Standalone auth cards */
+html[data-theme="dark"] body:has(#forgotForm) .card,html[data-theme="dark"] body:has(#updateForm) .card{background:var(--dp-surface)!important;color:var(--dp-text)!important;border-color:var(--dp-border)!important}
+html[data-theme="dark"] body:has(#forgotForm) .sub,html[data-theme="dark"] body:has(#updateForm) .sub,html[data-theme="dark"] body:has(#forgotForm) .password-hint{color:var(--dp-text-2)!important}
+html[data-theme="dark"] body:has(#forgotForm) .msg.error,html[data-theme="dark"] body:has(#updateForm) .msg.error{background:#351d23!important;color:#fda4af!important}
+html[data-theme="dark"] body:has(#forgotForm) .msg.success,html[data-theme="dark"] body:has(#updateForm) .msg.success{background:#173027!important;color:#6ee7b7!important}
+
+/* Support patient page */
+html[data-theme="dark"] body:has(#selectedPatientName) .bg-white{background:#17211f!important}
+html[data-theme="dark"] body:has(#selectedPatientName) .bg-gray-50,html[data-theme="dark"] body:has(#selectedPatientName) .bg-slate-50{background:#1d2927!important}
+html[data-theme="dark"] body:has(#selectedPatientName) .text-gray-700,html[data-theme="dark"] body:has(#selectedPatientName) .text-slate-700{color:#edf6f4!important}
+html[data-theme="dark"] body:has(#selectedPatientName) .text-gray-600,html[data-theme="dark"] body:has(#selectedPatientName) .text-slate-600{color:#b7c9c5!important}
+html[data-theme="dark"] body:has(#selectedPatientName) .border-gray-200,html[data-theme="dark"] body:has(#selectedPatientName) .border-slate-200{border-color:#30413e!important}
+
+/* Print stays light and readable. */
+@media print{
+  html[data-theme="dark"] body,html[data-theme="dark"] body *{color-scheme:light!important}
+}
