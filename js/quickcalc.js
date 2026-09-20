@@ -220,26 +220,6 @@ function convertDensityToKcalPerMl(value, unit) {
 
     }
 
-function convertKcalPerMlToUnit(value, unit) {
-
-        if (!isFinite(value) || value <= 0) {
-            return 0;
-        }
-
-        if (unit === 'kcal/oz') {
-
-            /*
-             * kcal/oz = kcal/mL × 29.5735
-             */
-
-            return value * 29.5735;
-
-        }
-
-        return value;
-
-    }
-
 function calculateFormulaConcentration() {
 
         const normalScoops =
@@ -792,8 +772,7 @@ function calculateDextrosePrep() {
 
 
 /* =========================================================
-   Quick Calculator — modern event wiring + page access
-   Replaces legacy inline handlers and legacy /protected auth.
+   Quick Calculator — event wiring + page access
    ========================================================= */
 
 document.addEventListener('click', function (event) {
