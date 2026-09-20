@@ -9,6 +9,8 @@
     user: null,
     patient: null,
     weightLogs: [],
+    isAdmin: false,
+    hasActiveSubscription: false,
     toastTimer: null
   };
 
@@ -38,12 +40,60 @@
     }[char]));
   }
 
+  async function refreshWriteAccess() {
+    try {
+      state.user = await access?.getCurrentUser?.();
+      if (!state.user) {
+        state.isAdmin = false;
+        state.hasActiveSubscription = false;
+        updateWriteControls();
+        return;
+      }
+      const role = await access?.getUserRole?.(state.user.id);
+      state.isAdmin = role === 'admin';
+      state.hasActiveSubscription = state.isAdmin
+        ? true
+        : (await access?.hasActiveSubscription?.(state.user.id)) === true;
+      updateWriteControls();
+    } catch (error) {
+      console.error('Weight access check failed:', error);
+      state.isAdmin = false;
+      state.hasActiveSubscription = false;
+      updateWriteControls();
+    }
+  }
+
+  function canWriteWeight() {
+    return state.isAdmin || state.hasActiveSubscription;
+  }
+
+  function updateWriteControls() {
+    const addButton = $('addWeightBtn');
+    const accessBox = $('weightAccessStatus');
+    if (addButton) {
+      addButton.disabled = !canWriteWeight();
+      addButton.classList.toggle('opacity-50', !canWriteWeight());
+      addButton.classList.toggle('cursor-not-allowed', !canWriteWeight());
+      addButton.title = canWriteWeight()
+        ? 'إضافة قياس'
+        : 'إضافة قياس متاحة أثناء الاشتراك المدفوع فقط';
+    }
+    if (accessBox) {
+      accessBox.textContent = state.isAdmin
+        ? 'وضع المدير: جميع الصلاحيات متاحة.'
+        : state.hasActiveSubscription
+          ? 'الاشتراك فعال — يمكنك إضافة وحذف قياسات الوزن.'
+          : 'الاشتراك غير فعال — لا يمكنك إضافة قياسات جديدة، لكن يمكنك عرض وحذف القياسات الحالية.';
+    }
+  }
+
   async function loadPage() {
     try {
       if (!supabase) throw new Error('DietPlannerAccess is not available.');
       if (!state.patientId) throw new Error('Missing patient id.');
 
       state.user = await access.getCurrentUser();
+      await refreshWriteAccess();
       if (!state.user) {
         window.location.href = 'index.html';
         return;
@@ -89,6 +139,10 @@
   }
 
   async function addWeightEntry() {
+    if (!canWriteWeight()) {
+      showToast('إضافة قياسات الوزن متاحة أثناء الاشتراك المدفوع فقط', 'error');
+      return;
+    }
     const date = $('weightLogDate').value;
     const weight = Number.parseFloat($('weightLogVal').value);
 
@@ -166,6 +220,10 @@
     modal.querySelector('[data-cancel]').addEventListener('click', closeModal);
     modal.querySelector('[data-delete]').addEventListener('click', async () => {
       closeModal();
+      if (!state.user) {
+        showToast('يجب تسجيل الدخول أولاً', 'error');
+        return;
+      }
       try {
         const { error } = await supabase
           .from('weight_logs')
