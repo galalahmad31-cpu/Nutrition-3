@@ -120,7 +120,6 @@ html[data-theme="dark"] td{
 
 /* Modals / dropdown-like surfaces */
 html[data-theme="dark"] [role="dialog"],
-html[data-theme="dark"] .modal,
 html[data-theme="dark"] .dropdown-menu{
   background-color:var(--dp-surface)!important;
   color:var(--dp-text)!important;
@@ -188,4 +187,329 @@ html[data-theme="dark"] .dp-theme-toggle{
 
 @media print{
   .dp-theme-toggle{display:none!important}
+}
+
+
+/* =========================================================
+   PAGE-SPECIFIC DARK MODE
+   The application has several older, highly styled pages.
+   Their light-mode palettes are intentionally preserved;
+   dark mode therefore needs scoped overrides instead of
+   broad global recoloring.
+   ========================================================= */
+
+@media screen {
+
+/* ---------------------------------------------------------
+   Quick Calculator
+   --------------------------------------------------------- */
+html[data-theme="dark"] body:has(#sub-content-quick-calc){
+  background:
+    radial-gradient(circle at 90% 0%,rgba(23,143,132,.10),transparent 28%),
+    radial-gradient(circle at 5% 95%,rgba(23,143,132,.06),transparent 25%),
+    #0d1514!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] #sub-content-quick-calc > .border{
+  background:#17211f!important;
+  border-color:var(--qc-border)!important;
+}
+html[data-theme="dark"] .page-header{
+  background:#17211f!important;
+  border-bottom-color:#30413e!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] .page-header h1{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] .page-header .text-slate-400{
+  color:#91a8a3!important;
+}
+html[data-theme="dark"] .back-btn{
+  background:#1a2624!important;
+  color:#8fe0d5!important;
+  border-color:#3b514d!important;
+}
+html[data-theme="dark"] .back-btn:hover{
+  background:#223431!important;
+  color:#b6eee7!important;
+}
+html[data-theme="dark"] .qc-tab{
+  background:#17211f!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] .qc-tab:hover{
+  background:#1d2927!important;
+}
+html[data-theme="dark"] .qc-tab small{
+  color:#91a8a3!important;
+}
+html[data-theme="dark"] .qc-panel{
+  background:#1b2826!important;
+  border-color:color-mix(in srgb,var(--qc-accent,#178f84) 28%,#30413e)!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] .qc-panel h4,
+html[data-theme="dark"] .qc-panel-title{
+  color:#e7f3f0!important;
+}
+html[data-theme="dark"] .qc-panel label{
+  color:#b7c9c5!important;
+}
+html[data-theme="dark"] #sub-content-quick-calc > .border > [id$="-content"]{
+  background:linear-gradient(180deg,var(--qc-soft,#1b302d) 0%,#17211f 110px)!important;
+}
+html[data-theme="dark"] .iv-line-row{
+  background:linear-gradient(180deg,#1d2a28,#182522)!important;
+  border-color:color-mix(in srgb,var(--qc-accent,#178f84) 30%,#3b514d)!important;
+}
+html[data-theme="dark"] .qc-result{
+  background:linear-gradient(180deg,#1d302d 0%,#17211f 100%)!important;
+}
+html[data-theme="dark"] .qc-note{
+  background:#1a2423!important;
+  color:#b7c9c5!important;
+}
+html[data-theme="dark"] .highlight-box{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] .qc-panel input,
+html[data-theme="dark"] .qc-panel select,
+html[data-theme="dark"] .qc-panel textarea,
+html[data-theme="dark"] #sub-content-quick-calc input,
+html[data-theme="dark"] #sub-content-quick-calc select,
+html[data-theme="dark"] #sub-content-quick-calc textarea{
+  background:#121c1b!important;
+  color:#edf6f4!important;
+  border-color:#3b514d!important;
+}
+html[data-theme="dark"] #sub-content-quick-calc input:focus,
+html[data-theme="dark"] #sub-content-quick-calc select:focus,
+html[data-theme="dark"] #sub-content-quick-calc textarea:focus{
+  background:#152321!important;
+}
+html[data-theme="dark"] #sub-content-quick-calc input::placeholder,
+html[data-theme="dark"] #sub-content-quick-calc textarea::placeholder{
+  color:#78908d!important;
+}
+html[data-theme="dark"] .qc-result .border-t{
+  border-color:#35514b!important;
+}
+
+/* ---------------------------------------------------------
+   Patient Finance
+   --------------------------------------------------------- */
+html[data-theme="dark"] body:has(#grid){
+  background:
+    radial-gradient(circle at 90% 0%,rgba(23,143,132,.10),transparent 28%),
+    radial-gradient(circle at 5% 95%,rgba(23,143,132,.06),transparent 25%),
+    #0d1514!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#grid) .glass{
+  background:rgba(23,33,31,.92)!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#grid) h1,
+html[data-theme="dark"] body:has(#grid) h2,
+html[data-theme="dark"] body:has(#grid) h3{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-slate-500{
+  color:#91a8a3!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-slate-400{
+  color:#78908d!important;
+}
+html[data-theme="dark"] body:has(#grid) .bg-white{
+  background-color:#17211f!important;
+}
+html[data-theme="dark"] body:has(#grid) input,
+html[data-theme="dark"] body:has(#grid) select,
+html[data-theme="dark"] body:has(#grid) textarea{
+  background:#121c1b!important;
+  color:#edf6f4!important;
+  border-color:#3b514d!important;
+}
+html[data-theme="dark"] body:has(#grid) .bg-slate-50{
+  background-color:#1d2927!important;
+}
+html[data-theme="dark"] body:has(#grid) .border-slate-200,
+html[data-theme="dark"] body:has(#grid) .border-slate-100{
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#grid) .modal{
+  background:rgba(3,9,8,.72)!important;
+}
+html[data-theme="dark"] body:has(#grid) .modal > div > div,
+html[data-theme="dark"] body:has(#grid) .modal > div > .w-full,
+html[data-theme="dark"] body:has(#grid) #editModal > div > div,
+html[data-theme="dark"] body:has(#grid) #followConfirm > div,
+html[data-theme="dark"] body:has(#grid) #deleteConfirm > div{
+  background:#17211f!important;
+  color:#edf6f4!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#grid) .bg-brand-50{
+  background:#17322f!important;
+}
+html[data-theme="dark"] body:has(#grid) .bg-emerald-50{
+  background:#173027!important;
+}
+html[data-theme="dark"] body:has(#grid) .bg-sky-50{
+  background:#172b36!important;
+}
+html[data-theme="dark"] body:has(#grid) .bg-red-50{
+  background:#351d23!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-brand-700,
+html[data-theme="dark"] body:has(#grid) .text-brand-600{
+  color:#8fe0d5!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-emerald-700{
+  color:#6ee7b7!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-sky-700{
+  color:#7dd3fc!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-red-700{
+  color:#fda4af!important;
+}
+html[data-theme="dark"] body:has(#grid) .text-slate-600,
+html[data-theme="dark"] body:has(#grid) .text-slate-700{
+  color:#b7c9c5!important;
+}
+
+/* ---------------------------------------------------------
+   Visit
+   --------------------------------------------------------- */
+html[data-theme="dark"] body:has(#assessmentContent){
+  background:#0d1514!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .module-card.assessment-module{
+  background:linear-gradient(180deg,#16332f 0%,#17211f 62%)!important;
+  border-color:#2d6960!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .module-card.calculator-module{
+  background:linear-gradient(180deg,#182d3a 0%,#17211f 62%)!important;
+  border-color:#315e75!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .module-card.diet-module{
+  background:linear-gradient(180deg,#193127 0%,#17211f 62%)!important;
+  border-color:#356b4c!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .assessment-section,
+html[data-theme="dark"] body:has(#assessmentContent) .calc-card,
+html[data-theme="dark"] body:has(#assessmentContent) #calculatorContent,
+html[data-theme="dark"] body:has(#assessmentContent) #dietPlanContent,
+html[data-theme="dark"] body:has(#assessmentContent) #exchangePlanContent{
+  background:#17211f!important;
+  color:#edf6f4!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .assessment-body{
+  background:linear-gradient(180deg,#16332f 0%,#17211f 28%)!important;
+  border-color:#2d6960!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .assessment-labs{
+  background:linear-gradient(180deg,#182d3a 0%,#17211f 28%)!important;
+  border-color:#315e75!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .assessment-clinical{
+  background:linear-gradient(180deg,#28213a 0%,#17211f 28%)!important;
+  border-color:#5c4d86!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .assessment-dietary{
+  background:linear-gradient(180deg,#302c1a 0%,#17211f 28%)!important;
+  border-color:#75622a!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) input,
+html[data-theme="dark"] body:has(#assessmentContent) select,
+html[data-theme="dark"] body:has(#assessmentContent) textarea{
+  background:#121c1b!important;
+  color:#edf6f4!important;
+  border-color:#3b514d!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) input::placeholder,
+html[data-theme="dark"] body:has(#assessmentContent) textarea::placeholder{
+  color:#78908d!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .bg-slate-50{
+  background:#1d2927!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .bg-slate-100{
+  background:#22302d!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .border-slate-100,
+html[data-theme="dark"] body:has(#assessmentContent) .border-slate-200{
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .text-slate-800,
+html[data-theme="dark"] body:has(#assessmentContent) .text-slate-700{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .text-slate-600{
+  color:#b7c9c5!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .text-slate-500{
+  color:#91a8a3!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .text-slate-400{
+  color:#78908d!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .calc-result-neutral{
+  background:#1d2927!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .calc-result-bmr{
+  background:#28213a!important;
+  border-color:#5c4d86!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .calc-result-tdee{
+  background:#173027!important;
+  border-color:#356b4c!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .calc-result-group{
+  background:#30233a!important;
+  border-color:#6a477a!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .assessment-body .section-icon{
+  background:#17463f!important;
+  color:#72e3d4!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .assessment-labs .section-icon{
+  background:#193b4b!important;
+  color:#7dd3fc!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .assessment-clinical .section-icon{
+  background:#352b4b!important;
+  color:#c4b5fd!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .assessment-dietary .section-icon{
+  background:#4a3d1d!important;
+  color:#fcd34d!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan{
+  background:#121b1a!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .exchange-plan-module{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .lab-modal-backdrop{
+  background:rgba(3,9,8,.72)!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .lab-modal-panel{
+  background:#17211f!important;
+  color:#edf6f4!important;
+}
+}
+
+/* Dark mode must never alter print styling. */
+@media print{
+  html[data-theme="dark"] body,
+  html[data-theme="dark"] body *{
+    color-scheme:light!important;
+  }
 }
