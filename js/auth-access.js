@@ -52,14 +52,14 @@
     if (!document.querySelector('link[data-diet-planner-theme]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet";
-      link.href = "css/theme.css?v=20260921-1";
+      link.href = "css/theme.css?v=20260921-2";
       link.dataset.dietPlannerTheme = "true";
       document.head.appendChild(link);
     }
 
     if (!document.querySelector('script[data-diet-planner-theme]')) {
       const script = document.createElement("script");
-      script.src = "js/theme.js?v=20260921-1";
+      script.src = "js/theme.js?v=20260921-2";
       script.dataset.dietPlannerTheme = "true";
       document.head.appendChild(script);
     }
