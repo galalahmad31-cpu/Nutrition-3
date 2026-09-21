@@ -1539,7 +1539,7 @@ function showDeleteConfirm(dayText){
 }
 function canWriteSupportDays() {
   const a = window.__dpNutritionSupportDayAccess || {};
-  return a.isAdmin === true || (a.hasActiveSubscription === true && a.hasFeature === true);
+  return a.hasActiveSubscription === true && a.hasFeature === true;
 }
 
 function applySupportDayAccessUI() {
@@ -1561,19 +1561,13 @@ function applySupportDayAccessUI() {
 
 async function refreshSupportDayAccess(userId) {
   try {
-    const role = await access?.getUserRole?.(userId);
-    const isAdmin = role === 'admin';
-    const hasActiveSubscription = isAdmin
-      ? true
-      : (await access?.hasActiveSubscription?.(userId)) === true;
-    const hasFeature = isAdmin
-      ? true
-      : (await access?.hasFeature?.(userId, 'nutrition_support')) === true;
-    window.__dpNutritionSupportDayAccess = { isAdmin, hasActiveSubscription, hasFeature };
+    const hasActiveSubscription = (await access?.hasActiveSubscription?.(userId)) === true;
+    const hasFeature = (await access?.hasFeature?.(userId, 'nutrition_support')) === true;
+    window.__dpNutritionSupportDayAccess = { hasActiveSubscription, hasFeature };
     applySupportDayAccessUI();
   } catch (error) {
     console.error('Nutrition support day access check failed:', error);
-    window.__dpNutritionSupportDayAccess = { isAdmin:false, hasActiveSubscription:false, hasFeature:false };
+    window.__dpNutritionSupportDayAccess = { hasActiveSubscription:false, hasFeature:false };
     applySupportDayAccessUI();
   }
 }
@@ -1684,7 +1678,6 @@ async function loadPatientData(){
 
     const supportAccess = window.__dpNutritionSupportDayAccess || {};
     if (
-      supportAccess.isAdmin !== true &&
       supportAccess.hasActiveSubscription === true &&
       supportAccess.hasFeature !== true
     ) {
