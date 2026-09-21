@@ -1942,3 +1942,37 @@ html[data-theme="dark"] #loading,
 html[data-theme="dark"] #loadingScreen{
   background:#0d1514!important;
 }
+
+
+/* =========================================================
+   VISIT — GENERATED DIET PLAN SURFACE FIX
+   The remaining bright areas came from Tailwind gradient
+   utilities (from-slate-50 -> to-white), not plain bg-white.
+   ========================================================= */
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .bg-gradient-to-b{
+  background-image:none!important;
+  background-color:#151f1d!important;
+  color:#e8f2ef!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .from-slate-50{
+  --tw-gradient-from:#1d2927!important;
+  --tw-gradient-to:rgba(29,41,39,0)!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .to-white{
+  --tw-gradient-to:#151f1d!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan [class~="bg-white/60"]{
+  background-color:rgba(255,255,255,.07)!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .bg-slate-100{
+  background-color:#26332f!important;
+  color:#dce9e6!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .bg-slate-50{
+  background-color:#1d2927!important;
+  color:#dce9e6!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .bg-white{
+  background-color:#151f1d!important;
+  color:#e8f2ef!important;
+}
