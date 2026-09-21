@@ -28,11 +28,12 @@ const db = window.DietPlannerAccess?.supabaseClient;
   }
 
   async function refreshVisitWriteAccess() {
-    const user = await getCurrentUser();
-    if (!user) return false;
-    const role = await window.DietPlannerAccess?.getUserRole?.(user.id);
-    if (role === 'admin') return true;
-    return (await window.DietPlannerAccess?.hasActiveSubscription?.(user.id)) === true;
+    const accessStatus = await window.DietPlannerAccess?.getAccessStatus?.();
+    if (!accessStatus?.authenticated) return false;
+    if (accessStatus.isAdmin === true) return true;
+    return (await window.DietPlannerAccess?.hasActiveSubscription?.(
+      accessStatus.user.id
+    )) === true;
   }
 
   function formatVisitDate(date) {
