@@ -13,6 +13,7 @@ let calcInitialized = false;
 
 let calcPatient = null;
 let selectedEnergyEquation = 'mifflin';
+let pendingSavedTargetCalories = null;
 
 function calcShowToast(msg, type = 'success') {
     const container = document.getElementById('toastContainer');
@@ -107,6 +108,14 @@ function calcShowToast(msg, type = 'success') {
             }
 
             const tdee = Math.round(bmr * activity);
+
+            // A saved target is an absolute target, while this field is an
+            // adjustment from TDEE. Convert it only when loading a saved plan.
+            if (pendingSavedTargetCalories != null && tdee > 0) {
+                document.getElementById('calcAdjustment').value =
+                    Number(pendingSavedTargetCalories) - tdee;
+                pendingSavedTargetCalories = null;
+            }
 
             document.getElementById('resBMR').textContent = Math.round(bmr);
             document.getElementById('resTDEE').textContent = tdee;
@@ -314,7 +323,7 @@ async function loadCalculatorPatientData() {
     const plan = plans?.[0];
     if (plan) {
         if (plan.target_calories != null) {
-            document.getElementById('calcAdjustment').value = Number(plan.target_calories);
+            pendingSavedTargetCalories = Number(plan.target_calories);
         }
         if (plan.target_protein && plan.target_calories) {
             document.getElementById('macroProPercent').value = Math.round(Number(plan.target_protein) * 4 / Number(plan.target_calories) * 100);
@@ -328,7 +337,14 @@ async function loadCalculatorPatientData() {
     }
 
     updateSchofieldGroupHint();
-    updateTargetAndMacros();
+
+    // Calculate the current TDEE first so a saved absolute target can be
+    // displayed correctly as (target - TDEE) in the adjustment field.
+    if (pendingSavedTargetCalories != null) {
+        calculateSelectedEnergy();
+    } else {
+        updateTargetAndMacros();
+    }
     return true;
 }
 
