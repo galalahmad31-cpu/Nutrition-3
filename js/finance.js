@@ -18,8 +18,8 @@ async function refreshFinanceWriteAccess() {
             applyFinanceWriteAccessUI();
             return;
         }
-        const role = await window.DietPlannerAccess?.getUserRole?.(currentUser.id);
-        const isAdmin = role === 'admin';
+        const accessStatus = await window.DietPlannerAccess?.getAccessStatus?.();
+        const isAdmin = accessStatus?.isAdmin === true;
         const hasActiveSubscription = isAdmin
             ? true
             : (await window.DietPlannerAccess?.hasActiveSubscription?.(currentUser.id)) === true;
