@@ -18,42 +18,6 @@
   "use strict";
 
   // ---------------------------------------------------------
-  // Global theme
-  // Loaded here so every application page that uses the
-  // central access layer gets the same Light / Dark mode.
-  // ---------------------------------------------------------
-  function initializeThemeAssets() {
-    const saved = localStorage.getItem("diet-planner-theme");
-    const systemDark =
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-    const theme =
-      saved === "dark" || saved === "light"
-        ? saved
-        : (systemDark ? "dark" : "light");
-
-    document.documentElement.setAttribute("data-theme", theme);
-
-    if (!document.querySelector('link[data-diet-planner-theme]')) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "css/theme.css";
-      link.dataset.dietPlannerTheme = "true";
-      document.head.appendChild(link);
-    }
-
-    if (!document.querySelector('script[data-diet-planner-theme]')) {
-      const script = document.createElement("script");
-      script.src = "js/theme.js";
-      script.dataset.dietPlannerTheme = "true";
-      document.head.appendChild(script);
-    }
-  }
-
-  initializeThemeAssets();
-
-  // ---------------------------------------------------------
   // Supabase
   // ---------------------------------------------------------
   const SUPABASE_URL =
