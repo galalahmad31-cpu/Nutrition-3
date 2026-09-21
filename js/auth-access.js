@@ -146,17 +146,38 @@
   async function hasActiveSubscription(userId) {
     if (!userId) return null;
 
+    // Admin access is determined locally from the already verified profile role.
+    // This also prevents a temporary RPC failure from locking the entire UI.
+    const role = await getUserRole(userId);
+    if (role === "admin") return true;
+
     const { data, error } = await supabaseClient.rpc(
       "has_active_subscription",
       { p_user_id: userId }
     );
 
-    if (error) {
-      console.error("Subscription check failed:", error);
+    if (!error) return data === true;
+
+    console.error("Subscription RPC failed; using read-only fallback:", error);
+
+    // UI fallback only. Database RLS remains the final write authorization layer.
+    const today = getToday();
+    const { data: subscription, error: fallbackError } = await supabaseClient
+      .from("subscriptions")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("status", "paid")
+      .lte("start_date", today)
+      .gte("expiry_date", today)
+      .limit(1)
+      .maybeSingle();
+
+    if (fallbackError) {
+      console.error("Subscription fallback check failed:", fallbackError);
       return null;
     }
 
-    return data === true;
+    return !!subscription;
   }
 
   async function canAddPatient(userId) {
