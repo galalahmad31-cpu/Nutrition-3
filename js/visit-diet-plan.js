@@ -102,34 +102,21 @@ async function loadPatient(){
 
 async function loadFoods(){
  /*
-  * PostgREST can return a limited number of rows per request. Load the
-  * foods table in pages so the client really receives the complete library,
-  * not just the first server page.
+  * Ask Supabase for the exact current row count, then request that full
+  * range. No fixed client-side limit such as 1000 is used.
   */
- const pageSize=1000;
- let offset=0;
- const allFoods=[];
+ const {data,error,count}=await sb.from('foods')
+  .select('*',{count:'exact'})
+  .order('name_ar',{ascending:true});
 
- while(true){
-  const {data,error}=await sb.from('foods')
-   .select('*')
-   .order('name_ar',{ascending:true})
-   .range(offset,offset+pageSize-1);
-
-  if(error){
-   console.error('Foods load failed:',error);
-   showToast('تعذر تحميل مكتبة الأغذية','error');
-   return false;
-  }
-
-  const rows=data||[];
-  allFoods.push(...rows);
-
-  if(rows.length<pageSize)break;
-  offset+=pageSize;
+ if(error){
+  console.error('Foods load failed:',error);
+  showToast('تعذر تحميل مكتبة الأغذية','error');
+  return false;
  }
 
- foodDatabase=allFoods.map(f=>({
+ const rows=data||[];
+ foodDatabase=rows.map(f=>({
   id:String(f.id),
   name:String(f.name_ar??'').trim(),
   household:f.household||'',
