@@ -458,8 +458,17 @@
   function initializeIndex() {
     if (!isIndexPage()) return;
 
-    checkSession();
-
+    /*
+     * IMPORTANT:
+     * Do not run an asynchronous session redirect on a normal visit to
+     * index.html. On Android and some desktop browsers, an immediate
+     * navigation can interrupt native input focus and make the keyboard
+     * appear/disappear or make the fields feel unresponsive.
+     *
+     * Normal access routing happens after a successful login. OAuth
+     * callbacks are the only case where index must process the existing
+     * session automatically.
+     */
     document
       .getElementById("loginButton")
       ?.addEventListener("click", loginUser);
@@ -471,6 +480,17 @@
     document
       .getElementById("googleLoginButton")
       ?.addEventListener("click", loginWithGoogle);
+
+    const isAuthCallback =
+      window.location.hash.includes("access_token=") ||
+      window.location.hash.includes("refresh_token=") ||
+      new URLSearchParams(window.location.search).has("code");
+
+    if (isAuthCallback) {
+      window.setTimeout(() => {
+        checkSession();
+      }, 300);
+    }
 
     document
       .querySelectorAll("[data-auth-tab]")
