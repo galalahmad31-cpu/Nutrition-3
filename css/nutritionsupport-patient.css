@@ -181,6 +181,38 @@ input:disabled,select:disabled,textarea:disabled{opacity:1}
 
 
 
+
+/* Final contrast pass — dark mode */
+html[data-theme="dark"] #mix-result{
+  background:#1d4038!important;
+  color:#a9f0d6!important;
+  border:1px solid #3e7568!important;
+}
+html[data-theme="dark"] #section-tpn .bg-yellow-100{
+  background:#3a3218!important;
+  color:#f5d978!important;
+  border:1px solid #66572a!important;
+}
+html[data-theme="dark"] #section-tpn .bg-blue-900{
+  background:#28357a!important;
+  color:#f0f3ff!important;
+  border:1px solid #4858ad!important;
+}
+html[data-theme="dark"] #section-tpn .bg-blue-100{
+  background:#20333b!important;
+  color:#bfe8f0!important;
+}
+html[data-theme="dark"] #section-tpn .text-blue-200{
+  color:#b9d4ff!important;
+}
+html[data-theme="dark"] #section-tpn .text-blue-800,
+html[data-theme="dark"] #section-tpn .text-blue-900{
+  color:#a9d8ff!important;
+}
+html[data-theme="dark"] #section-tpn .peer-checked\:bg-blue-600{
+  background:#4f7ff5!important;
+}
+
 /* Dark-mode refinement: keep clinical colors, but use the global dark palette as the base. */
 html[data-theme="dark"] #section-tpn .bg-indigo-900{
   background:#202b29!important;
