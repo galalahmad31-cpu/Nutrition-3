@@ -38,7 +38,8 @@
 
   async function refreshWriteAccess() {
     try {
-      state.user = await access?.getCurrentUser?.();
+      const accessStatus = await access?.getAccessStatus?.();
+      state.user = accessStatus?.user || null;
 
       if (!state.user) {
         state.isAdmin = false;
@@ -47,7 +48,6 @@
         return;
       }
 
-      const accessStatus = await access?.getAccessStatus?.();
       state.isAdmin = accessStatus?.isAdmin === true;
       state.hasActiveSubscription =
         (await access?.hasActiveSubscription?.(state.user.id)) === true;
