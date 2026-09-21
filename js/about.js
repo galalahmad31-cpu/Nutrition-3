@@ -129,13 +129,14 @@
         throw new Error("تعذر تهيئة الاتصال الآمن بالتطبيق.");
       }
 
-      const user = await window.DietPlannerAccess.getCurrentUser();
-      if (!user) {
+      const accessStatus = await window.DietPlannerAccess.getAccessStatus();
+      if (!accessStatus?.authenticated || !accessStatus.user) {
         window.location.replace("index.html");
         return false;
       }
 
-      state.isAdmin = (await window.DietPlannerAccess.getUserRole(user.id)) === "admin";
+      const user = accessStatus.user;
+      state.isAdmin = accessStatus.isAdmin === true;
       setAdminUI();
       return true;
     }
