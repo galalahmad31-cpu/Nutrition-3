@@ -250,7 +250,7 @@
     }
 
     try {
-      const user = await access?.getCurrentUser?.();
+      const user = state.user;
       if (!user) throw new Error('No authenticated user.');
 
       const { data, error } = await supabase
