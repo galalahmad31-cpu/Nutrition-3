@@ -30,9 +30,7 @@
     if (errorText) errorText.textContent = message;
   }
 
-  async function getUserForWrite() {
-    if (state.user) return state.user;
-    state.user = await access?.getCurrentUser?.();
+  function getUserForWrite() {
     return state.user;
   }
 
@@ -437,7 +435,8 @@
         throw new Error('تعذر تهيئة الاتصال بقاعدة البيانات.');
       }
 
-      state.user = await access.getCurrentUser?.();
+      const accessStatus = await access.getAccessStatus?.();
+      state.user = accessStatus?.user || null;
       if (!state.user) {
         showError('انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول مرة أخرى.');
         return;
