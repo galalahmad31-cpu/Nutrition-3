@@ -17,17 +17,19 @@ async function refreshFinanceWriteAccess() {
         if (!currentUser) {
             window.__dpFinanceAccess = { isAdmin:false, hasActiveSubscription:false };
             applyFinanceWriteAccessUI();
-            return;
+            return null;
         }
         const isAdmin = accessStatus?.isAdmin === true;
         const hasActiveSubscription =
             (await window.DietPlannerAccess?.hasActiveSubscription?.(currentUser.id)) === true;
         window.__dpFinanceAccess = { isAdmin, hasActiveSubscription };
         applyFinanceWriteAccessUI();
+        return currentUser;
     } catch (error) {
         console.error('Finance access check failed:', error);
         window.__dpFinanceAccess = { isAdmin:false, hasActiveSubscription:false };
         applyFinanceWriteAccessUI();
+        return null;
     }
 }
 
@@ -687,13 +689,12 @@ function bindEvents() {
    ========================================================= */
 
 async function init() {
-    await refreshFinanceWriteAccess();
     try {
-        if (!supabase || !window.DietPlannerAccess?.getCurrentUser) {
+        if (!supabase || !window.DietPlannerAccess?.getAccessStatus) {
             throw new Error('تعذر تهيئة الاتصال الآمن بالتطبيق.');
         }
 
-        user = await window.DietPlannerAccess.getCurrentUser();
+        user = await refreshFinanceWriteAccess();
 
         if (!user) {
             location.replace('index.html');
