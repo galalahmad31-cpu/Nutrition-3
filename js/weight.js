@@ -92,7 +92,6 @@
       if (!supabase) throw new Error('DietPlannerAccess is not available.');
       if (!state.patientId) throw new Error('Missing patient id.');
 
-      state.user = await access.getCurrentUser();
       await refreshWriteAccess();
       if (!state.user) {
         window.location.href = 'index.html';
