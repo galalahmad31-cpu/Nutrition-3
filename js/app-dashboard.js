@@ -239,30 +239,29 @@
 
     addLockStyles();
 
-    // Check each feature once through the centralized API.
+    // Check each distinct feature once through the centralized API.
+    const featureCache = new Map();
+
     const featureResults = await Promise.all(
       Array.from(elements.featureCards).map(
         async (card) => {
-          const feature =
-            card.dataset.feature;
+          const feature = card.dataset.feature;
 
           if (!feature) {
-            return {
-              card,
-              allowed: true
-            };
+            return { card, allowed: true };
           }
 
-          const allowed =
-            await access.hasFeature(
-              userId,
-              feature
+          if (!featureCache.has(feature)) {
+            featureCache.set(
+              feature,
+              access.hasFeature(userId, feature)
+                .then(value => value === true)
             );
+          }
 
-          return {
-            card,
-            allowed
-          };
+          const allowed = await featureCache.get(feature);
+
+          return { card, allowed };
         }
       )
     );
