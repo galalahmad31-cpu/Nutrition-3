@@ -180,13 +180,13 @@
   }
 
   async function canWriteProfile() {
-    const user = state.user || await access?.getCurrentUser?.();
-    if (!user) return false;
+    const accessStatus = await access?.getAccessStatus?.();
+    if (!accessStatus?.authenticated) return false;
+    if (accessStatus.isAdmin === true) return true;
 
-    const role = await access?.getUserRole?.(user.id);
-    if (role === 'admin') return true;
-
-    return (await access?.hasActiveSubscription?.(user.id)) === true;
+    return (await access?.hasActiveSubscription?.(
+      accessStatus.user.id
+    )) === true;
   }
 
   async function saveProfile() {
