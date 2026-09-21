@@ -539,6 +539,47 @@ html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan{
   background:#121b1a!important;
   color:#edf6f4!important;
 }
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .day-card,
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .bg-white{
+  background:#17211f!important;
+  color:#edf6f4!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .bg-slate-50{
+  background:#1d2927!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .bg-slate-100{
+  background:#22302d!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .border-slate-50,
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .border-slate-100,
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .border-slate-200{
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .text-slate-800,
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .text-slate-700{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .text-slate-600{
+  color:#b7c9c5!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .text-slate-500,
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .text-slate-400{
+  color:#91a8a3!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan .meal-header{
+  background:#17211f!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan input,
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan select,
+html[data-theme="dark"] body:has(#assessmentContent) .embedded-diet-plan textarea{
+  background:#121c1b!important;
+  color:#edf6f4!important;
+  border-color:#3b514d!important;
+}
 html[data-theme="dark"] body:has(#assessmentContent) .exchange-plan-module{
   color:#edf6f4!important;
 }
