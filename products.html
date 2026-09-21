@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المنتجات الغذائية - Diet Planner</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script>tailwind.config={theme:{extend:{fontFamily:{cairo:['Cairo','sans-serif']},colors:{brand:{50:'#eef7f6',100:'#d9efec',500:'#178f84',600:'#11786f',700:'#0d625b',800:'#0b504b'}}}}}</script>
+<link rel="stylesheet" href="css/theme.css?v=20260921-3">
+<script src="js/theme.js?v=20260921-3"></script>
+<style>
+body{font-family:Cairo,sans-serif;background:#f6faf9}.glass{background:rgba(255,255,255,.9);border:1px solid #e7efed}
+.product-card{transition:.18s ease}.product-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,118,110,.08)}
+</style>
+</head>
+<body class="min-h-screen">
+<main class="min-h-screen px-4 py-5 sm:px-6 lg:px-8"><div class="mx-auto max-w-7xl">
+<header class="glass rounded-3xl px-5 py-5 shadow-sm"><div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+<div class="flex items-center gap-4"><div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-lg"><i class="fa-solid fa-prescription-bottle-medical text-xl"></i></div>
+<div><h1 class="text-2xl font-extrabold text-slate-800">المنتجات الغذائية</h1><p class="mt-1 text-sm text-slate-500">مكتبة التركيبات والمنتجات الغذائية العلاجية</p></div></div>
+<a href="app.html" class="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 hover:bg-slate-50"><i class="fa-solid fa-arrow-right"></i> لوحة التحكم</a>
+</div></header>
+
+<section class="mt-6 glass rounded-3xl p-4 sm:p-5 shadow-sm">
+<div class="grid grid-cols-1 gap-3 md:grid-cols-4">
+<div><label class="mb-1.5 block text-xs font-bold text-slate-500">القسم</label><select id="categoryFilter" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm font-semibold outline-none"></select></div>
+<div><label class="mb-1.5 block text-xs font-bold text-slate-500">القسم الفرعي</label><select id="subcategoryFilter" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm font-semibold outline-none"></select></div>
+<div class="md:col-span-2"><label class="mb-1.5 block text-xs font-bold text-slate-500">بحث</label><div class="relative"><i class="fa-solid fa-magnifying-glass absolute right-3 top-3.5 text-slate-400"></i><input id="searchInput" class="w-full rounded-xl border border-slate-200 bg-white py-3 pr-10 pl-3 text-sm font-semibold outline-none" placeholder="ابحث باسم المنتج أو الاستخدام..."></div></div>
+</div>
+<div class="mt-4 flex items-center justify-between"><div id="resultCount" class="text-xs font-bold text-slate-500">—</div><button id="resetBtn" class="text-xs font-bold text-brand-600 hover:text-brand-700">إعادة التصفية</button></div>
+</section>
+
+<section class="mt-6"><div id="state" class="glass rounded-3xl p-10 text-center text-sm font-semibold text-slate-500">جاري تحميل المنتجات...</div><div id="productsGrid" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div></section>
+</div></main>
+<script src="js/auth-access.js?v=20260921-4"></script>
+<script src="js/products.js?v=20260922-1"></script>
+</body></html>
