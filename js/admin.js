@@ -26,10 +26,8 @@ function closeConfirm(){ $('confirmBg').style.display='none';confirmAction=null 
 
 async function requireAdmin(){
  if(!sb||!access){location.replace('index.html');return false}
- const u=await access.getCurrentUser();
- if(!u){location.replace('index.html');return false}
- const role=await access.getUserRole(u.id);
- if(role!=='admin'){location.replace('index.html');return false}
+ const accessStatus=await access.getAccessStatus();
+ if(!accessStatus?.authenticated || !accessStatus.isAdmin){location.replace('index.html');return false}
  $('adminContent').style.display='block';return true
 }
 
