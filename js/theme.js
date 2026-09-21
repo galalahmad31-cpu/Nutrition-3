@@ -99,7 +99,13 @@
 
   window.addEventListener("storage", (event) => {
     if (event.key !== STORAGE_KEY) return;
-    applyTheme(event.newValue === "dark" ? "dark" : "light");
+
+    if (event.newValue === "dark" || event.newValue === "light") {
+      applyTheme(event.newValue);
+      return;
+    }
+
+    applyTheme(getStoredTheme());
   });
 
   window.DietPlannerTheme = {
