@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 const supabase = window.DietPlannerAccess?.supabaseClient;
-let foods=[], exchanges=[], products=[], user=null;
+let foods=[], exchanges=[], user=null;
 
 const $=id=>document.getElementById(id);
 const num=v=>Number(v||0);
@@ -69,61 +69,9 @@ function renderExchanges(){
   $('exchangeEmpty').classList.toggle('hidden',filtered.length>0);
 }
 
-async function loadProducts(){
-  const {data,error}=await supabase
-    .from('food_products')
-    .select('id,product_name,usage,kcal,carb,protein,fat,notes,sort_order')
-    .order('sort_order',{ascending:true,nullsFirst:false})
-    .order('id',{ascending:true});
-
-  if(error){
-    console.error(error);
-    toast('تعذر تحميل المنتجات الغذائية: '+error.message,false);
-    return;
-  }
-
-  products=(data||[]).map(x=>({
-    id:String(x.id),
-    product_name:String(x.product_name??''),
-    usage:String(x.usage??''),
-    kcal:String(x.kcal??''),
-    carb:String(x.carb??''),
-    protein:String(x.protein??''),
-    fat:String(x.fat??''),
-    notes:String(x.notes??''),
-    sort_order:Number(x.sort_order??0)
-  }));
-
-  renderProducts();
-}
-
-function renderProducts(){
-  const q=$('productSearch').value.trim().toLowerCase();
-  const filtered=products.filter(x=>{
-    const text=`${x.product_name} ${x.usage} ${x.notes}`.toLowerCase();
-    return !q || text.includes(q);
-  });
-
-  $('productRows').innerHTML=filtered.map(x=>`
-    <tr class="border-b border-slate-100 hover:bg-slate-50/80">
-      <td class="px-2 py-2 sm:px-3 sm:py-3 font-extrabold text-slate-800">${esc(x.product_name)}</td>
-      <td class="px-2 py-2 sm:px-3 sm:py-3 text-slate-700">${esc(x.usage)}</td>
-      <td class="px-2 py-2 sm:px-3 sm:py-3 text-center font-bold">${esc(x.kcal)}</td>
-      <td class="px-2 py-2 sm:px-3 sm:py-3 text-center font-bold">${esc(x.carb)} g</td>
-      <td class="px-2 py-2 sm:px-3 sm:py-3 text-center font-bold">${esc(x.protein)} g</td>
-      <td class="px-2 py-2 sm:px-3 sm:py-3 text-center font-bold">${esc(x.fat)} g</td>
-      <td class="px-2 py-2 sm:px-3 sm:py-3 text-slate-600">${esc(x.notes)}</td>
-    </tr>
-  `).join('');
-
-  $('productsEmpty').classList.toggle('hidden',filtered.length>0);
-  $('productsCount').textContent=`${filtered.length} منتج`;
-}
-
 function switchTab(tab){
   const isFood=tab==='foods';
   const isExchange=tab==='exchanges';
-  const isProduct=tab==='products';
 
   $('foodsTab').classList.toggle('active',isFood);
   $('foodsTab').classList.toggle('text-slate-600',!isFood);
@@ -131,14 +79,10 @@ function switchTab(tab){
   $('exchangesTab').classList.toggle('active',isExchange);
   $('exchangesTab').classList.toggle('text-slate-600',!isExchange);
 
-  $('productsTab').classList.toggle('active',isProduct);
-  $('productsTab').classList.toggle('text-slate-600',!isProduct);
-
   $('foodTools').classList.toggle('hidden',!isFood);
   $('foodFilters').classList.toggle('hidden',!isFood);
   $('foodSection').classList.toggle('hidden',!isFood);
   $('exchangeSection').classList.toggle('hidden',!isExchange);
-  $('productsSection').classList.toggle('hidden',!isProduct);
 }
 
 async function loadFoods(){
@@ -236,7 +180,6 @@ $('exchangesTab').onclick=()=>switchTab('exchanges');
 $('productsTab').onclick=()=>switchTab('products');
 $('exchangeSearch').oninput=renderExchanges;
 $('exchangeGroupFilter').onchange=renderExchanges;
-$('productSearch').oninput=renderProducts;
 
 async function init(){
   if(!supabase){
@@ -246,7 +189,7 @@ async function init(){
   const accessStatus=await window.DietPlannerAccess?.getAccessStatus?.();
   if(!accessStatus?.authenticated || !accessStatus.user){location.replace('index.html');return;}
   user=accessStatus.user;
-  await Promise.all([loadFoods(),loadExchanges(),loadProducts()]);
+  await Promise.all([loadFoods(),loadExchanges()]);
   $('loading').style.display='none';
 }
 init();
