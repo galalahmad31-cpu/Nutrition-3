@@ -453,13 +453,18 @@
     const container = $('plans');
 
     try {
-      if (!access || !supabase || typeof access.getCurrentUser !== 'function') {
+      if (!access || !supabase || typeof access.getAccessStatus !== 'function') {
         throw new Error('نظام المصادقة المركزي غير متاح. تأكد من تحميل auth-access.js قبل subscription_plans.js.');
       }
 
       bindEvents();
 
-      state.user = await access.getCurrentUser();
+      const accessStatus = await access.getAccessStatus();
+      state.user = accessStatus?.user || null;
+      if (!state.user) {
+        window.location.replace('index.html');
+        return;
+      }
 
       await loadPlans();
     } catch (error) {
