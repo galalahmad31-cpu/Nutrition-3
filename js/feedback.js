@@ -445,17 +445,15 @@
     }
 
     try {
-      state.user = await access.getCurrentUser();
-
-      if (!state.user) {
+      const accessStatus = await access.getAccessStatus();
+      if (!accessStatus?.authenticated || !accessStatus.user) {
         hideLoading();
         showStatus("يجب تسجيل الدخول لاستخدام هذه الصفحة.", "error");
         return;
       }
 
-      if (access.getUserRole) {
-        state.isAdmin = (await access.getUserRole(state.user.id)) === "admin";
-      }
+      state.user = accessStatus.user;
+      state.isAdmin = accessStatus.isAdmin === true;
 
       const displayName = await getDisplayName(state.user);
       if (elements.name) elements.name.textContent = displayName;
