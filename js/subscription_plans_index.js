@@ -28,35 +28,14 @@ async function checkUser(){
     return false;
   }
 
-  const role = await access.getUserRole?.(currentUser.id);
-  if(role === 'admin'){
+  const accessStatus = await access.getAccessStatus?.();
+  if(accessStatus?.isAdmin === true){
     window.location.replace('app.html');
     return false;
   }
 
-  const {data:subscription,error} = await sb
-    .from('subscriptions')
-    .select('status,start_date,expiry_date')
-    .eq('user_id',currentUser.id)
-    .eq('status','paid')
-    .order('expiry_date',{ascending:false})
-    .limit(1)
-    .maybeSingle();
-
-  if(error){
-    console.error('Active subscription check error:',error);
-    return true;
-  }
-
-  const today = new Date().toISOString().slice(0,10);
-  const isActive =
-    subscription?.status === 'paid' &&
-    !!subscription.start_date &&
-    !!subscription.expiry_date &&
-    subscription.start_date <= today &&
-    subscription.expiry_date >= today;
-
-  if(isActive){
+  const isActive = await access.hasActiveSubscription?.(currentUser.id);
+  if(isActive === true){
     window.location.replace('app.html');
     return false;
   }
