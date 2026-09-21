@@ -23,10 +23,6 @@ const db = window.DietPlannerAccess?.supabaseClient;
     document.getElementById('errorText').textContent = message;
   }
 
-  async function getCurrentUser() {
-    return await window.DietPlannerAccess?.getCurrentUser?.() || null;
-  }
-
   async function refreshVisitWriteAccess() {
     const accessStatus = await window.DietPlannerAccess?.getAccessStatus?.();
     if (!accessStatus?.authenticated) return false;
@@ -342,7 +338,8 @@ function setAssessmentEditMode(editing){
       alert('تعديل التقييم متاح أثناء الاشتراك المدفوع فقط.');
       return;
     }
-    const user = await getCurrentUser();
+    const accessStatus = await window.DietPlannerAccess?.getAccessStatus?.();
+    const user = accessStatus?.user || null;
     if (!user || !visit) return;
     calculateBMI();
     const payload = {
