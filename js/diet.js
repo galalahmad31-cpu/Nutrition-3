@@ -50,13 +50,16 @@ function updateDiagnostics(extra='') {
   if(!panel||!box)return;
   const itemIds=diets.flatMap(d=>(d._diagnostic_item_ids||[]));
   const matched=itemIds.filter(id=>foods.some(f=>f.id===String(id))).length;
-  box.innerHTML=[
+  const modalBox=$('diagnosticTextModal');
+  const html=[
     '<div><b>عدد الأغذية المحملة:</b> '+foods.length+'</div>',
     '<div><b>عدد قوالب الدايت المحملة:</b> '+diets.length+'</div>',
     '<div><b>أول صنف:</b> '+esc(foods[0]?.name_ar||'لا يوجد')+' ('+esc(foods[0]?.id||'—')+')</div>',
     '<div><b>حالة الربط:</b> '+(itemIds.length?matched+' من '+itemIds.length+' أصناف مرتبطة': 'لم يتم فتح عناصر الدايت بعد')+'</div>',
     extra?'<div><b>ملاحظة:</b> '+esc(extra)+'</div>':''
   ].join('');
+  box.innerHTML=html;
+  if(modalBox) modalBox.innerHTML=html;
   panel.classList.remove('hidden');
 }
 async function loadDiets(){ $('statusStat').textContent='جاري التحميل...';const {data,error}=await supabase.from('diet_templates').select('*').order('updated_at',{ascending:false});if(error){$('statusStat').textContent='خطأ';$('statusStat').className='mt-1 text-sm font-extrabold text-red-600';updateDiagnostics('خطأ في تحميل قوالب الدايت: '+error.message);toast('تعذر تحميل مكتبة الدايت: '+error.message,false);return}diets=data||[];authors={};const ids=[...new Set(diets.filter(d=>d.visibility==='public').map(d=>d.created_by).filter(Boolean))];if(ids.length){const pr=await supabase.from('profiles').select('id,full_name').in('id',ids);if(!pr.error)(pr.data||[]).forEach(p=>{authors[p.id]=p.full_name||''})}if(!authors[user.id]){const ownProfile=await supabase.from('profiles').select('full_name').eq('id',user.id).maybeSingle();if(!ownProfile.error&&ownProfile.data)authors[user.id]=ownProfile.data.full_name||'';}if(!authors[user.id])authors[user.id]=user.user_metadata?.full_name||user.user_metadata?.name||'';diets.forEach(d=>{if(d.publisher_name)authors[d.created_by]=d.publisher_name});updateDiagnostics();$('statusStat').textContent='متصل';$('statusStat').className='mt-1 text-sm font-extrabold text-brand-600';renderDiets();return true}
