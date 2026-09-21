@@ -180,6 +180,49 @@ input:disabled,select:disabled,textarea:disabled{opacity:1}
 .support-report-print-header{display:none}
 
 
+
+/* Dark-mode refinement: keep clinical colors, but use the global dark palette as the base. */
+html[data-theme="dark"] #section-tpn .bg-indigo-900{
+  background:#202b29!important;
+  color:var(--dp-text)!important;
+  border:1px solid #344843!important;
+}
+html[data-theme="dark"] #section-tpn .bg-indigo-900 .border-indigo-700{
+  border-color:#3b514d!important;
+}
+html[data-theme="dark"] #section-tpn .bg-emerald-50,
+html[data-theme="dark"] #section-tpn .bg-emerald-100{
+  background:#18302b!important;
+  border-color:#36544d!important;
+}
+html[data-theme="dark"] #section-tpn .text-emerald-900,
+html[data-theme="dark"] #section-tpn .text-emerald-800{
+  color:#9be6d0!important;
+}
+html[data-theme="dark"] #section-tpn .bg-blue-200{
+  background:#243331!important;
+  color:var(--dp-text)!important;
+}
+html[data-theme="dark"] #section-tpn .bg-amber-50,
+html[data-theme="dark"] #section-tpn .bg-amber-100{
+  background:#332b19!important;
+  border-color:#5b4b2a!important;
+}
+html[data-theme="dark"] #section-tpn .text-amber-900,
+html[data-theme="dark"] #section-tpn .text-amber-800{
+  color:#f1d99b!important;
+}
+html[data-theme="dark"] #section-tpn .bg-white{
+  background:var(--dp-surface)!important;
+  color:var(--dp-text)!important;
+}
+html[data-theme="dark"] #section-tpn .border{
+  border-color:var(--dp-border)!important;
+}
+html[data-theme="dark"] #section-tpn .text-yellow-400{
+  color:#f5d76e!important;
+}
+
 /* =========================================================
    GLOBAL DARK MODE — Nutrition Support Patient
    Page-specific colors must not override theme.css.
