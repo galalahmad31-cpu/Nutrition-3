@@ -35,17 +35,31 @@
 
     document.documentElement.setAttribute("data-theme", theme);
 
+    if (!document.querySelector('meta[name="color-scheme"]')) {
+      const meta = document.createElement("meta");
+      meta.name = "color-scheme";
+      meta.content = theme === "dark" ? "dark light" : "light dark";
+      document.head.appendChild(meta);
+    }
+
+    if (!document.querySelector('meta[name="theme-color"]')) {
+      const meta = document.createElement("meta");
+      meta.name = "theme-color";
+      meta.content = theme === "dark" ? "#0d1514" : "#f7fafb";
+      document.head.appendChild(meta);
+    }
+
     if (!document.querySelector('link[data-diet-planner-theme]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet";
-      link.href = "css/theme.css";
+      link.href = "css/theme.css?v=20260921-1";
       link.dataset.dietPlannerTheme = "true";
       document.head.appendChild(link);
     }
 
     if (!document.querySelector('script[data-diet-planner-theme]')) {
       const script = document.createElement("script");
-      script.src = "js/theme.js";
+      script.src = "js/theme.js?v=20260921-1";
       script.dataset.dietPlannerTheme = "true";
       document.head.appendChild(script);
     }
