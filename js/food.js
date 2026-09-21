@@ -243,8 +243,9 @@ async function init(){
     toast('تعذر تهيئة الاتصال الآمن بالتطبيق',false);
     return;
   }
-  user=await window.DietPlannerAccess?.getCurrentUser?.();
-  if(!user){location.replace('index.html');return;}
+  const accessStatus=await window.DietPlannerAccess?.getAccessStatus?.();
+  if(!accessStatus?.authenticated || !accessStatus.user){location.replace('index.html');return;}
+  user=accessStatus.user;
   await Promise.all([loadFoods(),loadExchanges(),loadProducts()]);
   $('loading').style.display='none';
 }
