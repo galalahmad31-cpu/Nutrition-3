@@ -42,15 +42,15 @@
 
   async function refreshWriteAccess() {
     try {
-      state.user = await access?.getCurrentUser?.();
-      if (!state.user) {
+      const accessStatus = await access?.getAccessStatus?.();
+      state.user = accessStatus?.user || null;
+      if (!accessStatus?.authenticated) {
         state.isAdmin = false;
         state.hasActiveSubscription = false;
         updateWriteControls();
         return;
       }
-      const role = await access?.getUserRole?.(state.user.id);
-      state.isAdmin = role === 'admin';
+      state.isAdmin = accessStatus.isAdmin === true;
       state.hasActiveSubscription = state.isAdmin
         ? true
         : (await access?.hasActiveSubscription?.(state.user.id)) === true;
