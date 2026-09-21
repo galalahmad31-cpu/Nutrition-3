@@ -842,12 +842,12 @@ async function initializeQuickCalculatorAccess() {
     return;
   }
 
-  const user = await access.getCurrentUser();
-
-  if (!user) {
+  const accessStatus = await access.getAccessStatus();
+  if (!accessStatus?.authenticated || !accessStatus.user) {
     window.location.replace('index.html');
     return;
   }
+  const user = accessStatus.user;
 
   // The calculator itself is a client-side tool. Authentication is required;
   // subscription/feature authorization remains centralized in the app's access layer.
