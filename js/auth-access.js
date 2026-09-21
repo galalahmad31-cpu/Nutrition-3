@@ -17,55 +17,6 @@
 (() => {
   "use strict";
 
-  // ---------------------------------------------------------
-  // Global theme bootstrap
-  // Theme is loaded here only as a bootstrap dependency.
-  // The theme logic itself remains isolated in theme.js.
-  // ---------------------------------------------------------
-  function loadThemeAssets() {
-    const saved = localStorage.getItem("diet-planner-theme");
-    const systemDark =
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-    const theme =
-      saved === "dark" || saved === "light"
-        ? saved
-        : (systemDark ? "dark" : "light");
-
-    document.documentElement.setAttribute("data-theme", theme);
-
-    if (!document.querySelector('meta[name="color-scheme"]')) {
-      const meta = document.createElement("meta");
-      meta.name = "color-scheme";
-      meta.content = theme === "dark" ? "dark light" : "light dark";
-      document.head.appendChild(meta);
-    }
-
-    if (!document.querySelector('meta[name="theme-color"]')) {
-      const meta = document.createElement("meta");
-      meta.name = "theme-color";
-      meta.content = theme === "dark" ? "#0d1514" : "#f7fafb";
-      document.head.appendChild(meta);
-    }
-
-    if (!document.querySelector('link[data-diet-planner-theme]')) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "css/theme.css?v=20260921-2";
-      link.dataset.dietPlannerTheme = "true";
-      document.head.appendChild(link);
-    }
-
-    if (!document.querySelector('script[data-diet-planner-theme]')) {
-      const script = document.createElement("script");
-      script.src = "js/theme.js?v=20260921-2";
-      script.dataset.dietPlannerTheme = "true";
-      document.head.appendChild(script);
-    }
-  }
-
-  loadThemeAssets();
 
   // ---------------------------------------------------------
   // Supabase
