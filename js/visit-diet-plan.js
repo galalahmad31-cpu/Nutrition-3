@@ -46,9 +46,7 @@ async function currentUser(){return await window.DietPlannerAccess?.getCurrentUs
 async function canWriteVisitData(){
   const user=await currentUser();
   if(!user)return false;
-  const role=await window.DietPlannerAccess?.getUserRole?.(user.id);
-  if(role==='admin')return true;
-  return (await window.DietPlannerAccess?.hasActiveSubscription?.(user.id))===true;
+  return (await window.DietPlannerAccess?.canWrite?.(user.id))===true;
 }
 
 async function loadPatient(){
