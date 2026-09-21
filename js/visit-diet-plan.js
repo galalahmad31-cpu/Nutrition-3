@@ -379,7 +379,7 @@ function metricCard(label,value,unit,target,pctv,kind){
 async function syncFixedMeals(){
  const user=await currentUser();if(!user)return;
  const [pub,own]=await Promise.all([
-  sb.from('diet_templates').select('*').eq('visibility','public').eq('is_active',true).order('created_at',{ascending:false}),
+  sb.from('diet_templates').select('*').eq('visibility','public').order('created_at',{ascending:false}),
   sb.from('diet_templates').select('*').eq('created_by',user.id).order('created_at',{ascending:false})
  ]);
  if(pub.error||own.error){fixedMealsDatabase=[];return}
