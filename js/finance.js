@@ -12,17 +12,16 @@ let toastTimer = null;
 
 async function refreshFinanceWriteAccess() {
     try {
-        const currentUser = await window.DietPlannerAccess?.getCurrentUser?.();
+        const accessStatus = await window.DietPlannerAccess?.getAccessStatus?.();
+        const currentUser = accessStatus?.user || null;
         if (!currentUser) {
             window.__dpFinanceAccess = { isAdmin:false, hasActiveSubscription:false };
             applyFinanceWriteAccessUI();
             return;
         }
-        const accessStatus = await window.DietPlannerAccess?.getAccessStatus?.();
         const isAdmin = accessStatus?.isAdmin === true;
-        const hasActiveSubscription = isAdmin
-            ? true
-            : (await window.DietPlannerAccess?.hasActiveSubscription?.(currentUser.id)) === true;
+        const hasActiveSubscription =
+            (await window.DietPlannerAccess?.hasActiveSubscription?.(currentUser.id)) === true;
         window.__dpFinanceAccess = { isAdmin, hasActiveSubscription };
         applyFinanceWriteAccessUI();
     } catch (error) {
