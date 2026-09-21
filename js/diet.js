@@ -132,22 +132,12 @@ async function saveDietHeader(dietId,payload){
 }
 
 async function clearDietDays(dietId){
-  const {data,error}=await supabase
+  const {error}=await supabase
     .from('diet_template_days')
-    .select('id')
+    .delete()
     .eq('diet_id',dietId);
 
   if(error)throw error;
-
-  const ids=(data||[]).map(row=>row.id);
-  if(!ids.length)return;
-
-  const {error:deleteError}=await supabase
-    .from('diet_template_days')
-    .delete()
-    .in('id',ids);
-
-  if(deleteError)throw deleteError;
 }
 
 async function insertDietStructure(dietId){
