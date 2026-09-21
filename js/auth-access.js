@@ -75,6 +75,16 @@
   // ---------------------------------------------------------
   // Small helpers
   // ---------------------------------------------------------
+  const accessCache = {
+    userId: null,
+    role: null
+  };
+
+  function clearAccessCache() {
+    accessCache.userId = null;
+    accessCache.role = null;
+  }
+  // ---------------------------------------------------------
   function getToday() {
     return new Date().toISOString().slice(0, 10);
   }
@@ -139,6 +149,13 @@
   async function getUserRole(userId) {
     if (!userId) return null;
 
+    if (
+      accessCache.userId === userId &&
+      accessCache.role !== null
+    ) {
+      return accessCache.role;
+    }
+
     const { data, error } = await supabaseClient
       .from("profiles")
       .select("role")
@@ -150,7 +167,12 @@
       return null;
     }
 
-    return data?.role || "user";
+    const role = data?.role || "user";
+
+    accessCache.userId = userId;
+    accessCache.role = role;
+
+    return role;
   }
 
   // ---------------------------------------------------------
@@ -158,9 +180,6 @@
   // ---------------------------------------------------------
   async function hasActiveSubscription(userId) {
     if (!userId) return null;
-
-    const role = await getUserRole(userId);
-    if (role === "admin") return true;
 
     const { data, error } = await supabaseClient.rpc(
       "has_active_subscription",
@@ -178,9 +197,6 @@
   async function canAddPatient(userId) {
     if (!userId) return false;
 
-    const role = await getUserRole(userId);
-    if (role === "admin") return true;
-
     const { data, error } = await supabaseClient.rpc(
       "can_add_patient",
       { p_user_id: userId }
@@ -197,9 +213,6 @@
   async function canWrite(userId) {
     if (!userId) return false;
 
-    const role = await getUserRole(userId);
-    if (role === "admin") return true;
-
     const active = await hasActiveSubscription(userId);
     return active === true;
   }
@@ -209,10 +222,6 @@
   // ---------------------------------------------------------
   async function hasFeature(userId, featureKey) {
     if (!userId || !featureKey) return false;
-
-    const role = await getUserRole(userId);
-
-    if (role === "admin") return true;
 
     const { data, error } = await supabaseClient.rpc(
       "has_feature",
@@ -448,6 +457,7 @@
 
   async function logoutUser() {
     try {
+      clearAccessCache();
       await supabaseClient.auth.signOut();
     } catch (error) {
       console.error("Logout failed:", error);
