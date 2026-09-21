@@ -413,137 +413,88 @@ function newCloudUuid(){
 }
 
 async function savePlan(){
-  if(!(await canWriteVisitData())){showToast('حفظ الخطة الغذائية متاح أثناء الاشتراك المدفوع فقط','error');return false;}
-
- const user=await currentUser();
- if(!user||!(window.currentPatientId||patientId)){showToast('لم يتم تحديد المريض أو المستخدم','error');return false;}
-
- try{
-  const localDays=Array.isArray(savedDaysData)?savedDaysData:(Array.isArray(daysData)?daysData:[]);
-
-  // التأكد من أن كل صنف موجود فعلاً في مكتبة الأغذية قبل لمس قاعدة البيانات.
-  const missingFoods=[];
-  localDays.forEach(day=>(day.meals||[]).forEach(meal=>(meal.items||[]).forEach(item=>{
-   if(!item.foodId)return;
-   if(!foodDatabase.some(f=>String(f.id)===String(item.foodId))) missingFoods.push(String(item.foodId));
-  })));
-  if(missingFoods.length) throw new Error('الصنف غير موجود في مكتبة الأغذية: '+[...new Set(missingFoods)].join(', '));
-
-  let planId=activeCloudPlanId;
-
-  if(!planId){
-   let existingQuery=sb.from('nutrition_plans')
-    .select('id')
-    .eq('patient_id',window.currentPatientId||patientId);
-   if(visitId) existingQuery=existingQuery.eq('visit_id',visitId);
-   const existing=await existingQuery
-    .order('updated_at',{ascending:false})
-    .order('created_at',{ascending:false})
-    .limit(1);
-   if(existing.error) throw new Error('فشل البحث عن الخطة: '+existing.error.message);
-   planId=existing.data?.[0]?.id||newCloudUuid();
+  if(!(await canWriteVisitData())){
+    showToast('حفظ الخطة الغذائية متاح أثناء الاشتراك المدفوع فقط','error');
+    return false;
   }
 
-  const planData={
-   id:planId,
-   patient_id:window.currentPatientId||patientId,
-   visit_id:visitId||null,
-   plan_name:'الخطة الغذائية',
-   start_date:new Date().toISOString().slice(0,10),
-   target_calories:Number(patientInfo.targetCal)||null,
-   target_protein:Number(patientInfo.targetPro)||null,
-   target_carb:Number(patientInfo.targetCarb)||null,
-   target_fat:Number(patientInfo.targetFat)||null,
-   target_fluid:null,
-   goal:patientInfo.goal||null,
-   notes:null
-  };
-
-  let r=await sb.from('nutrition_plans').upsert(planData,{onConflict:'id'});
-  if(r.error) throw new Error('فشل حفظ الخطة: '+r.error.message);
-  activeCloudPlanId=planId;
-
-  // حذف الأبناء بالترتيب الصحيح بسبب العلاقات Foreign Keys.
-  const oldDaysRes=await sb.from('plan_days').select('id').eq('plan_id',planId);
-  if(oldDaysRes.error) throw new Error('فشل قراءة أيام الخطة القديمة: '+oldDaysRes.error.message);
-
-  const oldDayIds=(oldDaysRes.data||[]).map(x=>x.id);
-
-  if(oldDayIds.length){
-   const oldMealsRes=await sb.from('plan_meals').select('id').in('day_id',oldDayIds);
-   if(oldMealsRes.error) throw new Error('فشل قراءة وجبات الخطة القديمة: '+oldMealsRes.error.message);
-
-   const oldMealIds=(oldMealsRes.data||[]).map(x=>x.id);
-
-   if(oldMealIds.length){
-    r=await sb.from('plan_items').delete().in('meal_id',oldMealIds);
-    if(r.error) throw new Error('فشل حذف أصناف الخطة القديمة: '+r.error.message);
-
-    r=await sb.from('plan_meals').delete().in('day_id',oldDayIds);
-    if(r.error) throw new Error('فشل حذف وجبات الخطة القديمة: '+r.error.message);
-   }
-
-   r=await sb.from('plan_days').delete().eq('plan_id',planId);
-   if(r.error) throw new Error('فشل حذف أيام الخطة القديمة: '+r.error.message);
+  const user=await currentUser();
+  if(!user||!(window.currentPatientId||patientId)){
+    showToast('لم يتم تحديد المريض أو المستخدم','error');
+    return false;
   }
 
-  if(!localDays.length)return true;
+  try{
+    const localDays=Array.isArray(savedDaysData)
+      ? savedDaysData
+      : (Array.isArray(daysData)?daysData:[]);
 
-  const dayRows=localDays.map((d,i)=>({
-   id:newCloudUuid(),
-   plan_id:planId,
-   day_number:i+1,
-   day_name:d.title||`اليوم ${i+1}`
-  }));
+    // Validate food references before starting the atomic database operation.
+    const missingFoods=[];
+    localDays.forEach(day=>(day.meals||[]).forEach(meal=>(meal.items||[]).forEach(item=>{
+      if(!item.foodId)return;
+      if(!foodDatabase.some(f=>String(f.id)===String(item.foodId))){
+        missingFoods.push(String(item.foodId));
+      }
+    })));
 
-  r=await sb.from('plan_days').insert(dayRows);
-  if(r.error) throw new Error('فشل حفظ الأيام: '+r.error.message);
+    if(missingFoods.length){
+      throw new Error(
+        'الصنف غير موجود في مكتبة الأغذية: '+
+        [...new Set(missingFoods)].join(', ')
+      );
+    }
 
-  const mealRows=[];
-  localDays.forEach((day,di)=>(day.meals||[]).forEach((meal,mi)=>{
-   mealRows.push({
-    id:newCloudUuid(),
-    day_id:dayRows[di].id,
-    meal_name:meal.name||`وجبة ${mi+1}`,
-    meal_order:mi+1
-   });
-  }));
+    const planId=activeCloudPlanId || null;
 
-  if(mealRows.length){
-   r=await sb.from('plan_meals').insert(mealRows);
-   if(r.error) throw new Error('فشل حفظ الوجبات: '+r.error.message);
-  }
+    const planData={
+      id:planId,
+      patient_id:window.currentPatientId||patientId,
+      visit_id:visitId||null,
+      plan_name:'الخطة الغذائية',
+      start_date:new Date().toISOString().slice(0,10),
+      target_calories:Number(patientInfo.targetCal)||null,
+      target_protein:Number(patientInfo.targetPro)||null,
+      target_carb:Number(patientInfo.targetCarb)||null,
+      target_fat:Number(patientInfo.targetFat)||null,
+      target_fluid:null,
+      goal:patientInfo.goal||null,
+      notes:null
+    };
 
-  const itemRows=[];
-  localDays.forEach((day,di)=>(day.meals||[]).forEach((meal,mi)=>{
-   const cloudMeal=mealRows.find(x=>x.day_id===dayRows[di].id&&x.meal_order===mi+1);
-   if(!cloudMeal)return;
-   (meal.items||[]).forEach(item=>{
-    if(!item.foodId)return;
-    const food=foodDatabase.find(f=>String(f.id)===String(item.foodId));
-    itemRows.push({
-     id:newCloudUuid(),
-     meal_id:cloudMeal.id,
-     food_id:String(item.foodId),
-     quantity_g:num(item.grams),
-     household_measure:food?.household?scaleHouseholdMeasure(food.household,num(item.grams)):null,
-     frequency:item.repeat??null
+    const daysPayload=localDays.map(day=>({
+      title:day.title||'',
+      meals:(day.meals||[]).map(meal=>({
+        name:meal.name||'',
+        items:(meal.items||[]).map(item=>{
+          const food=foodDatabase.find(f=>String(f.id)===String(item.foodId));
+          return {
+            foodId:item.foodId?String(item.foodId):null,
+            grams:num(item.grams),
+            household_measure:food?.household
+              ? scaleHouseholdMeasure(food.household,num(item.grams))
+              : null,
+            repeat:item.repeat??null
+          };
+        })
+      }))
+    }));
+
+    const {data:savedPlanId,error}=await sb.rpc('save_nutrition_plan',{
+      p_plan:planData,
+      p_days:daysPayload
     });
-   });
-  }));
 
-  if(itemRows.length){
-   r=await sb.from('plan_items').insert(itemRows);
-   if(r.error) throw new Error('فشل حفظ أصناف الخطة: '+r.error.message);
+    if(error) throw new Error('فشل حفظ الخطة: '+error.message);
+
+    activeCloudPlanId=savedPlanId;
+    return true;
+  }catch(e){
+    console.error('Nutrition plan save failed:',e);
+    window.__lastNutritionPlanSaveError=e?.message||String(e);
+    showToast(window.__lastNutritionPlanSaveError,'error');
+    return false;
   }
-
-  return true;
- }catch(e){
-  console.error('Nutrition plan save failed:',e);
-  window.__lastNutritionPlanSaveError=e?.message||String(e);
-  showToast(window.__lastNutritionPlanSaveError,'error');
-  return false;
- }
 }
 
 function openPrintSettingsModal(){
