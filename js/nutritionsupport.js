@@ -321,7 +321,10 @@
     }
 
     try {
-      currentUser = await access.getCurrentUser();
+      const accessStatus = await access.getAccessStatus();
+      currentUser = accessStatus?.user || null;
+      const isAdmin = accessStatus?.isAdmin === true;
+
       if (!currentUser) {
         location.replace('index.html');
         return;
