@@ -334,9 +334,9 @@ async function loadCalculatorPatientData() {
 
 async function applyCustomTargetToPatient() {
     const user = await window.DietPlannerAccess?.getCurrentUser?.();
-    const role = user ? await window.DietPlannerAccess?.getUserRole?.(user.id) : null;
-    const canWrite = role === 'admin' ||
-      (user && (await window.DietPlannerAccess?.hasActiveSubscription?.(user.id)) === true);
+    const canWrite = user
+      ? (await window.DietPlannerAccess?.canWrite?.(user.id)) === true
+      : false;
     if (!canWrite) {
         calcShowToast('حفظ أهداف المريض متاح أثناء الاشتراك المدفوع فقط', 'error');
         return;
