@@ -34,7 +34,11 @@
 
 <div id="editor" class="modal-bg fixed inset-0 z-[80] hidden items-start justify-center overflow-y-auto p-3 sm:p-6"><div class="my-2 w-full max-w-[1500px] rounded-3xl bg-[#f7fafb] shadow-2xl">
  <div class="sticky top-0 z-20 flex items-center justify-between gap-3 rounded-t-3xl border-b border-slate-100 bg-white px-5 py-4"><div><h2 id="editorTitle" class="text-lg font-extrabold">إنشاء دايت جديد</h2><p class="mt-1 text-[11px] text-slate-400">قالب يمثل يومًا غذائيًا واحدًا فقط</p></div><div class="flex gap-2"><button id="cancelEditor" class="rounded-xl bg-slate-100 px-4 py-2 text-xs font-bold text-slate-600">إلغاء</button><button id="saveDiet" class="rounded-xl bg-brand-600 px-5 py-2 text-xs font-bold text-white">حفظ الدايت</button></div></div>
- <div class="p-4 sm:p-6">
+ <div id="diagnosticPanelModal" class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-950">
+   <div class="font-extrabold"><i class="fa-solid fa-stethoscope ml-1"></i> تشخيص تحميل البيانات</div>
+   <div id="diagnosticTextModal" class="mt-2 leading-6">جاري الفحص...</div>
+  </div>
+  <div class="p-4 sm:p-6">
   <section class="glass rounded-3xl p-5"><div class="mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-info text-brand-600"></i><h3 class="font-extrabold">بيانات القالب</h3></div><div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
    <label class="lg:col-span-1"><span class="text-xs font-bold text-slate-600">اسم الدايت *</span><input id="dietName" class="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" placeholder="مثال: دايت 1800 سعر - مصري"></label>
    <label><span class="text-xs font-bold text-slate-600">الوصف</span><input id="description" class="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" placeholder="وصف مختصر للدايت"></label>
@@ -56,5 +60,5 @@
 <div id="toast" class="fixed bottom-5 left-5 z-[150] hidden max-w-sm rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-xl"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth-access.js?v=20260921"></script>
-<script src="js/diet.js?v=20260921-3"></script>
+<script src="js/diet.js?v=20260921-4"></script>
 </body></html>
