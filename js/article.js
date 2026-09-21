@@ -100,12 +100,12 @@ $('grid').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=
 $('editModal').onclick=e=>{if(e.target===$('editModal'))closeEditor()};$('viewModal').onclick=e=>{if(e.target===$('viewModal')){$('viewModal').classList.add('hidden');document.body.classList.remove('overflow-hidden')}};document.onkeydown=e=>{if(e.key==='Escape'){closeEditor();$('viewModal').classList.add('hidden');document.body.classList.remove('overflow-hidden')}};
 (async()=>{try{
   if(!supabase){throw new Error('تعذر تهيئة الاتصال الآمن بالتطبيق')}
-  user=await window.DietPlannerAccess?.getCurrentUser?.();
+  const accessStatus=await window.DietPlannerAccess?.getAccessStatus?.();
+  user=accessStatus?.user||null;
   if(!user)return location.replace('index.html');
   const{data:p,error:profileError}=await supabase.from('profiles').select('full_name').eq('id',user.id).maybeSingle();
   if(profileError)throw profileError;
   profile=p||{};
-  const accessStatus=await window.DietPlannerAccess?.getAccessStatus?.();
   isAdmin=accessStatus?.isAdmin===true;
   await load();
   $('loading').style.display='none';
