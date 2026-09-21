@@ -177,7 +177,6 @@ $('foodForm').onsubmit=async e=>{
 
 $('foodsTab').onclick=()=>switchTab('foods');
 $('exchangesTab').onclick=()=>switchTab('exchanges');
-$('productsTab').onclick=()=>switchTab('products');
 $('exchangeSearch').oninput=renderExchanges;
 $('exchangeGroupFilter').onchange=renderExchanges;
 
