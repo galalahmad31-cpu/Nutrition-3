@@ -1561,13 +1561,22 @@ function applySupportDayAccessUI() {
 
 async function refreshSupportDayAccess(userId) {
   try {
-    const hasActiveSubscription = (await access?.hasActiveSubscription?.(userId)) === true;
-    const hasFeature = (await access?.hasFeature?.(userId, 'nutrition_support')) === true;
-    window.__dpNutritionSupportDayAccess = { hasActiveSubscription, hasFeature };
+    const [hasActiveSubscription, hasFeature] = await Promise.all([
+      access?.hasActiveSubscription?.(userId),
+      access?.hasFeature?.(userId, 'nutrition_support')
+    ]);
+
+    window.__dpNutritionSupportDayAccess = {
+      hasActiveSubscription: hasActiveSubscription === true,
+      hasFeature: hasFeature === true
+    };
     applySupportDayAccessUI();
   } catch (error) {
     console.error('Nutrition support day access check failed:', error);
-    window.__dpNutritionSupportDayAccess = { hasActiveSubscription:false, hasFeature:false };
+    window.__dpNutritionSupportDayAccess = {
+      hasActiveSubscription: false,
+      hasFeature: false
+    };
     applySupportDayAccessUI();
   }
 }
