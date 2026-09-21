@@ -1710,3 +1710,235 @@ html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsList .text-slate-4
 html[data-theme="dark"] body:has(#fixedMealsModal) #fixedMealsList table{
   color:#dce9e6!important;
 }
+
+
+/* =========================================================
+   SECONDARY PAGES — DARK MODE POLISH
+   Scoped overrides only. No page logic or component JS changed.
+   ========================================================= */
+
+/* Subscription pages */
+html[data-theme="dark"] body:has(.plans) .header,
+html[data-theme="dark"] body:has(.plans) .card,
+html[data-theme="dark"] body:has(.plans) .empty,
+html[data-theme="dark"] body:has(.plans) .modal,
+html[data-theme="dark"] body:has(.plans) .confirm-modal{
+  background:#17211f!important;
+  color:#edf6f4!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(.plans) .page-title p,
+html[data-theme="dark"] body:has(.plans) .duration,
+html[data-theme="dark"] body:has(.plans) .description,
+html[data-theme="dark"] body:has(.plans) .loading,
+html[data-theme="dark"] body:has(.plans) .field-help,
+html[data-theme="dark"] body:has(.plans) .confirm-message{
+  color:#91a8a3!important;
+}
+html[data-theme="dark"] body:has(.plans) .method,
+html[data-theme="dark"] body:has(.plans) .selected-plan-info{
+  background:#1d2927!important;
+  color:#dce9e6!important;
+}
+html[data-theme="dark"] body:has(.plans) .form-group input,
+html[data-theme="dark"] body:has(.plans) .form-group textarea{
+  background:#101a18!important;
+  color:#edf6f4!important;
+  border-color:#3b514d!important;
+}
+html[data-theme="dark"] body:has(.plans) .btn-outline{
+  background:#1d2927!important;
+  color:#8fe0d5!important;
+  border-color:#3b514d!important;
+}
+html[data-theme="dark"] body:has(.plans) .btn-danger{
+  background:#351d23!important;
+  color:#fda4af!important;
+}
+html[data-theme="dark"] body:has(.plans) .confirm-icon{
+  background:#351d23!important;
+  color:#fda4af!important;
+}
+html[data-theme="dark"] body:has(.plans) .confirm-modal h3{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(.plans) .toast{
+  background:#0b504b!important;
+}
+
+/* Profile */
+html[data-theme="dark"] body:has(#subscriptionCard) #loading{
+  background:#0d1514!important;
+}
+html[data-theme="dark"] body:has(#subscriptionCard) .bg-white{
+  background:#17211f!important;
+}
+html[data-theme="dark"] body:has(#subscriptionCard) .border-slate-100,
+html[data-theme="dark"] body:has(#subscriptionCard) .border-slate-200{
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#subscriptionCard) #subscriptionCard{
+  background:#1d2927!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#subscriptionCard) #subscriptionCard .bg-white{
+  background:#17211f!important;
+}
+html[data-theme="dark"] body:has(#subscriptionCard) .bg-slate-50{
+  background:#1d2927!important;
+}
+html[data-theme="dark"] body:has(#subscriptionCard) .text-slate-700,
+html[data-theme="dark"] body:has(#subscriptionCard) .text-slate-800{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#subscriptionCard) .text-slate-500{
+  color:#b7c9c5!important;
+}
+html[data-theme="dark"] body:has(#subscriptionCard) .text-slate-400{
+  color:#91a8a3!important;
+}
+html[data-theme="dark"] body:has(#subscriptionCard) .bg-slate-200{
+  background:#2a3936!important;
+  color:#c7d6d2!important;
+}
+html[data-theme="dark"] body:has(#subscriptionCard) #editProfileModal > div{
+  background:#17211f!important;
+  color:#edf6f4!important;
+  border-color:#30413e!important;
+}
+
+/* Article editor */
+html[data-theme="dark"] body:has(#editModal) #loading{
+  background:#0d1514!important;
+}
+html[data-theme="dark"] body:has(#editModal) .editor,
+html[data-theme="dark"] body:has(#editModal) #editModal > div > div{
+  background:#17211f!important;
+  color:#edf6f4!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#editModal) #toolbar{
+  background:#1d2927!important;
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(#editModal) #toolbar .tool,
+html[data-theme="dark"] body:has(#editModal) #toolbar select,
+html[data-theme="dark"] body:has(#editModal) #toolbar label{
+  background:#17211f!important;
+  color:#edf6f4!important;
+  border-color:#3b514d!important;
+}
+html[data-theme="dark"] body:has(#editModal) .editor table td,
+html[data-theme="dark"] body:has(#editModal) .editor table th,
+html[data-theme="dark"] body:has(#editModal) .content table td,
+html[data-theme="dark"] body:has(#editModal) .content table th{
+  border-color:#3b514d!important;
+}
+html[data-theme="dark"] body:has(#editModal) .editor table th,
+html[data-theme="dark"] body:has(#editModal) .content table th,
+html[data-theme="dark"] body:has(#editModal) .editor blockquote,
+html[data-theme="dark"] body:has(#editModal) .content blockquote{
+  background:#17302c!important;
+  color:#dce9e6!important;
+  border-color:#3d756c!important;
+}
+html[data-theme="dark"] body:has(#editModal) .bg-slate-50{
+  background:#1d2927!important;
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#editModal) .bg-slate-100{
+  background:#26332f!important;
+  color:#dce9e6!important;
+}
+
+/* Dashboard */
+html[data-theme="dark"] body:has(#loadingScreen) #loadingScreen{
+  background:#0d1514!important;
+}
+html[data-theme="dark"] body:has(#loadingScreen) .bg-blue-50,
+html[data-theme="dark"] body:has(#loadingScreen) .bg-emerald-50,
+html[data-theme="dark"] body:has(#loadingScreen) .bg-amber-50,
+html[data-theme="dark"] body:has(#loadingScreen) .bg-cyan-50,
+html[data-theme="dark"] body:has(#loadingScreen) .bg-sky-50,
+html[data-theme="dark"] body:has(#loadingScreen) .bg-green-50,
+html[data-theme="dark"] body:has(#loadingScreen) .bg-orange-50,
+html[data-theme="dark"] body:has(#loadingScreen) .bg-rose-50,
+html[data-theme="dark"] body:has(#loadingScreen) .bg-violet-50,
+html[data-theme="dark"] body:has(#loadingScreen) .bg-yellow-50{
+  filter:brightness(.72) saturate(.9);
+}
+html[data-theme="dark"] body:has(#loadingScreen) .border-slate-200{
+  border-color:#30413e!important;
+}
+
+/* Diet library */
+html[data-theme="dark"] body:has(#dietGrid) #loading{
+  background:#0d1514!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor > div,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker > div{
+  background:#151f1d!important;
+  color:#edf6f4!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) #editor > div > .sticky,
+html[data-theme="dark"] body:has(#dietGrid) #foodPicker > div > div{
+  background:#1d2927!important;
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) .food-row{
+  border-color:#30443f!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) .food-name-cell{
+  color:#edf6f4!important;
+}
+html[data-theme="dark"] body:has(#dietGrid) .food-name-en{
+  color:#91a8a3!important;
+}
+
+/* Food library */
+html[data-theme="dark"] body:has(.products-table) #loading{
+  background:#0d1514!important;
+}
+html[data-theme="dark"] body:has(.products-table) .table-wrap::-webkit-scrollbar-track{
+  background:#182522;
+}
+html[data-theme="dark"] body:has(.products-table) .table-wrap::-webkit-scrollbar-thumb{
+  background:#3b514d;
+}
+html[data-theme="dark"] body:has(.products-table) .products-table th:first-child,
+html[data-theme="dark"] body:has(.products-table) .products-table td:first-child{
+  background:#17211f!important;
+}
+html[data-theme="dark"] body:has(.products-table) .products-table thead th:first-child{
+  background:#1d2927!important;
+}
+html[data-theme="dark"] body:has(.products-table) .modal-bg > div{
+  background:#17211f!important;
+  color:#edf6f4!important;
+  border-color:#30413e!important;
+}
+
+/* Feedback / notifications */
+html[data-theme="dark"] body:has(#feedbackPage) #loading,
+html[data-theme="dark"] body:has(.notification-card) #loading{
+  background:#0d1514!important;
+}
+html[data-theme="dark"] body:has(#feedbackPage) .bg-slate-50,
+html[data-theme="dark"] body:has(.notification-card) .bg-slate-50{
+  background:#1d2927!important;
+}
+html[data-theme="dark"] body:has(#feedbackPage) .border-slate-200,
+html[data-theme="dark"] body:has(.notification-card) .border-slate-200{
+  border-color:#30413e!important;
+}
+html[data-theme="dark"] body:has(.notification-card) .tab-btn.active{
+  background:#17211f!important;
+  color:#8fe0d5!important;
+}
+
+/* Generic loading screens with a light hard-coded background. */
+html[data-theme="dark"] #loading,
+html[data-theme="dark"] #loadingScreen{
+  background:#0d1514!important;
+}
