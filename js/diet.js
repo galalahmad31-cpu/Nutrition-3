@@ -68,9 +68,11 @@ $('addMeal').onclick=()=>{day.meals.push({name:`وجبة ${day.meals.length+1}`,
 
 $('foodSearch').oninput=renderPicker;$('closePicker').onclick=closePicker;$('pickerList').onclick=e=>{const b=e.target.closest('[data-food]');if(b)chooseFood(b.dataset.food)};$('addSelectedFood').onclick=addSelected;$('selectedFoodGrams').oninput=()=>{};
 $('newBtn').onclick=openNew;$('visibility').onchange=()=>{if($('visibility').value!=='public')setDietAccess('')};$('cancelEditor').onclick=()=>toggleEditor(false);$('search').oninput=renderDiets;$('visibilityFilter').onchange=renderDiets;async function loadPageData(){
-  const foodsLoaded=await loadFoods();
-  if(!foodsLoaded)return;
-  await loadDiets();
+  const [foodsLoaded] = await Promise.all([
+    loadFoods(),
+    loadDiets()
+  ]);
+  return foodsLoaded;
 }
 $('refreshBtn').onclick=loadPageData;
 let deleteTarget=null;
@@ -79,8 +81,174 @@ function openDeleteConfirm(diet){deleteTarget=diet;$('deleteConfirmModal').class
 $('cancelDeleteBtn').onclick=closeDeleteConfirm;
 $('confirmDeleteBtn').onclick=async()=>{const x=deleteTarget;if(!x)return;const b=$('confirmDeleteBtn');b.disabled=true;b.textContent='جاري الحذف...';const {error}=await supabase.from('diet_templates').delete().eq('id',x.id).eq('created_by',user.id);b.disabled=false;b.innerHTML='<i class="fa-solid fa-trash ml-1"></i> حذف الدايت';closeDeleteConfirm();if(error)toast('فشل الحذف: '+error.message,false);else{toast('تم حذف الدايت');await loadDiets()}};
 $('dietGrid').onclick=async e=>{const o=e.target.closest('[data-open]'),d=e.target.closest('[data-del]');if(o)await openDiet(o.dataset.open);if(d){const x=diets.find(a=>a.id===d.dataset.del);if(x)openDeleteConfirm(x)}};
-async function save(){if(!user)return;const name=$('dietName').value.trim();if(!name){toast('اكتب اسم الدايت أولاً',false);return}if(!day.meals.length){toast('أضف وجبة واحدة على الأقل',false);return}const visibility=$('visibility').value;const t=calcTotals();$('saveDiet').disabled=true;$('saveDiet').textContent='جاري الحفظ...';let dietId=editingId;try{const publisherName=visibility==='public'?(authors[user.id]||user.user_metadata?.full_name||user.user_metadata?.name||''):null;const requiredFeature=isAdmin&&visibility==='public'&&$('dietAccess')?.value==='diet'?'diet':null;const payload={name,description:$('description').value.trim()||null,notes:$('notes').value.trim()||null,visibility,required_feature:requiredFeature,publisher_name:publisherName,target_calories:t.kcal,target_protein:t.protein,target_carb:t.carb,target_fat:t.fat,target_fluid:null,goal:null};if(!dietId){const r=await supabase.from('diet_templates').insert({created_by:user.id,...payload}).select('id').single();if(r.error)throw r.error;dietId=r.data.id}else{const r=await supabase.from('diet_templates').update(payload).eq('id',dietId).eq('created_by',user.id);if(r.error)throw r.error;const oldD=await supabase.from('diet_template_days').select('id').eq('diet_id',dietId);if(oldD.error)throw oldD.error;const ids=(oldD.data||[]).map(x=>x.id);if(ids.length){const oldM=await supabase.from('diet_template_meals').select('id').in('day_id',ids);if(oldM.error)throw oldM.error;const mids=(oldM.data||[]).map(x=>x.id);if(mids.length){const delI=await supabase.from('diet_template_items').delete().in('meal_id',mids);if(delI.error)throw delI.error;const delM=await supabase.from('diet_template_meals').delete().in('day_id',ids);if(delM.error)throw delM.error}const delD=await supabase.from('diet_template_days').delete().eq('diet_id',dietId);if(delD.error)throw delD.error}}
-const dayId=crypto.randomUUID();const dr=await supabase.from('diet_template_days').insert({id:dayId,diet_id:dietId,day_number:1,day_name:'اليوم'});if(dr.error)throw dr.error;for(let mi=0;mi<day.meals.length;mi++){const m=day.meals[mi];const mealId=crypto.randomUUID();const mr=await supabase.from('diet_template_meals').insert({id:mealId,day_id:dayId,meal_name:m.name||`وجبة ${mi+1}`,meal_order:mi+1,frequency:null});if(mr.error)throw mr.error;for(let ii=0;ii<m.items.length;ii++){const it=m.items[ii];if(!it.food_id)continue;const f=foods.find(x=>x.id===String(it.food_id));const ir=await supabase.from('diet_template_items').insert({id:crypto.randomUUID(),meal_id:mealId,food_id:String(it.food_id),quantity_g:num(it.quantity_g),household_measure:f?.household?scaleHouseholdMeasure(f.household,num(it.quantity_g)):(it.household_measure||null),frequency:it.frequency||null,item_order:ii+1});if(ir.error)throw ir.error}}toast(editingId?'تم تحديث الدايت بنجاح':'تم حفظ الدايت بنجاح');toggleEditor(false);await loadDiets()}catch(e){console.error(e);toast('فشل حفظ الدايت: '+(e.message||e),false)}$('saveDiet').disabled=false;$('saveDiet').textContent='حفظ الدايت'}
+function buildDietPayload(visibility, totals){
+  const publisherName=visibility==='public'
+    ?(authors[user.id]||user.user_metadata?.full_name||user.user_metadata?.name||'')
+    :null;
+
+  const requiredFeature=
+    isAdmin &&
+    visibility==='public' &&
+    $('dietAccess')?.value==='diet'
+      ?'diet'
+      :null;
+
+  return {
+    name:$('dietName').value.trim(),
+    description:$('description').value.trim()||null,
+    notes:$('notes').value.trim()||null,
+    visibility,
+    required_feature:requiredFeature,
+    publisher_name:publisherName,
+    target_calories:totals.kcal,
+    target_protein:totals.protein,
+    target_carb:totals.carb,
+    target_fat:totals.fat,
+    target_fluid:null,
+    goal:null
+  };
+}
+
+async function saveDietHeader(dietId,payload){
+  if(dietId){
+    const {error}=await supabase
+      .from('diet_templates')
+      .update(payload)
+      .eq('id',dietId)
+      .eq('created_by',user.id);
+
+    if(error)throw error;
+    return dietId;
+  }
+
+  const {data,error}=await supabase
+    .from('diet_templates')
+    .insert({created_by:user.id,...payload})
+    .select('id')
+    .single();
+
+  if(error)throw error;
+  return data.id;
+}
+
+async function clearDietDays(dietId){
+  const {data,error}=await supabase
+    .from('diet_template_days')
+    .select('id')
+    .eq('diet_id',dietId);
+
+  if(error)throw error;
+
+  const ids=(data||[]).map(row=>row.id);
+  if(!ids.length)return;
+
+  const {error:deleteError}=await supabase
+    .from('diet_template_days')
+    .delete()
+    .in('id',ids);
+
+  if(deleteError)throw deleteError;
+}
+
+async function insertDietStructure(dietId){
+  const dayId=crypto.randomUUID();
+
+  const {error:dayError}=await supabase
+    .from('diet_template_days')
+    .insert({
+      id:dayId,
+      diet_id:dietId,
+      day_number:1,
+      day_name:'اليوم'
+    });
+
+  if(dayError)throw dayError;
+
+  for(let mi=0;mi<day.meals.length;mi++){
+    const meal=day.meals[mi];
+    const mealId=crypto.randomUUID();
+
+    const {error:mealError}=await supabase
+      .from('diet_template_meals')
+      .insert({
+        id:mealId,
+        day_id:dayId,
+        meal_name:meal.name||`وجبة ${mi+1}`,
+        meal_order:mi+1,
+        frequency:null
+      });
+
+    if(mealError)throw mealError;
+
+    for(let ii=0;ii<meal.items.length;ii++){
+      const item=meal.items[ii];
+      if(!item.food_id)continue;
+
+      const food=foods.find(x=>x.id===String(item.food_id));
+      const householdMeasure=food?.household
+        ?scaleHouseholdMeasure(food.household,num(item.quantity_g))
+        :(item.household_measure||null);
+
+      const {error:itemError}=await supabase
+        .from('diet_template_items')
+        .insert({
+          id:crypto.randomUUID(),
+          meal_id:mealId,
+          food_id:String(item.food_id),
+          quantity_g:num(item.quantity_g),
+          household_measure:householdMeasure,
+          frequency:item.frequency||null,
+          item_order:ii+1
+        });
+
+      if(itemError)throw itemError;
+    }
+  }
+}
+
+async function save(){
+  if(!user)return;
+
+  const name=$('dietName').value.trim();
+  if(!name){
+    toast('اكتب اسم الدايت أولاً',false);
+    return;
+  }
+
+  if(!day.meals.length){
+    toast('أضف وجبة واحدة على الأقل',false);
+    return;
+  }
+
+  const visibility=$('visibility').value;
+  const totals=calcTotals();
+  const isUpdate=Boolean(editingId);
+  const button=$('saveDiet');
+
+  button.disabled=true;
+  button.textContent='جاري الحفظ...';
+
+  try{
+    const payload=buildDietPayload(visibility,totals);
+    const dietId=await saveDietHeader(editingId,payload);
+
+    if(isUpdate){
+      await clearDietDays(dietId);
+    }
+
+    await insertDietStructure(dietId);
+
+    toast(isUpdate?'تم تحديث الدايت بنجاح':'تم حفظ الدايت بنجاح');
+    toggleEditor(false);
+    await loadDiets();
+  }catch(error){
+    console.error('Diet save failed:',error);
+    toast('فشل حفظ الدايت: '+(error.message||error),false);
+  }finally{
+    button.disabled=false;
+    button.textContent='حفظ الدايت';
+  }
+}
 $('saveDiet').onclick=save;
 async function initializeDietPage(){
   if(!(await getSession()))return;
