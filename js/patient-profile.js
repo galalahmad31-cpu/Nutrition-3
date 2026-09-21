@@ -47,12 +47,10 @@
         return;
       }
 
-      const role = await access?.getUserRole?.(state.user.id);
-      state.isAdmin = role === 'admin';
-
-      state.hasActiveSubscription = state.isAdmin
-        ? true
-        : (await access?.hasActiveSubscription?.(state.user.id)) === true;
+      const accessStatus = await access?.getAccessStatus?.();
+      state.isAdmin = accessStatus?.isAdmin === true;
+      state.hasActiveSubscription =
+        (await access?.hasActiveSubscription?.(state.user.id)) === true;
 
       updateWriteControls();
     } catch (error) {
