@@ -36,6 +36,13 @@ async function loadFoods(){
     return false;
   }
   foods=(data||[]).map(f=>({...f,id:String(f.id),is_custom:Boolean(f.is_custom),kcal:num(f.kcal),protein:num(f.protein),carb:num(f.carb),fat:num(f.fat),sodium:num(f.sodium),potassium:num(f.potassium),phosphorus:num(f.phosphorus)}));
+  console.groupCollapsed('[Diet Planner] Diet page diagnostics');
+  console.log('foods.length:', foods.length);
+  console.log('first food:', foods[0] ? {id:foods[0].id,name_ar:foods[0].name_ar} : null);
+  console.groupEnd();
+  if(!foods.length){
+    console.warn('[Diet Planner] foods query returned 0 rows with no error. Check the authenticated session/RLS.');
+  }
   return true;
 }
 async function loadDiets(){ $('statusStat').textContent='جاري التحميل...';const {data,error}=await supabase.from('diet_templates').select('*').order('updated_at',{ascending:false});if(error){$('statusStat').textContent='خطأ';$('statusStat').className='mt-1 text-sm font-extrabold text-red-600';toast('تعذر تحميل مكتبة الدايت: '+error.message,false);return}diets=data||[];authors={};const ids=[...new Set(diets.filter(d=>d.visibility==='public').map(d=>d.created_by).filter(Boolean))];if(ids.length){const pr=await supabase.from('profiles').select('id,full_name').in('id',ids);if(!pr.error)(pr.data||[]).forEach(p=>{authors[p.id]=p.full_name||''})}if(!authors[user.id]){const ownProfile=await supabase.from('profiles').select('full_name').eq('id',user.id).maybeSingle();if(!ownProfile.error&&ownProfile.data)authors[user.id]=ownProfile.data.full_name||'';}if(!authors[user.id])authors[user.id]=user.user_metadata?.full_name||user.user_metadata?.name||'';diets.forEach(d=>{if(d.publisher_name)authors[d.created_by]=d.publisher_name});$('statusStat').textContent='متصل';$('statusStat').className='mt-1 text-sm font-extrabold text-brand-600';renderDiets();return true}
