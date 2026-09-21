@@ -265,11 +265,12 @@
 
   async function init() {
     try {
-      if (!supabase || typeof access.getCurrentUser !== 'function') {
+      if (!supabase || typeof access.getAccessStatus !== 'function') {
         throw new Error('تعذر تهيئة نظام الحساب.');
       }
 
-      state.user = await access.getCurrentUser();
+      const accessStatus = await access.getAccessStatus();
+      state.user = accessStatus?.user || null;
       if (!state.user) {
         setSubscriptionStatus(
           'غير متاح',
