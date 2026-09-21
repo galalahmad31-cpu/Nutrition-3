@@ -21,14 +21,13 @@ async function checkUser(){
     return false;
   }
 
-  currentUser = await access.getCurrentUser?.() || null;
+  const accessStatus = await access.getAccessStatus?.();
+  currentUser = accessStatus?.user || null;
 
   if(!currentUser){
     window.location.replace('index.html');
     return false;
   }
-
-  const accessStatus = await access.getAccessStatus?.();
   if(accessStatus?.isAdmin === true){
     window.location.replace('app.html');
     return false;
