@@ -9,10 +9,36 @@ const fmt=v=>v==null||v===''?'—':Number(v).toLocaleString('ar-EG',{maximumFrac
 function setState(msg,show=false){$('state').textContent=msg;$('state').style.display=show?'none':'block';$('productsGrid').style.display=show?'grid':'none'}
 function option(label,value,selected=false){return '<option value="'+esc(value)+'" '+(selected?'selected':'')+'>'+esc(label)+'</option>'}
 function populateCategories(){
- $('categoryFilter').innerHTML=option('كل الأقسام','')+state.categories.map(c=>option(c.name,c.id,c.id===state.category)).join('');
- const subs=state.subcategories.filter(s=>!state.category||s.category_id===state.category);
- if(!subs.some(s=>s.id===state.subcategory))state.subcategory='';
- $('subcategoryFilter').innerHTML=option('كل الأقسام الفرعية','')+subs.map(s=>option(s.name,s.id,s.id===state.subcategory)).join('');
+ const usedSubcategoryIds=new Set(
+  state.products
+    .map(p=>p.subcategory_id)
+    .filter(Boolean)
+ );
+
+ const usedCategoryIds=new Set(
+  state.subcategories
+    .filter(s=>usedSubcategoryIds.has(s.id))
+    .map(s=>s.category_id)
+    .filter(Boolean)
+ );
+
+ const categories=state.categories.filter(c=>usedCategoryIds.has(c.id));
+ $('categoryFilter').innerHTML=
+  option('كل الأقسام','')+
+  categories.map(c=>option(c.name,c.id,c.id===state.category)).join('');
+
+ const subs=state.subcategories.filter(s=>
+  usedSubcategoryIds.has(s.id) &&
+  (!state.category || s.category_id===state.category)
+ );
+
+ if(!subs.some(s=>s.id===state.subcategory)){
+  state.subcategory='';
+ }
+
+ $('subcategoryFilter').innerHTML=
+  option('كل الأقسام الفرعية','')+
+  subs.map(s=>option(s.name,s.id,s.id===state.subcategory)).join('');
 }
 function filtered(){
  const q=state.search.toLowerCase();
