@@ -105,7 +105,8 @@ $('editModal').onclick=e=>{if(e.target===$('editModal'))closeEditor()};$('viewMo
   const{data:p,error:profileError}=await supabase.from('profiles').select('full_name').eq('id',user.id).maybeSingle();
   if(profileError)throw profileError;
   profile=p||{};
-  isAdmin=(await window.DietPlannerAccess?.getUserRole?.(user.id))==='admin';
+  const accessStatus=await window.DietPlannerAccess?.getAccessStatus?.();
+  isAdmin=accessStatus?.isAdmin===true;
   await load();
   $('loading').style.display='none';
 }catch(e){
