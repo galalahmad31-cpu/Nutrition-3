@@ -715,3 +715,9 @@ html[data-theme="dark"] .dp-theme-toggle{
     color-scheme:light!important;
   }
 }
+
+/* ---------- Tailwind opacity variants ---------- */
+html[data-theme="dark"] .bg-slate-50\/60,
+html[data-theme="dark"] .bg-slate-50\/70{background:var(--dp-surface-2)!important}
+html[data-theme="dark"] .bg-emerald-50\/70{background:#173027!important}
+html[data-theme="dark"] .bg-amber-50\/60{background:#3a2d17!important}
