@@ -4,7 +4,6 @@
   let patients = [];
   let currentUser = null;
   let supabase = null;
-  let isAdmin = false;
   let hasActiveSubscription = false;
   let hasNutritionSupportFeature = false;
   let canAddPatientByQuota = false;
@@ -12,23 +11,13 @@
   async function refreshNutritionSupportAccess() {
     try {
       const accessApi = window.DietPlannerAccess;
-      const user = await accessApi?.getCurrentUser?.();
-      if (!user) return;
-      const userId = user.id;
-      const role = await accessApi?.getUserRole?.(userId);
-      isAdmin = role === 'admin';
-      hasActiveSubscription = isAdmin
-        ? true
-        : (await accessApi?.hasActiveSubscription?.(userId)) === true;
-      hasNutritionSupportFeature = isAdmin
-        ? true
-        : (await accessApi?.hasFeature?.(userId, 'nutrition_support')) === true;
-      canAddPatientByQuota = isAdmin
-        ? true
-        : (await accessApi?.canAddPatient?.(userId)) === true;
+      const userId = currentUser?.id;
+      if (!userId) return;
+      hasActiveSubscription = (await accessApi?.hasActiveSubscription?.(userId)) === true;
+      hasNutritionSupportFeature = (await accessApi?.hasFeature?.(userId, 'nutrition_support')) === true;
+      canAddPatientByQuota = (await accessApi?.canAddPatient?.(userId)) === true;
     } catch (error) {
       console.error('Nutrition support access check failed:', error);
-      isAdmin = false;
       hasActiveSubscription = false;
       hasNutritionSupportFeature = false;
       canAddPatientByQuota = false;
@@ -36,13 +25,13 @@
   }
 
   function canWriteNutritionSupport() {
-    return isAdmin || (hasActiveSubscription && hasNutritionSupportFeature);
+    return hasActiveSubscription && hasNutritionSupportFeature;
   }
 
   // Adding a patient is controlled by the patient quota only.
   // The Nutrition Support page itself is already gated by the feature.
   function canAddNutritionSupportPatient() {
-    return isAdmin || canAddPatientByQuota;
+    return canAddPatientByQuota;
   }
 
   const $ = (id) => document.getElementById(id);
@@ -116,6 +105,8 @@
 
   async function savePatient(event) {
     event.preventDefault();
+    const id = $('patientId').value.trim();
+
     if (id) {
       if (!canWriteNutritionSupport()) {
         alert('تعديل بيانات المريض في الدعم الغذائي يتطلب اشتراكًا مدفوعًا فعالًا وتوفر الخاصية في خطتك.');
@@ -127,7 +118,6 @@
     }
     if (!currentUser || !supabase) { location.replace('index.html'); return; }
 
-    const id = $('patientId').value.trim();
     const payload = {
       name: $('patientName').value.trim(),
       gender: $('patientGender').value || null,
