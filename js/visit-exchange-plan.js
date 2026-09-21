@@ -16,9 +16,7 @@ async function currentExchangeUser(){return await window.DietPlannerAccess?.getC
 async function canWriteExchangePlan(){
   const user=await currentExchangeUser();
   if(!user)return false;
-  const role=await window.DietPlannerAccess?.getUserRole?.(user.id);
-  if(role==='admin')return true;
-  return (await window.DietPlannerAccess?.hasActiveSubscription?.(user.id))===true;
+  return (await window.DietPlannerAccess?.canWrite?.(user.id))===true;
 }
 
 function ctx(){return window.visitContext||{}}
