@@ -68,20 +68,12 @@
         return;
       }
 
-      const role = await access?.getUserRole?.(state.user.id);
-      state.isAdmin = role === 'admin';
-
-      if (state.isAdmin) {
-        state.hasActiveSubscription = true;
-        state.canAddPatient = true;
-      } else {
-        state.hasActiveSubscription =
-          (await access?.hasActiveSubscription?.(state.user.id)) === true;
-
-        state.canAddPatient =
-          state.hasActiveSubscription &&
-          ((await access?.canAddPatient?.(state.user.id)) === true);
-      }
+      const accessStatus = await access?.getAccessStatus?.();
+      state.isAdmin = accessStatus?.isAdmin === true;
+      state.hasActiveSubscription =
+        (await access?.hasActiveSubscription?.(state.user.id)) === true;
+      state.canAddPatient =
+        (await access?.canAddPatient?.(state.user.id)) === true;
 
       updateWriteControls();
     } catch (error) {
