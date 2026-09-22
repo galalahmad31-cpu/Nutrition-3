@@ -407,7 +407,7 @@
       .from('patients')
       .update(payload)
       .eq('id', patientId)
-      .select('*')
+      .select('id,user_id,name,gender,birth_date,age,height,diagnosis,complaints,clinical_notes,created_at,updated_at')
       .single();
 
     if (error) {
