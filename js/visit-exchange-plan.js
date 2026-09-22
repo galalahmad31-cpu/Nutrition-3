@@ -30,8 +30,8 @@ function updateDisplay(){calc();const t=total();document.getElementById('exchang
 function render(){calc();document.getElementById('exchangeTargetCal').textContent=S.t.cal?rnd(S.t.cal,0)+' kcal':'—';document.getElementById('exchangeTargetPro').textContent=S.t.pro?rnd(S.t.pro,1)+' g':'—';document.getElementById('exchangeTargetCarb').textContent=S.t.carb?rnd(S.t.carb,1)+' g':'—';document.getElementById('exchangeTargetFat').textContent=S.t.fat?rnd(S.t.fat,1)+' g':'—';const b=document.getElementById('exchangeValuesBody');b.innerHTML=G.map(g=>{const r=S.r[g.k],v=vals(g),c=n(r.count);let sub='—';if(g.subs)sub='<select data-sub="'+g.k+'" '+(S.editing?'':'disabled')+' class="w-full bg-white border border-slate-200 rounded-lg px-2 py-1.5 font-bold">'+g.subs.map(s=>'<option value="'+esc(s)+'" '+(r.sub===s?'selected':'')+'>'+esc(s)+'</option>').join('')+'</select>';const cnt=g.m?'<input data-count="'+g.k+'" '+(S.editing?'':'disabled')+' type="number" min="0" step="0.5" inputmode="decimal" value="'+r.count+'" class="w-20 mx-auto block text-center bg-white border border-slate-200 rounded-lg px-2 py-1.5 font-extrabold text-violet-700">':'<span class="font-black text-violet-700">'+rnd(r.count,2)+'</span>';return '<tr data-ex-row="'+g.k+'" class="border-b border-slate-100 last:border-0"><td class="py-2.5 px-3 font-black">'+esc(g.n)+'</td><td class="py-2.5 px-3">'+sub+'</td><td class="py-2.5 px-3 text-center">'+cnt+'</td><td data-val class="py-2.5 px-3 text-center font-bold">'+rnd(c*v.kcal,1)+'</td><td data-val class="py-2.5 px-3 text-center font-bold">'+rnd(c*v.carb,1)+'</td><td data-val class="py-2.5 px-3 text-center font-bold">'+rnd(c*v.pro,1)+'</td><td data-val class="py-2.5 px-3 text-center font-bold">'+rnd(c*v.fat,1)+'</td></tr>'}).join('');updateDisplay();setButtons()}
 async function findPlans(){const c=ctx();if(!c.patient_id)return[];let q=dbx.from('nutrition_plans').select('id,patient_id,visit_id,target_calories,target_protein,target_carb,target_fat,goal,created_at,updated_at').eq('patient_id',c.patient_id);if(c.id)q=q.eq('visit_id',c.id);const {data,error}=await q.order('updated_at',{ascending:false}).order('created_at',{ascending:false});return error?[]:(data||[])}
 async function loadExchangeValues(){if(!S.plan)return;const r=await dbx.from('exchange_values').select('group_name,subgroup_name,exchange_count').eq('plan_id',S.plan);if(!r.error)(r.data||[]).forEach(x=>{const g=G.find(y=>y.n===x.group_name);if(g){S.r[g.k].count=n(x.exchange_count);if(x.subgroup_name)S.r[g.k].sub=x.subgroup_name}});S.saved=(r.data||[]).length>0}
-async function ensureExchangePlan(){
-  if(!(await canWriteExchangePlan())){status('إنشاء خطة البدائل متاح أثناء الاشتراك المدفوع فقط',true);return null;}
+async function ensureExchangePlan(skipAuth=false){
+  if(!skipAuth && !(await canWriteExchangePlan())){status('إنشاء خطة البدائل متاح أثناء الاشتراك المدفوع فقط',true);return null;}
 
  if(S.plan && isUuid(S.plan))return S.plan;
 
@@ -263,11 +263,11 @@ function executePrintAll(){
  setTimeout(()=>window.print(),200);
 }
 
-async function save(){
- if(!(await canWriteExchangePlan())){status('حفظ خطة البدائل متاح أثناء الاشتراك المدفوع فقط',true);return false;}
+async function save(options={}){
+ if(!options.skipAuth && !(await canWriteExchangePlan())){status('حفظ خطة البدائل متاح أثناء الاشتراك المدفوع فقط',true);return false;}
 
  if(!S.editing)return true;
- const planId=await ensureExchangePlan();
+ const planId=await ensureExchangePlan(true);
  if(!planId){status('اعتمد السعرات والماكروز أولاً من الحاسبة',true);return false}
  render();
  const rows=G.map(g=>{
@@ -284,7 +284,8 @@ async function saveAndPrintFromSettings(){
  const pb=document.getElementById('executePrintBtn');
  if(pb)pb.disabled=true;
  try{
-  const planId=await ensureExchangePlan();
+  if(!(await canWriteExchangePlan())){status('حفظ وطباعة خطة البدائل متاح أثناء الاشتراك المدفوع فقط',true);return false}
+  const planId=await ensureExchangePlan(true);
   if(!planId){status('اعتمد السعرات والماكروز أولاً من الحاسبة',true);return false}
 
   const hasDayChanges=S.days.some(d=>String(d.id).startsWith('local-day-'))||Object.values(S.dayEditing).some(Boolean);
@@ -296,7 +297,7 @@ async function saveAndPrintFromSettings(){
   }
 
   if(S.editing){
-   if(!(await save()))return false;
+   if(!(await save({skipAuth:true})))return false;
   }
 
   executePrintAll();
