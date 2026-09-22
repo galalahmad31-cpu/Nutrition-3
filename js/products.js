@@ -129,15 +129,15 @@ function render() {
 
     const formulaHtml = formula
       ? '<div class="mt-3 rounded-2xl border border-slate-100 bg-white p-3">' +
-        '<div class="text-sm font-extrabold text-slate-800">' + esc(formula.formula_name) + '</div>' +
-        '<div class="mt-1 text-[10px] font-bold text-slate-400">' +
-          esc(formula.basis_amount ? fmt(formula.basis_amount) + ' ' + (formula.basis_unit || '') : 'أساس غير محدد') +
+        '<div class="flex items-start justify-between gap-2">' +
+        '<div><div class="text-sm font-extrabold text-slate-800">' + esc(formula.formula_name) + '</div>' +
+        '<div class="mt-1 text-[10px] font-bold text-slate-400">' + esc(formula.basis_amount ? fmt(formula.basis_amount) + ' ' + (formula.basis_unit || '') : 'أساس غير محدد') + (formula.is_default ? ' · افتراضية' : '') + (formula.is_active === false ? ' · غير نشطة' : '') + '</div></div>' +
         '</div>' +
         '<div class="mt-3 grid grid-cols-4 gap-2 text-center">' +
-          '<div><div class="text-[10px] text-slate-400">السعرات</div><div class="mt-1 text-sm font-extrabold text-amber-600">' + fmt(formula.kcal) + '</div></div>' +
-          '<div><div class="text-[10px] text-slate-400">كارب</div><div class="mt-1 text-sm font-extrabold text-sky-600">' + fmt(formula.carb) + '</div></div>' +
-          '<div><div class="text-[10px] text-slate-400">بروتين</div><div class="mt-1 text-sm font-extrabold text-emerald-600">' + fmt(formula.protein) + '</div></div>' +
-          '<div><div class="text-[10px] text-slate-400">دهون</div><div class="mt-1 text-sm font-extrabold text-rose-600">' + fmt(formula.fat) + '</div></div>' +
+        '<div><div class="text-[10px] text-slate-400">السعرات</div><div class="mt-1 text-sm font-extrabold text-amber-600">' + fmt(formula.kcal) + '</div></div>' +
+        '<div><div class="text-[10px] text-slate-400">كارب</div><div class="mt-1 text-sm font-extrabold text-sky-600">' + fmt(formula.carb) + '</div></div>' +
+        '<div><div class="text-[10px] text-slate-400">بروتين</div><div class="mt-1 text-sm font-extrabold text-emerald-600">' + fmt(formula.protein) + '</div></div>' +
+        '<div><div class="text-[10px] text-slate-400">دهون</div><div class="mt-1 text-sm font-extrabold text-rose-600">' + fmt(formula.fat) + '</div></div>' +
         '</div>' +
         (formula.notes ? '<div class="mt-3 text-[11px] leading-5 text-slate-500">' + esc(formula.notes) + '</div>' : '') +
         '</div>'
@@ -145,10 +145,9 @@ function render() {
 
     return '<article class="product-card glass rounded-3xl p-5 shadow-sm">' +
       '<div class="flex items-start justify-between gap-3">' +
-        '<div class="min-w-0"><div class="text-xs font-bold text-brand-600">' + esc(cat?.name || 'غير مصنف') + ' · ' + esc(sub?.name || 'غير مصنف') + '</div>' +
-        '<h2 class="mt-1 text-lg font-extrabold text-slate-800">' + esc(p.product_name) + '</h2></div>' +
-        adminActions +
-      '</div>' +
+      '<div class="min-w-0"><div class="text-xs font-bold text-brand-600">' + esc(cat?.name || 'غير مصنف') + ' · ' + esc(sub?.name || 'غير مصنف') + '</div>' +
+      '<h2 class="mt-1 text-lg font-extrabold text-slate-800">' + esc(p.product_name) + '</h2></div>' +
+      adminActions + '</div>' +
       '<div class="mt-4 rounded-2xl bg-slate-50 p-3"><div class="text-xs font-bold text-slate-500">الاستخدام</div><div class="mt-1 text-sm font-semibold leading-6 text-slate-700">' + esc(p.usage || '—') + '</div></div>' +
       formulaHtml +
       (p.notes ? '<div class="mt-3 text-[11px] leading-5 text-slate-500">' + esc(p.notes) + '</div>' : '') +
@@ -186,6 +185,8 @@ function resetFormulaFields() {
   $('formFat').value = '';
   $('formFormulaNotes').value = '';
   $('formFormulaSort').value = '0';
+  $('formFormulaDefault').checked = false;
+  $('formFormulaActive').checked = true;
 }
 
 function fillFormulaFields(f) {
@@ -198,6 +199,8 @@ function fillFormulaFields(f) {
   $('formFat').value = f?.fat ?? '';
   $('formFormulaNotes').value = f?.notes || '';
   $('formFormulaSort').value = f?.sort_order ?? 0;
+  $('formFormulaDefault').checked = !!f?.is_default;
+  $('formFormulaActive').checked = f ? !!f.is_active : true;
 }
 
 function readFormulaFields() {
@@ -220,6 +223,8 @@ function readFormulaFields() {
     protein: numOrNull('formProtein'),
     fat: numOrNull('formFat'),
     notes: $('formFormulaNotes').value.trim() || null,
+    is_default: $('formFormulaDefault').checked,
+    is_active: $('formFormulaActive').checked,
     sort_order: Number($('formFormulaSort').value || 0)
   };
 }
@@ -235,16 +240,12 @@ function openEditor(mode, productId = null) {
   const product = productId ? state.products.find(p => p.id === productId) : null;
   const formula = product ? productFormulaRows(product.id)[0] : null;
 
-  state.editor = {
-    mode,
-    productId,
-    formulaId: formula?.id || null
-  };
+  state.editor = { mode, productId, formulaId: formula?.id || null };
 
   $('editorModal').style.display = 'flex';
   $('editorTitle').textContent = mode === 'add-product' ? 'إضافة صنف جديد' : 'تعديل بيانات الصنف';
   $('editorSubtitle').textContent = mode === 'add-product'
-    ? 'أدخل بيانات الصنف والتركيبة المرتبطة به.'
+    ? 'أدخل بيانات الصنف وتركيبته.'
     : 'يمكنك تعديل بيانات الصنف وتركيبته الوحيدة.';
 
   $('productFields').style.display = 'block';
@@ -257,6 +258,8 @@ function openEditor(mode, productId = null) {
   $('formUsage').value = product?.usage || '';
   $('formProductNotes').value = product?.notes || '';
   $('formProductSort').value = product?.sort_order ?? 0;
+  $('formRequiredFeature').value = product?.required_feature || 'product';
+  $('formProductActive').checked = product ? !!product.is_active : true;
 
   if (mode === 'add-product') resetFormulaFields();
   else fillFormulaFields(formula || null);
@@ -320,8 +323,9 @@ async function saveProduct() {
     usage: $('formUsage').value.trim() || null,
     notes: $('formProductNotes').value.trim() || null,
     sort_order: Number($('formProductSort').value || 0),
-    required_feature: 'product',
-    subcategory_id: subcategoryId
+    required_feature: $('formRequiredFeature').value.trim() || 'product',
+    subcategory_id: subcategoryId,
+    is_active: $('formProductActive').checked
   };
 
   const formulaPayload = readFormulaFields();
