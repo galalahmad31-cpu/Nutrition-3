@@ -86,11 +86,10 @@ function switchTab(tab){
 }
 
 async function loadFoods(){
-  $('statusStat').textContent='جاري التحميل...';
   const {data,error}=await supabase.from('foods').select('*').order('name_ar',{ascending:true});
-  if(error){console.error(error);$('statusStat').textContent='خطأ في الاتصال';$('statusStat').className='mt-1 text-sm font-extrabold text-red-600';toast('تعذر تحميل مكتبة الأغذية: '+error.message,false);return;}
+  if(error){console.error(error);toast('تعذر تحميل مكتبة الأغذية: '+error.message,false);return;}
   foods=(data||[]).map(f=>({...f,id:String(f.id),kcal:num(f.kcal),protein:num(f.protein),carb:num(f.carb),fat:num(f.fat),sodium:num(f.sodium),potassium:num(f.potassium),phosphorus:num(f.phosphorus),water:num(f.water),is_custom:Boolean(f.is_custom)}));
-  render(); $('statusStat').textContent='متصل';$('statusStat').className='mt-1 text-sm font-extrabold text-brand-600';
+  render();
 }
 function render(){
   const q=$('search').value.trim().toLowerCase(), type=$('typeFilter').value;
