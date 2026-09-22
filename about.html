@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>عن التطبيق | Diet Planner</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -89,7 +89,6 @@
     </div>
   </main>
 
-  <!-- Delete confirmation -->
   <div id="deleteModal" class="hidden fixed inset-0 z-[200] items-center justify-center bg-slate-900/45 px-4">
     <div class="glass w-full max-w-sm rounded-3xl p-6 shadow-2xl">
       <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600">
@@ -104,7 +103,9 @@
     </div>
   </div>
 
-  <script src="js/auth-access.js?v=20260923-1"></script>
+  <script src="js/core/supabase.js"></script>
+  <script src="js/core/auth.js"></script>
+  <script src="js/core/access.js"></script>
   <script src="js/about.js"></script>
   
 </body>
