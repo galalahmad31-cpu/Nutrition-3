@@ -229,10 +229,6 @@ function readFormulaFields() {
   };
 }
 
-function setFormulaSelector(productId, selectedId = '') {
-  const formulas = productFormulaRows(productId);
-
-
 function openEditor(mode, productId = null) {
   if (!state.isAdmin) return;
   if (mode !== 'add-product' && mode !== 'edit-product') return;
