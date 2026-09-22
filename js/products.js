@@ -159,10 +159,10 @@ function render() {
 
 async function loadData() {
   const [c,s,p,f] = await Promise.all([
-    sb.from('product_categories').select('*').order('sort_order'),
-    sb.from('product_subcategories').select('*').order('sort_order'),
-    sb.from('food_products').select('id,product_name,usage,notes,sort_order,subcategory_id').order('sort_order'),
-    sb.from('food_product_formulas').select('id,product_id,formula_name,basis_amount,basis_unit,kcal,carb,protein,fat,notes,sort_order').order('sort_order')
+    sb.from('product_categories').select('*').eq('is_active',true).order('sort_order'),
+    sb.from('product_subcategories').select('*').eq('is_active',true).order('sort_order'),
+    sb.from('food_products').select('id,product_name,usage,notes,sort_order,subcategory_id,required_feature,is_active').eq('is_active',true).order('sort_order'),
+    sb.from('food_product_formulas').select('id,product_id,formula_name,basis_amount,basis_unit,kcal,carb,protein,fat,notes,is_default,is_active,sort_order').eq('is_active',true).order('sort_order')
   ]);
   if (c.error) throw c.error;
   if (s.error) throw s.error;
