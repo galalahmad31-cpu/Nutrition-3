@@ -139,7 +139,82 @@ function deleteMeal(did,mid){openConfirm('حذف الوجبة','هل أنت مت
 function openConfirm(title,text,cb){document.getElementById('confirmTitle').textContent=title;document.getElementById('confirmText').textContent=text;S.confirm=cb;document.getElementById('confirmModal').classList.remove('hidden')}
 function closeConfirm(){document.getElementById('confirmModal').classList.add('hidden');S.confirm=null}
 async function saveDay(id){if(!dayEditing(id))return;const ok=await saveDaysToDb();if(ok){S.savedDays=clone(S.days);S.dayEditing[String(id)]=false;renderDays();status('تم حفظ اليوم بنجاح')}}
-async function saveDaysToDb(){if(!S.plan)return false;try{const oldIds=S.savedDays.filter(d=>!String(d.id).startsWith('local-day-')).map(d=>d.id),curIds=S.days.filter(d=>!String(d.id).startsWith('local-day-')).map(d=>d.id),removed=oldIds.filter(id=>!curIds.includes(id));if(removed.length){const mr=await dbx.from('plan_meals').select('id').in('day_id',removed);if(mr.error)throw mr.error;const mids=(mr.data||[]).map(x=>x.id);if(mids.length){let r=await dbx.from('plan_items').delete().in('meal_id',mids);if(r.error)throw r.error;r=await dbx.from('plan_meals').delete().in('day_id',removed);if(r.error)throw r.error}let r=await dbx.from('plan_days').delete().in('id',removed);if(r.error)throw r.error}for(let i=0;i<S.days.length;i++){const d=S.days[i];let did=String(d.id).startsWith('local-day-')?null:d.id;if(!did){const r=await dbx.from('plan_days').insert({plan_id:S.plan,day_number:i+1,day_name:d.title}).select('id').single();if(r.error)throw r.error;did=r.data.id;d.id=did}else{const r=await dbx.from('plan_days').update({day_number:i+1,day_name:d.title}).eq('id',did);if(r.error)throw r.error}const oldM=await dbx.from('plan_meals').select('id').eq('day_id',did);if(oldM.error)throw oldM.error;const mids=(oldM.data||[]).map(x=>x.id);if(mids.length){let r=await dbx.from('plan_items').delete().in('meal_id',mids);if(r.error)throw r.error;r=await dbx.from('plan_meals').delete().in('day_id',did);if(r.error)throw r.error}const mealRows=(d.meals||[]).map((m,mi)=>({id:crypto.randomUUID(),day_id:did,meal_name:m.name||`وجبة ${mi+1}`,meal_order:mi+1}));if(mealRows.length){const r=await dbx.from('plan_meals').insert(mealRows);if(r.error)throw r.error}const itemRows=[];(d.meals||[]).forEach((m,mi)=>(m.items||[]).forEach(it=>{if(String(it.name||'').trim())itemRows.push({id:crypto.randomUUID(),meal_id:mealRows[mi].id,food_id:null,item_name:String(it.name).trim(),quantity_g:0,household_measure:String(it.measure||'').trim()||null,frequency:String(it.repeat||'').trim()||null})}));if(itemRows.length){const r=await dbx.from('plan_items').insert(itemRows);if(r.error)throw r.error}}return true}catch(e){status('تعذر حفظ أيام الخطة: '+(e.message||e),true);return false}}
+async function deleteRemovedDays(removed){
+ if(!removed.length)return;
+ const mr=await dbx.from('plan_meals').select('id').in('day_id',removed);
+ if(mr.error)throw mr.error;
+ const mealIds=(mr.data||[]).map(x=>x.id);
+ if(mealIds.length){
+  let r=await dbx.from('plan_items').delete().in('meal_id',mealIds);
+  if(r.error)throw r.error;
+  r=await dbx.from('plan_meals').delete().in('day_id',removed);
+  if(r.error)throw r.error;
+ }
+ const r=await dbx.from('plan_days').delete().in('id',removed);
+ if(r.error)throw r.error;
+}
+
+async function prepareDayRecord(day,index){
+ let dayId=String(day.id).startsWith('local-day-')?null:day.id;
+ if(!dayId){
+  const r=await dbx.from('plan_days').insert({plan_id:S.plan,day_number:index+1,day_name:day.title}).select('id').single();
+  if(r.error)throw r.error;
+  dayId=r.data.id;
+  day.id=dayId;
+ }else{
+  const r=await dbx.from('plan_days').update({day_number:index+1,day_name:day.title}).eq('id',dayId);
+  if(r.error)throw r.error;
+ }
+ return dayId;
+}
+
+async function clearDayMeals(dayId){
+ const oldM=await dbx.from('plan_meals').select('id').eq('day_id',dayId);
+ if(oldM.error)throw oldM.error;
+ const mealIds=(oldM.data||[]).map(x=>x.id);
+ if(!mealIds.length)return;
+ let r=await dbx.from('plan_items').delete().in('meal_id',mealIds);
+ if(r.error)throw r.error;
+ r=await dbx.from('plan_meals').delete().in('day_id',dayId);
+ if(r.error)throw r.error;
+}
+
+async function saveDayMeals(day,dayId){
+ const mealRows=(day.meals||[]).map((m,mi)=>({id:crypto.randomUUID(),day_id:dayId,meal_name:m.name||('وجبة '+(mi+1)),meal_order:mi+1}));
+ if(mealRows.length){
+  const r=await dbx.from('plan_meals').insert(mealRows);
+  if(r.error)throw r.error;
+ }
+ const itemRows=[];
+ (day.meals||[]).forEach((m,mi)=>(m.items||[]).forEach(it=>{
+  if(String(it.name||'').trim())itemRows.push({id:crypto.randomUUID(),meal_id:mealRows[mi].id,food_id:null,item_name:String(it.name).trim(),quantity_g:0,household_measure:String(it.measure||'').trim()||null,frequency:String(it.repeat||'').trim()||null});
+ }));
+ if(itemRows.length){
+  const r=await dbx.from('plan_items').insert(itemRows);
+  if(r.error)throw r.error;
+ }
+}
+
+async function saveSingleDay(day,index){
+ const dayId=await prepareDayRecord(day,index);
+ await clearDayMeals(dayId);
+ await saveDayMeals(day,dayId);
+}
+
+async function saveDaysToDb(){
+ if(!S.plan)return false;
+ try{
+  const oldIds=S.savedDays.filter(d=>!String(d.id).startsWith('local-day-')).map(d=>d.id);
+  const currentIds=S.days.filter(d=>!String(d.id).startsWith('local-day-')).map(d=>d.id);
+  const removed=oldIds.filter(id=>!currentIds.includes(id));
+  await deleteRemovedDays(removed);
+  for(let i=0;i<S.days.length;i++)await saveSingleDay(S.days[i],i);
+  return true;
+ }catch(e){
+  status('تعذر حفظ أيام الخطة: '+(e.message||e),true);
+  return false;
+ }
+}
 function deleteDay(id){openConfirm('حذف اليوم','هل أنت متأكد من حذف هذا اليوم بكل وجباته وأصنافه؟',async()=>{const old=clone(S.days),idx=S.days.findIndex(x=>String(x.id)===String(id));if(idx<0)return;S.days.splice(idx,1);if(await saveDaysToDb()){S.savedDays=clone(S.days);renderDays();status('تم حذف اليوم بنجاح')}else{S.days=old;renderDays()}})}
 function addItem(did,mid){
  const d=S.days.find(x=>String(x.id)===String(did)),m=d?.meals.find(x=>String(x.id)===String(mid));
