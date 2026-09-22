@@ -120,18 +120,11 @@ function render() {
     const cat = sub && state.categories.find(c => c.id === sub.category_id);
     const fs = productFormulaRows(p.id);
 
-    const adminActions = state.isAdmin
-      ? '<div class="flex shrink-0 gap-2">' +
-        '<button type="button" data-action="edit-product" data-id="' + esc(p.id) + '" class="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100" title="تعديل"><i class="fa-solid fa-pen"></i></button>' +
-        '<button type="button" data-action="delete-product" data-id="' + esc(p.id) + '" class="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100" title="حذف"><i class="fa-solid fa-trash"></i></button>' +
-        '</div>'
-      : '';
-
-    const formulasHtml = fs.map(f =>
+        const formulasHtml = fs.map(f =>
       '<div class="mt-3 rounded-2xl border border-slate-100 bg-white p-3">' +
       '<div class="flex items-start justify-between gap-2">' +
       '<div class="min-w-0"><div class="text-sm font-extrabold text-slate-800">' + esc(f.formula_name) + '</div>' +
-      '<div class="mt-1 text-[10px] font-bold text-slate-400">' + esc(f.basis_amount ? fmt(f.basis_amount) + ' ' + (f.basis_unit || '') : 'أساس غير محدد') + (f.is_default ? ' · افتراضية' : '') + '</div></div>' +
+      '<div class="mt-1 text-[10px] font-bold text-slate-400">' + esc(f.basis_amount ? fmt(f.basis_amount) + ' ' + (f.basis_unit || '') : 'أساس غير محدد') +  + '</div></div>' +
       (state.isAdmin
         ? '<div class="flex shrink-0 gap-1.5">' +
           '<button type="button" data-action="edit-formula" data-id="' + esc(f.id) + '" class="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100" title="تعديل التركيبة"><i class="fa-solid fa-pen-to-square text-xs"></i></button>' +
@@ -147,11 +140,7 @@ function render() {
       '</div>'
     ).join('');
 
-    const addFormulaButton = state.isAdmin
-      ? '<button type="button" data-action="add-formula" data-id="' + esc(p.id) + '" class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-brand-200 bg-brand-50 px-3 py-2.5 text-xs font-extrabold text-brand-700 hover:bg-brand-100"><i class="fa-solid fa-plus"></i> إضافة تركيبة</button>'
-      : '';
-
-    return '<article class="product-card glass rounded-3xl p-5 shadow-sm">' +
+        return '<article class="product-card glass rounded-3xl p-5 shadow-sm">' +
       '<div class="flex items-start justify-between gap-3"><div class="min-w-0"><div class="text-xs font-bold text-brand-600">' + esc(cat?.name || 'غير مصنف') + ' · ' + esc(sub?.name || 'غير مصنف') + '</div>' +
       '<h2 class="mt-1 text-lg font-extrabold text-slate-800">' + esc(p.product_name) + '</h2></div>' + adminActions + '</div>' +
       '<div class="mt-4 rounded-2xl bg-slate-50 p-3"><div class="text-xs font-bold text-slate-500">الاستخدام</div><div class="mt-1 text-sm font-semibold leading-6 text-slate-700">' + esc(p.usage || '—') + '</div></div>' +
@@ -165,10 +154,10 @@ function render() {
 
 async function loadData() {
   const [c,s,p,f] = await Promise.all([
-    sb.from('product_categories').select('*').eq('is_active',true).order('sort_order'),
-    sb.from('product_subcategories').select('*').eq('is_active',true).order('sort_order'),
-    sb.from('food_products').select('id,product_name,usage,notes,sort_order,subcategory_id,required_feature,is_active').eq('is_active',true).order('sort_order'),
-    sb.from('food_product_formulas').select('id,product_id,formula_name,basis_amount,basis_unit,kcal,carb,protein,fat,notes,is_default,is_active,sort_order').eq('is_active',true).order('sort_order')
+    sb.from('product_categories').select('*').order('sort_order'),
+    sb.from('product_subcategories').select('*').order('sort_order'),
+    sb.from('food_products').select('id,product_name,usage,notes,sort_order,subcategory_id').order('sort_order'),
+    sb.from('food_product_formulas').select('id,product_id,formula_name,basis_amount,basis_unit,kcal,carb,protein,fat,notes,sort_order').order('sort_order')
   ]);
   if (c.error) throw c.error;
   if (s.error) throw s.error;
@@ -191,8 +180,6 @@ function resetFormulaFields() {
   $('formFat').value = '';
   $('formFormulaNotes').value = '';
   $('formFormulaSort').value = '0';
-  $('formFormulaDefault').checked = false;
-  $('formFormulaActive').checked = true;
 }
 
 function fillFormulaFields(f) {
@@ -205,8 +192,6 @@ function fillFormulaFields(f) {
   $('formFat').value = f?.fat ?? '';
   $('formFormulaNotes').value = f?.notes || '';
   $('formFormulaSort').value = f?.sort_order ?? 0;
-  $('formFormulaDefault').checked = !!f?.is_default;
-  $('formFormulaActive').checked = f ? !!f.is_active : true;
 }
 
 function readFormulaFields() {
@@ -229,35 +214,23 @@ function readFormulaFields() {
     protein: numOrNull('formProtein'),
     fat: numOrNull('formFat'),
     notes: $('formFormulaNotes').value.trim() || null,
-    is_default: $('formFormulaDefault').checked,
-    is_active: $('formFormulaActive').checked,
     sort_order: Number($('formFormulaSort').value || 0)
   };
 }
 
 function setFormulaSelector(productId, selectedId = '') {
   const formulas = productFormulaRows(productId);
-  const wrap = $('formulaSelectorWrap');
-  const selector = $('formFormulaSelector');
 
-  if (!formulas.length) {
-    wrap.classList.add('hidden');
-    selector.innerHTML = '';
-    return;
-  }
-
-  wrap.classList.remove('hidden');
-  selector.innerHTML = formulas.map(f => option(f.formula_name, f.id, f.id === selectedId)).join('');
-  if (!selector.value && formulas[0]) selector.value = formulas[0].id;
-}
 
 function openEditor(mode, productId = null, formulaId = null) {
   if (!state.isAdmin) return;
 
+  if (mode === 'add-formula' || mode === 'edit-formula') return;
   state.editor = { mode, productId, formulaId };
 
   const product = productId ? state.products.find(p => p.id === productId) : null;
-  const formula = formulaId ? state.formulas.find(f => f.id === formulaId) : (product ? productFormulaRows(product.id)[0] : null);
+  const formula = product ? productFormulaRows(product.id)[0] : null;
+  state.editor.formulaId = formula?.id || null;
 
   $('editorModal').style.display = 'flex';
   $('editorTitle').textContent =
@@ -280,25 +253,18 @@ function openEditor(mode, productId = null, formulaId = null) {
     $('formUsage').value = product?.usage || '';
     $('formProductNotes').value = product?.notes || '';
     $('formProductSort').value = product?.sort_order ?? 0;
-    $('formRequiredFeature').value = product?.required_feature || 'product';
-    $('formProductActive').checked = product ? !!product.is_active : true;
   } else {
     $('formulaProductInfo').classList.remove('hidden');
     $('formulaProductInfo').textContent = 'الصنف: ' + (product?.product_name || '—');
   }
 
-  $('formulaProductInfo').style.display = mode === 'add-formula' ? 'block' : 'none';
+  $('formulaProductInfo').style.display = mode === 'edit-product' || mode === 'add-product' ? 'none' : 'none';
 
   if (mode === 'add-product') {
-    $('formulaSelectorWrap').classList.add('hidden');
     resetFormulaFields();
   } else if (mode === 'edit-product') {
-    const formulas = product ? productFormulaRows(product.id) : [];
-    setFormulaSelector(product.id, formula?.id || formulas[0]?.id || '');
     fillFormulaFields(formula || null);
-    state.editor.formulaId = formula?.id || formulas[0]?.id || null;
   } else {
-    $('formulaSelectorWrap').classList.add('hidden');
     fillFormulaFields(formula || null);
   }
 }
@@ -308,19 +274,13 @@ function closeEditor() {
   state.editor = { mode: null, productId: null, formulaId: null };
 }
 
-function openConfirm(type, id) {
+function openConfirm(_type, id) {
   if (!state.isAdmin) return;
-  state.pendingDelete = { type, id };
+  state.pendingDelete = { type: 'product', id };
 
-  if (type === 'product') {
-    const p = state.products.find(x => x.id === id);
-    $('confirmTitle').textContent = 'تأكيد حذف الصنف';
-    $('confirmMessage').textContent = 'سيتم حذف الصنف «' + (p?.product_name || '') + '» وجميع التركيبات المرتبطة به. لا يمكن التراجع عن هذه العملية.';
-  } else {
-    const f = state.formulas.find(x => x.id === id);
-    $('confirmTitle').textContent = 'تأكيد حذف التركيبة';
-    $('confirmMessage').textContent = 'سيتم حذف التركيبة «' + (f?.formula_name || '') + '». لا يمكن التراجع عن هذه العملية.';
-  }
+  const p = state.products.find(x => x.id === id);
+  $('confirmTitle').textContent = 'تأكيد حذف الصنف';
+  $('confirmMessage').textContent = 'سيتم حذف الصنف «' + (p?.product_name || '') + '» وتركيبته المرتبطة به. لا يمكن التراجع عن هذه العملية.';
 
   $('confirmModal').style.display = 'flex';
 }
@@ -338,7 +298,7 @@ async function deletePending() {
   $('confirmDeleteBtn').textContent = 'جاري الحذف...';
 
   try {
-    const table = type === 'product' ? 'food_products' : 'food_product_formulas';
+    const table = 'food_products';
     const { error } = await sb.from(table).delete().eq('id', id);
     if (error) throw error;
 
@@ -346,7 +306,7 @@ async function deletePending() {
     await loadData();
     populateCategories();
     render();
-    showToast(type === 'product' ? 'تم حذف الصنف وجميع تركيباته.' : 'تم حذف التركيبة.');
+    showToast('تم حذف الصنف وتركيبته.');
   } catch (e) {
     console.error(e);
     showToast(e.message || 'تعذر تنفيذ الحذف.', false);
@@ -367,9 +327,8 @@ async function saveProduct() {
     usage: $('formUsage').value.trim() || null,
     notes: $('formProductNotes').value.trim() || null,
     sort_order: Number($('formProductSort').value || 0),
-    required_feature: $('formRequiredFeature').value.trim() || 'product',
-    subcategory_id: subcategoryId,
-    is_active: $('formProductActive').checked
+    required_feature: 'product',
+    subcategory_id: subcategoryId
   };
 
   const formulaPayload = readFormulaFields();
@@ -411,26 +370,6 @@ async function saveProduct() {
   }
 }
 
-async function saveFormula() {
-  const formulaPayload = readFormulaFields();
-  if (!formulaPayload.formula_name) throw new Error('اسم التركيبة حقل مطلوب.');
-
-  const { mode, productId, formulaId } = state.editor;
-
-  if (mode === 'add-formula') {
-    const { error } = await sb.from('food_product_formulas').insert({
-      ...formulaPayload,
-      product_id: productId
-    });
-    if (error) throw error;
-    showToast('تمت إضافة التركيبة.');
-  } else {
-    const { error } = await sb.from('food_product_formulas').update(formulaPayload).eq('id', formulaId);
-    if (error) throw error;
-    showToast('تم تعديل التركيبة.');
-  }
-}
-
 async function saveEditor(e) {
   e.preventDefault();
   if (!state.isAdmin) return;
@@ -440,11 +379,7 @@ async function saveEditor(e) {
   btn.textContent = 'جاري الحفظ...';
 
   try {
-    if (state.editor.mode === 'add-product' || state.editor.mode === 'edit-product') {
-      await saveProduct();
-    } else {
-      await saveFormula();
-    }
+    await saveProduct();
 
     closeEditor();
     await loadData();
@@ -526,12 +461,6 @@ $('editorForm').addEventListener('submit', saveEditor);
 
 $('formCategory').onchange = refreshFormSubcategories;
 
-$('formFormulaSelector').onchange = e => {
-  const f = state.formulas.find(x => x.id === e.target.value);
-  state.editor.formulaId = f?.id || null;
-  fillFormulaFields(f || null);
-};
-
 $('productsGrid').addEventListener('click', e => {
   const btn = e.target.closest('[data-action]');
   if (!btn || !state.isAdmin) return;
@@ -541,11 +470,7 @@ $('productsGrid').addEventListener('click', e => {
 
   if (action === 'edit-product') openEditor('edit-product', id);
   else if (action === 'delete-product') openConfirm('product', id);
-  else if (action === 'edit-formula') {
-    const f = state.formulas.find(x => x.id === id);
-    openEditor('edit-formula', f?.product_id || null, id);
-  } else if (action === 'delete-formula') openConfirm('formula', id);
-  else if (action === 'add-formula') openEditor('add-formula', id);
+
 });
 
 $('editorModal').addEventListener('click', e => {
