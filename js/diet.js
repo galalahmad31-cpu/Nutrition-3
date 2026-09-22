@@ -109,92 +109,54 @@ function buildDietPayload(visibility, totals){
   };
 }
 
-async function saveDietHeader(dietId,payload){
-  if(dietId){
-    const {error}=await supabase
-      .from('diet_templates')
-      .update(payload)
-      .eq('id',dietId)
-      .eq('created_by',user.id);
-
-    if(error)throw error;
-    return dietId;
-  }
-
-  const {data,error}=await supabase
-    .from('diet_templates')
-    .insert({created_by:user.id,...payload})
-    .select('id')
-    .single();
-
-  if(error)throw error;
-  return data.id;
-}
-
-async function clearDietDays(dietId){
-  const {error}=await supabase
-    .from('diet_template_days')
-    .delete()
-    .eq('diet_id',dietId);
-
-  if(error)throw error;
-}
-
-async function insertDietStructure(dietId){
+async function saveDietTemplateViaRpc(dietId,payload){
   const dayId=crypto.randomUUID();
 
-  const {error:dayError}=await supabase
-    .from('diet_template_days')
-    .insert({
-      id:dayId,
-      diet_id:dietId,
-      day_number:1,
-      day_name:'اليوم'
-    });
+  const meals=day.meals.map((meal,mi)=>({
+    id:crypto.randomUUID(),
+    meal_name:meal.name||('وجبة '+(mi+1)),
+    meal_order:mi+1,
+    frequency:null
+  }));
 
-  if(dayError)throw dayError;
-
-  for(let mi=0;mi<day.meals.length;mi++){
-    const meal=day.meals[mi];
-    const mealId=crypto.randomUUID();
-
-    const {error:mealError}=await supabase
-      .from('diet_template_meals')
-      .insert({
-        id:mealId,
-        day_id:dayId,
-        meal_name:meal.name||`وجبة ${mi+1}`,
-        meal_order:mi+1,
-        frequency:null
-      });
-
-    if(mealError)throw mealError;
-
-    for(let ii=0;ii<meal.items.length;ii++){
-      const item=meal.items[ii];
-      if(!item.food_id)continue;
+  const items=[];
+  day.meals.forEach((meal,mi)=>{
+    const mealId=meals[mi].id;
+    meal.items.forEach((item,ii)=>{
+      if(!item.food_id)return;
 
       const food=foods.find(x=>x.id===String(item.food_id));
       const householdMeasure=food?.household
         ?scaleHouseholdMeasure(food.household,num(item.quantity_g))
         :(item.household_measure||null);
 
-      const {error:itemError}=await supabase
-        .from('diet_template_items')
-        .insert({
-          id:crypto.randomUUID(),
-          meal_id:mealId,
-          food_id:String(item.food_id),
-          quantity_g:num(item.quantity_g),
-          household_measure:householdMeasure,
-          frequency:item.frequency||null,
-          notes:item.notes||null,
-          item_order:ii+1
-        });
+      items.push({
+        id:crypto.randomUUID(),
+        meal_id:mealId,
+        food_id:String(item.food_id),
+        quantity_g:num(item.quantity_g),
+        household_measure:householdMeasure,
+        frequency:item.frequency||null,
+        notes:item.notes||null,
+        item_order:ii+1
+      });
+    });
+  });
 
-      if(itemError)throw itemError;
-    }
-  }
+  const {data,error}=await supabase.rpc('save_diet_template',{
+    p_diet_id:dietId||null,
+    p_payload:payload,
+    p_day:{
+      id:dayId,
+      day_number:1,
+      day_name:'اليوم'
+    },
+    p_meals:meals,
+    p_items:items
+  });
+
+  if(error)throw error;
+  return data;
 }
 
 async function save(){
@@ -221,13 +183,7 @@ async function save(){
 
   try{
     const payload=buildDietPayload(visibility,totals);
-    const dietId=await saveDietHeader(editingId,payload);
-
-    if(isUpdate){
-      await clearDietDays(dietId);
-    }
-
-    await insertDietStructure(dietId);
+    const dietId=await saveDietTemplateViaRpc(editingId,payload);
 
     toast(isUpdate?'تم تحديث الدايت بنجاح':'تم حفظ الدايت بنجاح');
     toggleEditor(false);
