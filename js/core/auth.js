@@ -34,14 +34,24 @@
 
   async function signIn(email, password) {
     const client = getClient();
-    if (!client) return { data: null, error: new Error("Supabase client is not available.") };
+    if (!client) {
+      return {
+        data: null,
+        error: new Error("Supabase client is not available.")
+      };
+    }
 
     return client.auth.signInWithPassword({ email, password });
   }
 
   async function signUp(email, password, fullName) {
     const client = getClient();
-    if (!client) return { data: null, error: new Error("Supabase client is not available.") };
+    if (!client) {
+      return {
+        data: null,
+        error: new Error("Supabase client is not available.")
+      };
+    }
 
     return client.auth.signUp({
       email,
@@ -54,7 +64,12 @@
 
   async function signInWithGoogle(redirectTo) {
     const client = getClient();
-    if (!client) return { data: null, error: new Error("Supabase client is not available.") };
+    if (!client) {
+      return {
+        data: null,
+        error: new Error("Supabase client is not available.")
+      };
+    }
 
     return client.auth.signInWithOAuth({
       provider: "google",
@@ -64,10 +79,10 @@
 
   async function signOut() {
     const client = getClient();
-    if (!client) return { error: new Error("Supabase client is not available.") };
-
-    if (window.DietPlannerCoreAccess?.clearCache) {
-      window.DietPlannerCoreAccess.clearCache();
+    if (!client) {
+      return {
+        error: new Error("Supabase client is not available.")
+      };
     }
 
     return client.auth.signOut();
