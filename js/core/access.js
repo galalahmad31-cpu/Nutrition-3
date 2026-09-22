@@ -4,9 +4,7 @@
    Shared access primitives only.
    No page routing, login UI, DOM manipulation, or page-specific logic.
    ---------------------------------------------------------
-   This module is intentionally not wired into existing pages yet.
-   The current auth-access.js remains the compatibility layer until
-   all dependants are audited.
+   Depends on: core/supabase.js + core/auth.js
    ========================================================= */
 
 (() => {
@@ -27,6 +25,10 @@
   }
 
   async function getCurrentUser() {
+    if (window.DietPlannerCoreAuth?.getCurrentUser) {
+      return window.DietPlannerCoreAuth.getCurrentUser();
+    }
+
     const client = supabase();
     if (!client) return null;
 
