@@ -79,11 +79,12 @@ let deleteTarget=null;
 function closeDeleteConfirm(){deleteTarget=null;$('deleteConfirmModal').classList.add('hidden');$('deleteConfirmModal').classList.remove('flex')}
 function openDeleteConfirm(diet){deleteTarget=diet;$('deleteConfirmModal').classList.remove('hidden');$('deleteConfirmModal').classList.add('flex')}
 $('cancelDeleteBtn').onclick=closeDeleteConfirm;
-$('confirmDeleteBtn').onclick=async()=>{const x=deleteTarget;if(!x)return;const b=$('confirmDeleteBtn');b.disabled=true;b.textContent='جاري الحذف...';const {error}=await supabase.from('diet_templates').delete().eq('id',x.id).eq('created_by',user.id);b.disabled=false;b.innerHTML='<i class="fa-solid fa-trash ml-1"></i> حذف الدايت';closeDeleteConfirm();if(error)toast('فشل الحذف: '+error.message,false);else{toast('تم حذف الدايت');await loadDiets()}};
+$('confirmDeleteBtn').onclick=async()=>{const x=deleteTarget;if(!x)return;const b=$('confirmDeleteBtn');b.disabled=true;b.textContent='جاري الحذف...';const {error}=await supabase.from('diet_templates').delete().eq('id',x.id);b.disabled=false;b.innerHTML='<i class="fa-solid fa-trash ml-1"></i> حذف الدايت';closeDeleteConfirm();if(error)toast('فشل الحذف: '+error.message,false);else{toast('تم حذف الدايت');await loadDiets()}};
 $('dietGrid').onclick=async e=>{const o=e.target.closest('[data-open]'),d=e.target.closest('[data-del]');if(o)await openDiet(o.dataset.open);if(d){const x=diets.find(a=>a.id===d.dataset.del);if(x)openDeleteConfirm(x)}};
 function buildDietPayload(visibility, totals){
+  const currentDiet=editingId?diets.find(d=>d.id===editingId):null;
   const publisherName=visibility==='public'
-    ?(authors[user.id]||user.user_metadata?.full_name||user.user_metadata?.name||'')
+    ?(currentDiet?.publisher_name||authors[currentDiet?.created_by]||authors[user.id]||user.user_metadata?.full_name||user.user_metadata?.name||'')
     :null;
 
   const requiredFeature=
@@ -186,6 +187,7 @@ async function save(){
     const dietId=await saveDietTemplateViaRpc(editingId,payload);
 
     const savedId=dietId;
+    const existingDiet=isUpdate?diets.find(d=>d.id===savedId):null;
     const savedDiet={
       id:savedId,
       name:payload.name,
@@ -199,7 +201,7 @@ async function save(){
       goal:payload.goal,
       visibility:payload.visibility,
       required_feature:payload.required_feature,
-      created_by:user.id,
+      created_by:existingDiet?.created_by||user.id,
       publisher_name:payload.publisher_name,
       updated_at:new Date().toISOString(),
       created_at:isUpdate?(diets.find(d=>d.id===savedId)?.created_at||null):new Date().toISOString()
