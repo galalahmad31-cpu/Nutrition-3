@@ -131,7 +131,7 @@ function render() {
       ? '<div class="mt-3 rounded-2xl border border-slate-100 bg-white p-3">' +
         '<div class="flex items-start justify-between gap-2">' +
         '<div><div class="text-sm font-extrabold text-slate-800">' + esc(formula.formula_name) + '</div>' +
-        '<div class="mt-1 text-[10px] font-bold text-slate-400">' + esc(formula.basis_amount ? fmt(formula.basis_amount) + ' ' + (formula.basis_unit || '') : 'أساس غير محدد') + (formula.is_default ? ' · افتراضية' : '') + (formula.is_active === false ? ' · غير نشطة' : '') + '</div></div>' +
+        '<div class="mt-1 text-[10px] font-bold text-slate-400">' + esc(formula.basis_amount ? fmt(formula.basis_amount) + ' ' + (formula.basis_unit || '') : 'أساس غير محدد') + '</div></div>' +
         '</div>' +
         '<div class="mt-3 grid grid-cols-4 gap-2 text-center">' +
         '<div><div class="text-[10px] text-slate-400">السعرات</div><div class="mt-1 text-sm font-extrabold text-amber-600">' + fmt(formula.kcal) + '</div></div>' +
@@ -162,7 +162,7 @@ async function loadData() {
     sb.from('product_categories').select('*').eq('is_active',true).order('sort_order'),
     sb.from('product_subcategories').select('*').eq('is_active',true).order('sort_order'),
     sb.from('food_products').select('id,product_name,usage,notes,sort_order,subcategory_id,required_feature,is_active').eq('is_active',true).order('sort_order'),
-    sb.from('food_product_formulas').select('id,product_id,formula_name,basis_amount,basis_unit,kcal,carb,protein,fat,notes,is_default,is_active,sort_order').eq('is_active',true).order('sort_order')
+    sb.from('food_product_formulas').select('id,product_id,formula_name,basis_amount,basis_unit,kcal,carb,protein,fat,notes,sort_order').order('sort_order')
   ]);
   if (c.error) throw c.error;
   if (s.error) throw s.error;
@@ -185,8 +185,6 @@ function resetFormulaFields() {
   $('formFat').value = '';
   $('formFormulaNotes').value = '';
   $('formFormulaSort').value = '0';
-  $('formFormulaDefault').checked = false;
-  $('formFormulaActive').checked = true;
 }
 
 function fillFormulaFields(f) {
@@ -199,8 +197,6 @@ function fillFormulaFields(f) {
   $('formFat').value = f?.fat ?? '';
   $('formFormulaNotes').value = f?.notes || '';
   $('formFormulaSort').value = f?.sort_order ?? 0;
-  $('formFormulaDefault').checked = !!f?.is_default;
-  $('formFormulaActive').checked = f ? !!f.is_active : true;
 }
 
 function readFormulaFields() {
@@ -223,8 +219,6 @@ function readFormulaFields() {
     protein: numOrNull('formProtein'),
     fat: numOrNull('formFat'),
     notes: $('formFormulaNotes').value.trim() || null,
-    is_default: $('formFormulaDefault').checked,
-    is_active: $('formFormulaActive').checked,
     sort_order: Number($('formFormulaSort').value || 0)
   };
 }
