@@ -5,7 +5,7 @@ let currentSubscription=null;
 const state={plans:[],subscriptions:[]};
 
 
-let confirmResolver=null;function showConfirmPopup(message,title='تأكيد العملية'){return new Promise(resolve=>{confirmResolver=resolve;document.getElementById('confirmTitle').textContent=title;document.getElementById('confirmMessage').innerHTML=message;document.getElementById('confirmOverlay').style.display='flex';});}function resolveConfirm(value){document.getElementById('confirmOverlay').style.display='none';if(confirmResolver){const r=confirmResolver;confirmResolver=null;r(value);}}
+let confirmResolver=null;function showConfirmPopup(message,title='تأكيد العملية'){return new Promise(resolve=>{confirmResolver=resolve;document.getElementById('confirmTitle').textContent=title;document.getElementById('confirmMessage').textContent=message;document.getElementById('confirmOverlay').style.display='flex';});}function resolveConfirm(value){document.getElementById('confirmOverlay').style.display='none';if(confirmResolver){const r=confirmResolver;confirmResolver=null;r(value);}}
 async function logoutUser(){
   const {error}=await sb.auth.signOut();
   if(error){ console.error("Logout error:",error); showToast("تعذر تسجيل الخروج"); return; }
@@ -85,11 +85,11 @@ async function loadPlans(){
     if(isActive){
       action=`<button class="btn btn-outline" disabled style="cursor:default;opacity:.9"><i class="fa-solid fa-circle-check"></i> الخطة مفعّلة</button>`;
     }else if(hasPending){
-      action=`<button class="btn btn-outline" onclick="openPendingSubscription('${pendingSubscription.id}')"><i class="fa-solid fa-clock"></i> الطلب قيد المراجعة</button>`;
+      action=`<button class="btn btn-outline" data-action="open-pending" data-id="${escapeHtml(pendingSubscription.id)}"><i class="fa-solid fa-clock"></i> الطلب قيد المراجعة</button>`;
     }else if(trialUsed){
       action=`<button class="btn btn-outline" disabled style="cursor:default;opacity:.75"><i class="fa-solid fa-circle-check"></i> تم استخدام التجربة</button>`;
     }else{
-      action=`<button class="btn btn-primary" onclick="subscribeToPlan('${p.id}')">${p.is_free_trial?'ابدأ التجربة':'اشتراك'}</button>`;
+      action=`<button class="btn btn-primary" data-action="subscribe-plan" data-id="${escapeHtml(p.id)}">${p.is_free_trial?'ابدأ التجربة':'اشتراك'}</button>`;
     }
 
     return `
@@ -392,11 +392,28 @@ function showDetailedError(title, error){
                     ${details ? `<br><br><strong>Details:</strong><br>${escapeHtml(details)}` : ''}
                     ${hint ? `<br><br><strong>Hint:</strong><br>${escapeHtml(hint)}` : ''}
                 </div>
-                <button class="btn btn-primary" style="width:100%;margin-top:15px" onclick="document.getElementById('errorOverlay')?.remove()">إغلاق</button>
+                <button class="btn btn-primary" style="width:100%;margin-top:15px" data-action="close-error">إغلاق</button>
             </div>
         </div>`;
     document.body.insertAdjacentHTML('beforeend', html);
 }
+
+document.addEventListener('click',event=>{
+  const target=event.target.closest('[data-action]');
+  if(!target) return;
+  const action=target.dataset.action;
+  switch(action){
+    case 'replace-proof': replacePendingProof(); break;
+    case 'cancel-pending': cancelPendingSubscription(); break;
+    case 'close-subscribe': closeSubscribeModal(); break;
+    case 'submit-subscription': submitSubscription(); break;
+    case 'confirm-no': resolveConfirm(false); break;
+    case 'confirm-yes': resolveConfirm(true); break;
+    case 'open-pending': openPendingSubscription(target.dataset.id); break;
+    case 'subscribe-plan': subscribeToPlan(target.dataset.id); break;
+    case 'close-error': document.getElementById('errorOverlay')?.remove(); break;
+  }
+});
 
 document.getElementById('subscribeModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeSubscribeModal()});
 document.getElementById('logoutBtn')?.addEventListener('click',logoutUser);
