@@ -1425,7 +1425,10 @@ const supabaseClient = access?.supabaseClient;
 if (!access || !supabaseClient) {
   console.error('DietPlannerAccess is not available. Check that auth-access.js is loaded from the same folder.');
   document.addEventListener('DOMContentLoaded',()=>{
-    document.body.insertAdjacentHTML('afterbegin','<div style="padding:16px;text-align:center;color:#b91c1c;font-family:Cairo,sans-serif">تعذر تشغيل نظام الاتصال بالتطبيق. تأكد من وجود auth-access.js بجوار الصفحة.</div>');
+    const notice=document.createElement('div');
+    notice.style.cssText='padding:16px;text-align:center;color:#b91c1c;font-family:Cairo,sans-serif';
+    notice.textContent='تعذر تشغيل نظام الاتصال بالتطبيق. تأكد من وجود auth-access.js بجوار الصفحة.';
+    document.body.prepend(notice);
   },{once:true});
 } 
 const $=id=>document.getElementById(id);
@@ -1520,7 +1523,7 @@ function renderSupportDays(){
     b.addEventListener('click',()=>selectSupportDay(d.id));
     const del=document.createElement('button');
     del.type='button'; del.className='day-delete'; del.title=writable?'حذف هذا اليوم':'الحذف غير متاح حاليًا'; del.setAttribute('aria-label','حذف هذا اليوم'); del.disabled=!writable;
-    del.innerHTML='🗑️';
+    del.textContent='🗑️';
     del.addEventListener('click',e=>{e.stopPropagation();deleteSupportDay(d.id);});
     row.appendChild(b); row.appendChild(del); list.appendChild(row);
   });
