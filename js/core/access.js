@@ -13,6 +13,7 @@
   if (window.DietPlannerCoreAccess) return;
 
   const supabase = () => window.DietPlannerSupabase?.client || null;
+  const Auth = () => window.DietPlannerCoreAuth || null;
 
   const cache = {
     userId: null,
@@ -25,21 +26,13 @@
   }
 
   async function getCurrentUser() {
-    if (window.DietPlannerCoreAuth?.getCurrentUser) {
-      return window.DietPlannerCoreAuth.getCurrentUser();
-    }
-
-    const client = supabase();
-    if (!client) return null;
-
-    const { data, error } = await client.auth.getSession();
-
-    if (error) {
-      console.error("Session lookup failed:", error);
+    const auth = Auth();
+    if (!auth?.getCurrentUser) {
+      console.error("Diet Planner Core Auth is not loaded.");
       return null;
     }
 
-    return data?.session?.user || null;
+    return auth.getCurrentUser();
   }
 
   async function getUserRole(userId) {
@@ -80,27 +73,12 @@
       { p_user_id: userId }
     );
 
-    if (!error) return data === true;
-
-    console.error("Subscription RPC failed; using read-only fallback:", error);
-
-    const today = new Date().toISOString().slice(0, 10);
-    const { data: subscription, error: fallbackError } = await client
-      .from("subscriptions")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("status", "paid")
-      .lte("start_date", today)
-      .gte("expiry_date", today)
-      .limit(1)
-      .maybeSingle();
-
-    if (fallbackError) {
-      console.error("Subscription fallback check failed:", fallbackError);
+    if (error) {
+      console.error("Subscription RPC failed:", error);
       return null;
     }
 
-    return !!subscription;
+    return data === true;
   }
 
   async function canAddPatient(userId) {
