@@ -305,9 +305,9 @@
       return;
     }
 
-    if (!data?.session?.user) return;
+    if (!data?.session?.user) return null;
 
-    await checkUserAccess(data.session);
+    return data.session;
   }
 
   // ---------------------------------------------------------
@@ -488,6 +488,7 @@
 
     if (isAuthCallback) {
       let handled = false;
+      let authStateSubscription = null;
 
       const handleCallbackSession = async (session) => {
         if (handled || !session?.user) return;
@@ -511,7 +512,7 @@
           }
         });
 
-      const authStateSubscription = authStateData?.subscription;
+      authStateSubscription = authStateData?.subscription;
 
       // Fallback for providers/browsers where the callback event can be
       // delivered before the listener is attached.
