@@ -14,7 +14,8 @@ const state = {
   search: '',
   isAdmin: false,
   editor: { mode: null, productId: null, formulaId: null },
-  pendingDelete: null
+  pendingDelete: null,
+  categoryManagerType: null
 };
 
 const $ = id => document.getElementById(id);
@@ -75,6 +76,84 @@ function populateFormCategories(selectedCategory = '', selectedSubcategory = '')
     subs.map(s => option(s.name,s.id,s.id === selectedSubcategory)).join('');
 
   $('formSubcategory').value = selectedSubcategory || '';
+}
+
+function populateSubcategoryParentSelect(selectedId = '') {
+  const select = $('subcategoryParentSelect');
+  select.innerHTML = option('اختر القسم الرئيسي','') +
+    state.categories.map(c => option(c.name,c.id,c.id === selectedId)).join('');
+}
+
+function openCategoryModal(type) {
+  if (!state.isAdmin) return;
+  state.categoryManagerType = type;
+  const isSub = type === 'subcategory';
+  $('categoryModalTitle').textContent = isSub ? 'إضافة قسم فرعي جديد' : 'إضافة قسم رئيسي جديد';
+  $('categoryModalHint').textContent = isSub
+    ? 'اختر القسم الرئيسي ثم اكتب اسم القسم الفرعي.'
+    : 'اكتب اسم القسم الرئيسي الجديد.';
+  $('subcategoryParentWrap').classList.toggle('hidden', !isSub);
+  $('subcategoryParentSelect').required = isSub;
+  $('categoryNameInput').value = '';
+  populateSubcategoryParentSelect($('formCategory').value || '');
+  $('categoryModal').style.display = 'flex';
+  $('categoryNameInput').focus();
+}
+
+function closeCategoryModal() {
+  $('categoryModal').style.display = 'none';
+  $('categoryForm').reset();
+  state.categoryManagerType = null;
+}
+
+async function saveNewCategory(e) {
+  e.preventDefault();
+  if (!state.isAdmin) return;
+
+  const name = $('categoryNameInput').value.trim();
+  const type = state.categoryManagerType;
+  if (!name || !type) return;
+
+  const payload = type === 'category'
+    ? { name, sort_order: 0, is_active: true }
+    : { name, category_id: $('subcategoryParentSelect').value, sort_order: 0, is_active: true };
+
+  if (type === 'subcategory' && !payload.category_id) {
+    showToast('اختر القسم الرئيسي أولاً.', false);
+    return;
+  }
+
+  const table = type === 'category' ? 'product_categories' : 'product_subcategories';
+  const button = $('saveCategoryBtn');
+  button.disabled = true;
+  button.textContent = 'جاري الإضافة...';
+
+  try {
+    const { data, error } = await sb.from(table).insert(payload).select('id').single();
+    if (error) throw error;
+
+    await loadData();
+    populateCategories();
+
+    if (type === 'category') {
+      populateFormCategories(data.id, '');
+      $('formCategory').value = data.id;
+      refreshFormSubcategories();
+    } else {
+      const parentId = payload.category_id;
+      const selected = data.id;
+      populateFormCategories(parentId, selected);
+    }
+
+    closeCategoryModal();
+    showToast(type === 'category' ? 'تمت إضافة القسم الرئيسي.' : 'تمت إضافة القسم الفرعي.');
+  } catch (error) {
+    console.error('Category creation failed:', error);
+    showToast(error.message || 'تعذر إضافة القسم.', false);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'إضافة';
+  }
 }
 
 function refreshFormSubcategories() {
@@ -447,6 +526,20 @@ $('confirmDeleteBtn').onclick = deletePending;
 $('editorForm').addEventListener('submit', saveEditor);
 
 $('formCategory').onchange = refreshFormSubcategories;
+$('addCategoryBtn').onclick = () => openCategoryModal('category');
+$('addSubcategoryBtn').onclick = () => {
+  if (!$('formCategory').value) {
+    showToast('اختر القسم الرئيسي أولاً.', false);
+    return;
+  }
+  openCategoryModal('subcategory');
+};
+$('closeCategoryModalBtn').onclick = closeCategoryModal;
+$('cancelCategoryBtn').onclick = closeCategoryModal;
+$('categoryForm').addEventListener('submit', saveNewCategory);
+$('categoryModal').addEventListener('click', e => {
+  if (e.target === $('categoryModal')) closeCategoryModal();
+});
 
 $('productsGrid').addEventListener('click', e => {
   const btn = e.target.closest('[data-action]');
