@@ -487,9 +487,37 @@
       new URLSearchParams(window.location.search).has("code");
 
     if (isAuthCallback) {
-      window.setTimeout(() => {
-        checkSession();
-      }, 300);
+      let handled = false;
+
+      const handleCallbackSession = async (session) => {
+        if (handled || !session?.user) return;
+        handled = true;
+
+        try {
+          await checkUserAccess(session);
+        } finally {
+          authStateSubscription?.unsubscribe?.();
+        }
+      };
+
+      const { data: authStateData } =
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+          if (
+            event === "SIGNED_IN" ||
+            event === "INITIAL_SESSION" ||
+            event === "TOKEN_REFRESHED"
+          ) {
+            handleCallbackSession(session);
+          }
+        });
+
+      const authStateSubscription = authStateData?.subscription;
+
+      // Fallback for providers/browsers where the callback event can be
+      // delivered before the listener is attached.
+      checkSession().then((session) => {
+        if (session?.user) handleCallbackSession(session);
+      });
     }
 
     document
