@@ -3,11 +3,10 @@
    Public feedback + own feedback management.
 
    Depends on:
-   - js/auth-access.js
+   - js/core/supabase.js
+   - js/core/auth.js
+   - js/core/access.js
    - public.app_feedback
-
-   Authentication and Supabase client are provided by
-   DietPlannerAccess. This file does not duplicate auth logic.
    ========================================================= */
 
 (() => {
@@ -94,7 +93,7 @@
   }
 
   async function getDisplayName(user) {
-    const supabase = window.DietPlannerAccess?.supabaseClient;
+    const supabase = window.DietPlannerSupabase?.client;
     if (!supabase || !user?.id) return "حساب المستخدم";
 
     try {
@@ -172,11 +171,8 @@
   }
 
   function renderOwnFeedback(feedback) {
-    if (feedback) {
-      setFormMode(feedback);
-    } else if (!state.editingId) {
-      setFormMode(null);
-    }
+    if (feedback) setFormMode(feedback);
+    else if (!state.editingId) setFormMode(null);
   }
 
   function renderFeedbackList(feedbacks) {
@@ -237,7 +233,7 @@
   }
 
   async function loadFeedbacks() {
-    const supabase = window.DietPlannerAccess?.supabaseClient;
+    const supabase = window.DietPlannerSupabase?.client;
     if (!supabase) return;
 
     const { data, error } = await supabase
@@ -277,7 +273,7 @@
       return;
     }
 
-    const supabase = window.DietPlannerAccess?.supabaseClient;
+    const supabase = window.DietPlannerSupabase?.client;
     if (!supabase) {
       showStatus("تعذر الاتصال بقاعدة البيانات حاليًا.", "error");
       return;
@@ -364,7 +360,7 @@
     clearStatus();
 
     try {
-      const supabase = window.DietPlannerAccess?.supabaseClient;
+      const supabase = window.DietPlannerSupabase?.client;
       if (!supabase) throw new Error("Supabase client is unavailable.");
 
       const { error } = await supabase
@@ -374,9 +370,7 @@
 
       if (error) throw error;
 
-      if (state.editingId === feedbackId) {
-        setFormMode(null);
-      }
+      if (state.editingId === feedbackId) setFormMode(null);
 
       showStatus("تم حذف التقييم بنجاح.", "success");
       await loadFeedbacks();
@@ -391,7 +385,6 @@
   function editFeedback(feedbackId) {
     const card = state.feedbacks?.find((item) => item.id === feedbackId);
     if (!card) return;
-
     if (!state.isAdmin && card.user_id !== state.user?.id) return;
 
     setFormMode(card);
@@ -407,9 +400,7 @@
     }
 
     const deleteButton = event.target.closest("[data-delete-feedback]");
-    if (deleteButton) {
-      openDeleteModal(deleteButton.dataset.deleteFeedback);
-    }
+    if (deleteButton) openDeleteModal(deleteButton.dataset.deleteFeedback);
   }
 
   function bindEvents() {
@@ -437,8 +428,11 @@
     cacheElements();
     bindEvents();
 
-    const access = window.DietPlannerAccess;
-    if (!access?.getCurrentUser || !access?.supabaseClient) {
+    const auth = window.DietPlannerCoreAuth;
+    const access = window.DietPlannerCoreAccess;
+    const supabase = window.DietPlannerSupabase?.client;
+
+    if (!auth?.getCurrentUser || !access?.getAccessStatus || !supabase) {
       hideLoading();
       showStatus("تعذر تحميل خدمة الحساب حاليًا.", "error");
       return;
@@ -473,7 +467,5 @@
     initialize();
   }
 
-  window.DietPlannerFeedback = {
-    init: initialize
-  };
+  window.DietPlannerFeedback = Object.freeze({ init: initialize });
 })();
