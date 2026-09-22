@@ -33,6 +33,8 @@
         const arrow =
             document.getElementById(arrowId);
 
+        if (!content || !arrow) return;
+
         if (content.classList.contains('hidden')) {
 
             content.classList.remove('hidden');
@@ -162,14 +164,13 @@
 
     function toggleGlucoseMode() {
 
-        const isAuto =
-            document.getElementById('glu-toggle-auto').checked;
+        const autoToggle = document.getElementById('glu-toggle-auto');
+        const autoDisplay = document.getElementById('res-glu-conc-display');
+        const manualInput = document.getElementById('in-glu-conc-manual');
 
-        const autoDisplay =
-            document.getElementById('res-glu-conc-display');
+        if (!autoToggle || !autoDisplay || !manualInput) return;
 
-        const manualInput =
-            document.getElementById('in-glu-conc-manual');
+        const isAuto = autoToggle.checked;
 
         if (isAuto) {
 
@@ -196,11 +197,12 @@
 
     function toggleTpnTypeMode() {
 
-        const tpnType =
-            document.getElementById('tpn-type-select').value;
+        const typeEl = document.getElementById('tpn-type-select');
+        const dynamicRow = document.getElementById('tpn-rate-display-row');
 
-        const dynamicRow =
-            document.getElementById('tpn-rate-display-row');
+        if (!typeEl || !dynamicRow) return;
+
+        const tpnType = typeEl.value;
 
         if (tpnType === '2in1') {
 
@@ -1441,6 +1443,7 @@ let supportDays=[];
 let currentSupportDayId=null;
 let dayDefaults=null;
 let dayEditMode=false;
+let supportDayOperationBusy=false;
 
 function dayControls(){
   return document.querySelectorAll('#section-en input,#section-en select,#section-en textarea,#section-tpn input,#section-tpn select,#section-tpn textarea');
@@ -1465,11 +1468,14 @@ function restoreDayState(state){
     if(el.type==='checkbox'||el.type==='radio') el.checked=!!st[el.id].checked;
     else el.value=st[el.id].value??'';
   });
-  dayControls().forEach(el=>{
-    if(el.type==='checkbox'||el.type==='radio') el.dispatchEvent(new Event('change',{bubbles:true}));
-    else {el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}
-  });
+
+  // Restore the complete state first, then recalculate once.
   switchTab(st.__tab==='tpn'?'tpn':'en');
+  try { toggleFortifier(); } catch(error) { console.error('Fortifier restore failed:',error); }
+  try { calculateEN(); } catch(error) { console.error('EN restore failed:',error); }
+  try { toggleGlucoseInputMode(); } catch(error) { console.error('Glucose mode restore failed:',error); }
+  try { calculateTPN(); } catch(error) { console.error('TPN restore failed:',error); }
+  try { runGlucoseMixing(); } catch(error) { console.error('Glucose mixing restore failed:',error); }
 }
 function setDayEditMode(editing){
   const writable = canWriteSupportDays();
@@ -1521,7 +1527,7 @@ function showDeleteConfirm(dayText){
     const cancel=$('deleteConfirmCancel');
     if(!overlay||!text||!ok||!cancel){resolve(false);return;}
 
-    text.innerHTML='هل أنت متأكد من حذف يوم <strong>'+dayText+'</strong>؟<br>سيتم حذف جميع بيانات Enteral و Parenteral المحفوظة لهذا اليوم نهائيًا.';
+    text.textContent='هل أنت متأكد من حذف يوم '+dayText+'؟\nسيتم حذف جميع بيانات Enteral و Parenteral المحفوظة لهذا اليوم نهائيًا.';
     overlay.classList.add('show');
 
     const close=value=>{
@@ -1582,12 +1588,20 @@ async function refreshSupportDayAccess(userId) {
 }
 
 async function deleteSupportDay(id){
+  if (supportDayOperationBusy) return;
   if (!canWriteSupportDays()) { alert('تعديل أيام الدعم الغذائي متاح أثناء الاشتراك المدفوع وخاصية التغذية الداعمة فقط.'); return; }
   const d=supportDays.find(x=>x.id===id); if(!d)return;
   if(!(await showDeleteConfirm(formatDayDate(d.day_date))))return;
+  supportDayOperationBusy=true;
   const {error}=await supabaseClient.from('nutrition_support_days').delete()
     .eq('id',id).eq('patient_id',supportPatientId).eq('user_id',supportUserId);
-  if(error){console.error(error);alert('تعذر حذف اليوم: '+(error.message||'تحقق من صلاحيات قاعدة البيانات.'));return;}
+  if(error){
+    console.error(error);
+    supportDayOperationBusy=false;
+    alert('تعذر حذف اليوم: '+(error.message||'تحقق من صلاحيات قاعدة البيانات.'));
+    return;
+  }
+  supportDayOperationBusy=false;
   supportDays=supportDays.filter(x=>x.id!==id);
   if(currentSupportDayId===id){
     const next=[...supportDays].sort((a,b)=>String(b.day_date).localeCompare(String(a.day_date)))[0];
@@ -1597,6 +1611,7 @@ async function deleteSupportDay(id){
   renderSupportDays();
 }
 async function saveCurrentSupportDay(){
+  if (supportDayOperationBusy) return false;
   if (!canWriteSupportDays()) { alert('تعديل أيام الدعم الغذائي متاح أثناء الاشتراك المدفوع وخاصية التغذية الداعمة فقط.'); return false; }
   if(!supportPatientId||!supportUserId||!currentSupportDayId){
     alert('أضف يومًا أولاً ثم اضغط تعديل.');
@@ -1604,6 +1619,9 @@ async function saveCurrentSupportDay(){
   }
   const d=supportDays.find(x=>x.id===currentSupportDayId);
   if(!d)return false;
+
+  supportDayOperationBusy=true;
+  setDayEditMode(false);
 
   const state=captureDayState();
   state.__date=d.day_date;
@@ -1618,12 +1636,15 @@ async function saveCurrentSupportDay(){
   if(error){
     console.error('Nutrition support day save failed:',error);
     alert('تعذر حفظ بيانات هذا اليوم: '+(error.message||'تحقق من صلاحيات قاعدة البيانات.'));
+    supportDayOperationBusy=false;
+    setDayEditMode(true);
     return false;
   }
 
   d.state=state;
   d.updated_at=new Date().toISOString();
   dayEditMode=false;
+  supportDayOperationBusy=false;
   setDayEditMode(false);
   return true;
 }
@@ -1637,18 +1658,26 @@ async function selectSupportDay(id){
   setDayEditMode(false);
 }
 async function addSupportDay(){
+  if (supportDayOperationBusy) return;
   if (!canWriteSupportDays()) { alert('إضافة أيام الدعم الغذائي متاحة أثناء الاشتراك المدفوع وخاصية التغذية الداعمة فقط.'); return; }
   const date=$('newDayDate')?.value;
   if(!date){alert('اختر تاريخ اليوم أولاً.');return;}
   if(!supportPatientId||!supportUserId){alert('لم يتم تحميل المريض بعد.');return;}
   const existing=supportDays.find(x=>String(x.day_date).slice(0,10)===date);
   if(existing){await selectSupportDay(existing.id);return;}
+  supportDayOperationBusy=true;
   const blank=dayDefaults?JSON.parse(JSON.stringify(dayDefaults)):captureDayState();
   blank.__date=date;blank.__tab='en';
   const {data,error}=await supabaseClient.from('nutrition_support_days')
     .insert({patient_id:supportPatientId,user_id:supportUserId,day_date:date,state:blank})
     .select('id,patient_id,user_id,day_date,state,created_at,updated_at').single();
-  if(error){console.error(error);alert('تعذر إضافة اليوم: '+(error.message||'تحقق من جدول nutrition_support_days وصلاحيات RLS.'));return;}
+  if(error){
+    console.error(error);
+    supportDayOperationBusy=false;
+    alert('تعذر إضافة اليوم: '+(error.message||'تحقق من جدول nutrition_support_days وصلاحيات RLS.'));
+    return;
+  }
+  supportDayOperationBusy=false;
   supportDays.push(data);currentSupportDayId=data.id;
   restoreDayState(blank);$('report-date').value=date;renderSupportDays();
   setDayEditMode(true);
@@ -1723,7 +1752,10 @@ async function loadPatientData(){
     await initSupportDays(p.id, sessionUser.id);
   }catch(e){
     console.error(e);
-    document.body.insertAdjacentHTML('afterbegin','<div style="padding:16px;text-align:center;color:#b91c1c;font-family:Cairo,sans-serif">تعذر تحميل بيانات المريض.</div>');
+    const notice=document.createElement('div');
+    notice.style.cssText='padding:16px;text-align:center;color:#b91c1c;font-family:Cairo,sans-serif';
+    notice.textContent='تعذر تحميل بيانات المريض.';
+    document.body.prepend(notice);
   }
 }
 
