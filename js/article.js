@@ -1,6 +1,7 @@
 (function(){
 'use strict';
-const supabase=window.DietPlannerAccess?.supabaseClient;
+const supabase=window.DietPlannerSupabase?.client;
+const access=window.DietPlannerCoreAccess;
 const $=id=>document.getElementById(id);let user=null,profile=null,isAdmin=false,articles=[],editingId=null,timer;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const date=v=>v?new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium',timeStyle:'short'}).format(new Date(v)):'—';
@@ -99,8 +100,8 @@ $('editor').addEventListener('focusin',e=>{
 $('grid').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=articles.find(x=>x.id===b.dataset.id);if(!a)return;if(b.dataset.a==='view')view(a);if(b.dataset.a==='edit'&&a.created_by===user.id)openEditor(a);if(b.dataset.a==='delete')del(a.id)};
 $('editModal').onclick=e=>{if(e.target===$('editModal'))closeEditor()};$('viewModal').onclick=e=>{if(e.target===$('viewModal')){$('viewModal').classList.add('hidden');document.body.classList.remove('overflow-hidden')}};document.onkeydown=e=>{if(e.key==='Escape'){closeEditor();$('viewModal').classList.add('hidden');document.body.classList.remove('overflow-hidden')}};
 (async()=>{try{
-  if(!supabase){throw new Error('تعذر تهيئة الاتصال الآمن بالتطبيق')}
-  const accessStatus=await window.DietPlannerAccess?.getAccessStatus?.();
+  if(!supabase||!access)throw new Error('تعذر تهيئة الاتصال الآمن بالتطبيق');
+  const accessStatus=await access.getAccessStatus();
   user=accessStatus?.user||null;
   if(!user)return location.replace('index.html');
   const{data:p,error:profileError}=await supabase.from('profiles').select('full_name').eq('id',user.id).maybeSingle();
