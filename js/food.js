@@ -86,7 +86,7 @@ function switchTab(tab){
 }
 
 async function loadFoods(){
-  const {data,error}=await supabase.from('foods').select('*').order('name_ar',{ascending:true});
+  const {data,error}=await supabase.from('foods').select('id,name_ar,name_en,household,kcal,protein,carb,fat,sodium,potassium,phosphorus,water,is_custom,created_by').order('name_ar',{ascending:true});
   if(error){console.error(error);toast('تعذر تحميل مكتبة الأغذية: '+error.message,false);return;}
   foods=(data||[]).map(f=>({...f,id:String(f.id),kcal:num(f.kcal),protein:num(f.protein),carb:num(f.carb),fat:num(f.fat),sodium:num(f.sodium),potassium:num(f.potassium),phosphorus:num(f.phosphorus),water:num(f.water),is_custom:Boolean(f.is_custom)}));
   render();
