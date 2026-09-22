@@ -1,24 +1,35 @@
-/*
- * Diet Planner - Legacy Access Compatibility Layer
- *
- * This file is intentionally small. New code should use js/core/auth.js,
- * js/core/access.js and js/core/supabase.js directly.
- *
- * Existing pages can continue using DietPlannerAccess while migration is
- * performed gradually. No page-specific UI or routing logic belongs here.
- */
-(function () {
-  'use strict';
+/* =========================================================
+   Diet Planner — Core / Legacy Access Compatibility
+   ---------------------------------------------------------
+   Keeps the existing DietPlannerAccess API available while pages are
+   migrated gradually to the core modules.
 
-  const Access = window.DietPlannerAccessCore;
-  const Auth = window.DietPlannerAuth;
+   This file contains no page UI, routing, or duplicated Supabase logic.
+   Load order:
+     1) core/supabase.js
+     2) core/auth.js
+     3) core/access.js
+     4) core/legacy-access.js
+   ========================================================= */
 
-  if (!Access || !Auth) {
-    console.error('Diet Planner Core is not loaded before legacy-access.js');
+(() => {
+  "use strict";
+
+  if (window.DietPlannerAccess) return;
+
+  const Auth = window.DietPlannerCoreAuth;
+  const Access = window.DietPlannerCoreAccess;
+  const Supabase = window.DietPlannerSupabase;
+
+  if (!Auth || !Access || !Supabase) {
+    console.error(
+      "Diet Planner Core is not loaded before legacy-access.js."
+    );
     return;
   }
 
   window.DietPlannerAccess = Object.freeze({
+    supabaseClient: Supabase.client,
     getCurrentUser: Auth.getCurrentUser,
     getUserRole: Access.getUserRole,
     hasActiveSubscription: Access.hasActiveSubscription,
@@ -26,6 +37,6 @@
     canWrite: Access.canWrite,
     hasFeature: Access.hasFeature,
     getAccessStatus: Access.getAccessStatus,
-    signOut: Auth.signOut
+    logout: Auth.signOut
   });
 })();
