@@ -342,9 +342,9 @@
 
     if (error) {
       showAuthMessage(
-        error.message.includes("Invalid login credentials")
+        error?.code === "invalid_credentials"
           ? "البريد الإلكتروني أو كلمة المرور غير صحيحة."
-          : error.message
+          : error?.message || "تعذر تسجيل الدخول حاليًا."
       );
       return;
     }
