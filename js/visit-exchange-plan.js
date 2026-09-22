@@ -91,39 +91,39 @@ function renderDays(){
   <div class="p-3 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
    <div class="flex items-center gap-2 flex-1 min-w-0">
     <span class="text-[10px] text-slate-400 font-bold shrink-0">اليوم ${di+1}</span>
-    <input value="${esc(d.title)}" ${dayEditing(d.id)?'':'disabled'} onchange="window.exchangePlan.setDayTitle('${esc(d.id)}',this.value)" class="bg-transparent border-b border-slate-600 focus:border-violet-400 outline-none font-black text-sm w-full sm:w-48">
+    <input value="${esc(d.title)}" ${dayEditing(d.id)?'':'disabled'} data-xaction="set-day-title" data-day-id="${esc(d.id)}" class="bg-transparent border-b border-slate-600 focus:border-violet-400 outline-none font-black text-sm w-full sm:w-48">
    </div>
    <div class="flex items-center gap-1.5 no-print">
-    <button onclick="window.exchangePlan.editDay('${esc(d.id)}')" class="px-2.5 py-1.5 rounded-lg bg-sky-600 text-white text-[10px] font-bold"><i class="fa-solid fa-pen ml-1"></i>تعديل</button>
-    <button onclick="window.exchangePlan.saveDay('${esc(d.id)}')" ${dayEditing(d.id)?'':'disabled'} class="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[10px] font-bold disabled:opacity-40"><i class="fa-solid fa-floppy-disk ml-1"></i>حفظ</button>
-    <button onclick="window.exchangePlan.deleteDay('${esc(d.id)}')" class="px-2.5 py-1.5 rounded-lg bg-rose-600 text-white text-[10px] font-bold"><i class="fa-solid fa-trash ml-1"></i>حذف</button>
+    <button data-xaction="edit-day" data-day-id="${esc(d.id)}" class="px-2.5 py-1.5 rounded-lg bg-sky-600 text-white text-[10px] font-bold"><i class="fa-solid fa-pen ml-1"></i>تعديل</button>
+    <button data-xaction="save-day" data-day-id="${esc(d.id)}" ${dayEditing(d.id)?'':'disabled'} class="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[10px] font-bold disabled:opacity-40"><i class="fa-solid fa-floppy-disk ml-1"></i>حفظ</button>
+    <button data-xaction="delete-day" data-day-id="${esc(d.id)}" class="px-2.5 py-1.5 rounded-lg bg-rose-600 text-white text-[10px] font-bold"><i class="fa-solid fa-trash ml-1"></i>حذف</button>
    </div>
   </div>
   <div class="p-3 space-y-3">
    ${(d.meals||[]).map((m,mi)=>`<div class="border border-slate-200 rounded-xl p-3">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
-     <input value="${esc(m.name)}" ${dayEditing(d.id)?'':'disabled'} onchange="window.exchangePlan.setMealName('${esc(d.id)}','${esc(m.id)}',this.value)" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 font-black text-xs w-full sm:w-56">
+     <input value="${esc(m.name)}" ${dayEditing(d.id)?'':'disabled'} data-xaction="set-meal-name" data-day-id="${esc(d.id)}" data-meal-id="${esc(m.id)}" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 font-black text-xs w-full sm:w-56">
      <div class="flex gap-1 no-print flex-wrap">
-      <button onclick="window.exchangePlan.moveMeal('${esc(d.id)}','${esc(m.id)}',-1)" ${dayEditing(d.id)||mi===0?'':'disabled'} class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 disabled:opacity-40" title="تحريك لأعلى"><i class="fa-solid fa-arrow-up"></i></button>
-      <button onclick="window.exchangePlan.moveMeal('${esc(d.id)}','${esc(m.id)}',1)" ${dayEditing(d.id)||mi===(d.meals.length-1)?'':'disabled'} class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 disabled:opacity-40" title="تحريك لأسفل"><i class="fa-solid fa-arrow-down"></i></button>
-      <button onclick="window.exchangePlan.addItem('${esc(d.id)}','${esc(m.id)}')" ${dayEditing(d.id)?'':'disabled'} class="px-2.5 py-1.5 rounded-lg bg-violet-600 text-white text-[10px] font-bold disabled:opacity-40"><i class="fa-solid fa-plus ml-1"></i>إضافة صنف</button>
-      <button onclick="window.exchangePlan.deleteMeal('${esc(d.id)}','${esc(m.id)}')" ${dayEditing(d.id)?'':'disabled'} class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 disabled:opacity-40" title="حذف الوجبة"><i class="fa-solid fa-trash"></i></button>
+      <button data-xaction="move-meal-up" data-day-id="${esc(d.id)}" data-meal-id="${esc(m.id)}" ${dayEditing(d.id)||mi===0?'':'disabled'} class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 disabled:opacity-40" title="تحريك لأعلى"><i class="fa-solid fa-arrow-up"></i></button>
+      <button data-xaction="move-meal-down" data-day-id="${esc(d.id)}" data-meal-id="${esc(m.id)}" ${dayEditing(d.id)||mi===(d.meals.length-1)?'':'disabled'} class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 disabled:opacity-40" title="تحريك لأسفل"><i class="fa-solid fa-arrow-down"></i></button>
+      <button data-xaction="add-item" data-day-id="${esc(d.id)}" data-meal-id="${esc(m.id)}" ${dayEditing(d.id)?'':'disabled'} class="px-2.5 py-1.5 rounded-lg bg-violet-600 text-white text-[10px] font-bold disabled:opacity-40"><i class="fa-solid fa-plus ml-1"></i>إضافة صنف</button>
+      <button data-xaction="delete-meal" data-day-id="${esc(d.id)}" data-meal-id="${esc(m.id)}" ${dayEditing(d.id)?'':'disabled'} class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 disabled:opacity-40" title="حذف الوجبة"><i class="fa-solid fa-trash"></i></button>
      </div>
     </div>
     <div class="overflow-x-auto mt-2">
      <table class="w-full min-w-[720px] text-[10px]">
       <thead><tr class="text-slate-500 border-b border-slate-100"><th class="py-2 text-right">اسم الصنف</th><th class="py-2 text-center">المقياس المنزلي</th><th class="py-2 text-center">التكرار</th><th class="py-2 text-center no-print w-20">إجراء</th></tr></thead>
       <tbody>${(m.items||[]).length?(m.items||[]).map(it=>`<tr class="border-b border-slate-50 last:border-0">
-       <td class="py-2 px-1"><input data-xitem-name="${esc(it.id)}" value="${esc(it.name)}" ${dayEditing(d.id)?'':'disabled'} oninput="window.exchangePlan.setItemField('${esc(d.id)}','${esc(m.id)}','${esc(it.id)}','name',this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-bold outline-none focus:border-violet-400"></td>
-       <td class="py-2 px-1"><input value="${esc(it.measure)}" ${dayEditing(d.id)?'':'disabled'} oninput="window.exchangePlan.setItemField('${esc(d.id)}','${esc(m.id)}','${esc(it.id)}','measure',this.value)" placeholder="مثال: كوب / ½ رغيف" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-bold text-center outline-none focus:border-violet-400"></td>
-       <td class="py-2 px-1"><input value="${esc(it.repeat||'')}" ${dayEditing(d.id)?'':'disabled'} oninput="window.exchangePlan.setItemField('${esc(d.id)}','${esc(m.id)}','${esc(it.id)}','repeat',this.value)" placeholder="يوميًا / 3 مرات أسبوعيًا" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-bold text-center outline-none focus:border-violet-400"></td>
-       <td class="py-2 text-center no-print"><button onclick="window.exchangePlan.deleteItem('${esc(d.id)}','${esc(m.id)}','${esc(it.id)}')" ${dayEditing(d.id)?'':'disabled'} class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 disabled:opacity-40" title="حذف الصنف"><i class="fa-solid fa-trash"></i></button></td>
+       <td class="py-2 px-1"><input data-xitem-name="${esc(it.id)}" value="${esc(it.name)}" ${dayEditing(d.id)?'':'disabled'} data-xaction="set-item-name" data-day-id="${esc(d.id)}" data-meal-id="${esc(m.id)}" data-item-id="${esc(it.id)}" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-bold outline-none focus:border-violet-400"></td>
+       <td class="py-2 px-1"><input value="${esc(it.measure)}" ${dayEditing(d.id)?'':'disabled'} data-xaction="set-item-measure" data-day-id="${esc(d.id)}" data-meal-id="${esc(m.id)}" data-item-id="${esc(it.id)}" placeholder="مثال: كوب / ½ رغيف" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-bold text-center outline-none focus:border-violet-400"></td>
+       <td class="py-2 px-1"><input value="${esc(it.repeat||'')}" ${dayEditing(d.id)?'':'disabled'} data-xaction="set-item-repeat" data-day-id="${esc(d.id)}" data-meal-id="${esc(m.id)}" data-item-id="${esc(it.id)}" placeholder="يوميًا / 3 مرات أسبوعيًا" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-bold text-center outline-none focus:border-violet-400"></td>
+       <td class="py-2 text-center no-print"><button data-xaction="delete-item" data-day-id="${esc(d.id)}" data-meal-id="${esc(m.id)}" data-item-id="${esc(it.id)}" ${dayEditing(d.id)?'':'disabled'} class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 disabled:opacity-40" title="حذف الصنف"><i class="fa-solid fa-trash"></i></button></td>
       </tr>`).join(''):'<tr><td colspan="4" class="py-5 text-center text-slate-400 font-bold">لا توجد أصناف مضافة. اضغط «إضافة صنف» لإضافة صف جديد.</td></tr>'}</tbody>
      </table>
     </div>
 
    </div>`).join('')}
-   <button onclick="window.exchangePlan.addMeal('${esc(d.id)}')" ${dayEditing(d.id)?'':'disabled'} class="w-full border border-dashed border-violet-300 text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-xl py-2 text-xs font-extrabold disabled:opacity-40 no-print"><i class="fa-solid fa-plus ml-1"></i>إضافة وجبة</button>
+   <button data-xaction="add-meal" data-day-id="${esc(d.id)}" ${dayEditing(d.id)?'':'disabled'} class="w-full border border-dashed border-violet-300 text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-xl py-2 text-xs font-extrabold disabled:opacity-40 no-print"><i class="fa-solid fa-plus ml-1"></i>إضافة وجبة</button>
   </div>
  </div>`).join('');
 }
@@ -236,9 +236,39 @@ async function saveAndPrintFromSettings(){
 }
 function edit(){if(!S.plan)return;S.editing=true;render();status('وضع التعديل')}
 async function deletePlan(){if(!(await canWriteExchangePlan())){status('حذف خطة البدائل متاح أثناء الاشتراك المدفوع فقط',true);return;}if(!S.plan)return;openConfirm('حذف خطة البدائل','هل أنت متأكد من حذف خطة البدائل بالكامل؟',async()=>{try{const dr=await dbx.from('plan_days').select('id').eq('plan_id',S.plan);if(dr.error)throw dr.error;const dids=(dr.data||[]).map(x=>x.id);if(dids.length){const mr=await dbx.from('plan_meals').select('id').in('day_id',dids);if(mr.error)throw mr.error;const mids=(mr.data||[]).map(x=>x.id);if(mids.length){let r=await dbx.from('plan_items').delete().in('meal_id',mids);if(r.error)throw r.error;r=await dbx.from('plan_meals').delete().in('day_id',dids);if(r.error)throw r.error}let r=await dbx.from('plan_days').delete().in('id',dids);if(r.error)throw r.error}let r=await dbx.from('exchange_values').delete().eq('plan_id',S.plan);if(r.error)throw r.error;r=await dbx.from('nutrition_plans').delete().eq('id',S.plan);if(r.error)throw r.error;S.plan=null;S.saved=false;S.editing=true;S.days=[];S.savedDays=[];S.r={};G.forEach(g=>S.r[g.k]={count:0,sub:g.k==='milk'?'خالى الدسم':g.k==='meat'?'خالية الدهون':''});render();renderDays();setButtons();status('تم حذف خطة البدائل بنجاح')}catch(e){status('تعذر حذف خطة البدائل: '+(e.message||e),true)}})}
+function setupExchangePlanEvents(){
+ const container=document.getElementById('exchangeDaysContainer');
+ if(!container||container.dataset.eventsReady==='1')return;
+ container.dataset.eventsReady='1';
+ container.addEventListener('click',event=>{
+  const el=event.target.closest('[data-xaction]');
+  if(!el||!container.contains(el))return;
+  const action=el.dataset.xaction,dayId=el.dataset.dayId,mealId=el.dataset.mealId,itemId=el.dataset.itemId;
+  if(action==='edit-day')editDay(dayId);
+  else if(action==='save-day')saveDay(dayId);
+  else if(action==='delete-day')deleteDay(dayId);
+  else if(action==='move-meal-up')moveMeal(dayId,mealId,-1);
+  else if(action==='move-meal-down')moveMeal(dayId,mealId,1);
+  else if(action==='add-item')addItem(dayId,mealId);
+  else if(action==='delete-meal')deleteMeal(dayId,mealId);
+  else if(action==='delete-item')deleteItem(dayId,mealId,itemId);
+  else if(action==='add-meal')addMeal(dayId);
+ });
+ container.addEventListener('input',event=>{
+  const el=event.target.closest('[data-xaction]');
+  if(!el||!container.contains(el))return;
+  const {xaction:action,dayId,mealId,itemId}=el.dataset;
+  if(action==='set-day-title')setDayTitle(dayId,el.value);
+  else if(action==='set-meal-name')setMealName(dayId,mealId,el.value);
+  else if(action==='set-item-name')setItemField(dayId,mealId,itemId,'name',el.value);
+  else if(action==='set-item-measure')setItemField(dayId,mealId,itemId,'measure',el.value);
+  else if(action==='set-item-repeat')setItemField(dayId,mealId,itemId,'repeat',el.value);
+ });
+}
 async function init(){
  if(S.ready)return;
  S.ready=true;
+ setupExchangePlanEvents();
 
  const plans=await findPlans();
  const ex=plans.find(p=>p.plan_name==='الخطة الغذائية باستخدام البدائل');
