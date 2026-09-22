@@ -1504,8 +1504,14 @@ function formatDayDate(v){
 function renderSupportDays(){
   const list=$('dayList'); if(!list)return;
   const writable = canWriteSupportDays();
-  list.innerHTML='';
-  if(!supportDays.length){list.innerHTML='<div class="day-empty">لا توجد أيام مضافة بعد.</div>';return;}
+  while(list.firstChild) list.removeChild(list.firstChild);
+  if(!supportDays.length){
+    const empty=document.createElement('div');
+    empty.className='day-empty';
+    empty.textContent='لا توجد أيام مضافة بعد.';
+    list.appendChild(empty);
+    return;
+  }
   [...supportDays].sort((a,b)=>String(a.day_date).localeCompare(String(b.day_date))).forEach(d=>{
     const row=document.createElement('div'); row.className='day-row';
     const b=document.createElement('button');
