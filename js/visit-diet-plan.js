@@ -134,7 +134,7 @@ async function loadFoods(){
 }
 
 async function loadPlan(){
- let query=sb.from('nutrition_plans').select('*').eq('patient_id',window.currentPatientId||patientId);
+ let query=sb.from('nutrition_plans').select('id,patient_id,visit_id,plan_name,start_date,target_calories,target_protein,target_carb,target_fat,target_fluid,goal,notes,created_at,updated_at').eq('patient_id',window.currentPatientId||patientId);
  if(visitId) query=query.eq('visit_id',visitId);
  const {data:plans,error}=await query.order('updated_at',{ascending:false}).order('created_at',{ascending:false}).limit(1);
  if(error){showToast('تعذر تحميل الخطة الغذائية','error');return;}
@@ -142,10 +142,10 @@ async function loadPlan(){
  if(!plan){daysData=[];savedDaysData=[];updateTargets();renderDays();return;}
  activeCloudPlanId=plan.id;
  patientInfo.targetCal=plan.target_calories??''; patientInfo.targetPro=plan.target_protein??''; patientInfo.targetCarb=plan.target_carb??''; patientInfo.targetFat=plan.target_fat??''; patientInfo.goal=plan.goal||'loss';
- const {data:dayRows}=await sb.from('plan_days').select('*').eq('plan_id',plan.id).order('day_number',{ascending:true});
+ const {data:dayRows}=await sb.from('plan_days').select('id,plan_id,day_number,day_name').eq('plan_id',plan.id).order('day_number',{ascending:true});
  const ids=(dayRows||[]).map(x=>x.id);
- let meals=[]; if(ids.length){const r=await sb.from('plan_meals').select('*').in('day_id',ids).order('meal_order',{ascending:true});meals=r.data||[];}
- const mids=meals.map(x=>x.id); let items=[]; if(mids.length){const r=await sb.from('plan_items').select('*').in('meal_id',mids);items=r.data||[];}
+ let meals=[]; if(ids.length){const r=await sb.from('plan_meals').select('id,day_id,meal_order,meal_name').in('day_id',ids).order('meal_order',{ascending:true});meals=r.data||[];}
+ const mids=meals.map(x=>x.id); let items=[]; if(mids.length){const r=await sb.from('plan_items').select('id,meal_id,food_id,quantity_g,frequency,notes').in('meal_id',mids);items=r.data||[];}
  daysData=(dayRows||[]).map(d=>({id:d.id,title:d.day_name||`اليوم ${d.day_number}`,notes:'',isCollapsed:false,meals:meals.filter(m=>m.day_id===d.id).map(m=>({id:m.id,name:m.meal_name||'وجبة',description:'',items:items.filter(i=>i.meal_id===m.id).map(i=>({itemId:i.id,foodId:String(i.food_id),grams:Number(i.quantity_g)||0,includeInCalculation:true,...(i.frequency!=null?{repeat:i.frequency}:{}),...(i.notes!=null?{notes:i.notes}:{})}))}))}));
  savedDaysData=cloneDays(daysData); dayEditModes={}; updateTargets(); renderDays();
 }
