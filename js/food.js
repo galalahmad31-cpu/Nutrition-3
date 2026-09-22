@@ -101,7 +101,7 @@ function render(){
   <tr class="border-b border-slate-100 hover:bg-slate-50/80">
     <td class="px-3 py-3"><div class="font-bold text-slate-800">${esc(f.name_ar)}</div>${f.name_en?`<div class="mt-0.5 text-[10px] text-slate-400" dir="ltr">${esc(f.name_en)}</div>`:''}</td>
     <td class="px-3 py-3 text-slate-600">${esc(f.household)}</td>
-    <td class="px-3 py-3 text-center font-bold">${f.kcal}</td><td class="px-3 py-3 text-center">${f.protein}</td><td class="px-3 py-3 text-center">${f.carb}</td><td class="px-3 py-3 text-center">${f.fat}</td>
+    <td class="px-3 py-3 text-center font-bold">${f.kcal}</td><td class="px-3 py-3 text-center">${f.carb}</td><td class="px-3 py-3 text-center">${f.protein}</td><td class="px-3 py-3 text-center">${f.fat}</td>
     <td class="px-3 py-3 text-center">${f.sodium}</td><td class="px-3 py-3 text-center">${f.potassium}</td><td class="px-3 py-3 text-center">${f.phosphorus}</td><td class="px-3 py-3 text-center">${f.water}</td>
     <td class="px-3 py-3 text-center">${f.is_custom?'<span class="rounded-full bg-violet-50 px-2 py-1 text-[10px] font-bold text-violet-600">مخصص</span>':'<span class="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-600">أساسي</span>'}</td>
     <td class="px-3 py-3 text-center">${f.is_custom && f.created_by===user.id?`<div class="flex justify-center gap-1"><button data-edit="${esc(f.id)}" class="edit rounded-lg bg-slate-100 px-2.5 py-2 text-slate-600 hover:bg-brand-50 hover:text-brand-600"><i class="fa-solid fa-pen"></i></button><button data-del="${esc(f.id)}" class="del rounded-lg bg-red-50 px-2.5 py-2 text-red-500 hover:bg-red-100"><i class="fa-solid fa-trash"></i></button></div>`:'<span class="text-slate-300">—</span>'}</td>
