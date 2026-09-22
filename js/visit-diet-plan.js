@@ -378,11 +378,65 @@ async function syncFixedMeals(){
  fixedMealsDatabase=diets.map(d=>{const day=days.find(x=>x.diet_id===d.id);return{id:d.id,name:d.name||'دايت ثابت',description:d.description||'',created_by:d.created_by,target_calories:d.target_calories,target_protein:d.target_protein,target_carb:d.target_carb,target_fat:d.target_fat,meals:day?meals.filter(m=>m.day_id===day.id).map(m=>({name:m.meal_name||'وجبة',frequency:m.frequency||'',items:items.filter(i=>i.meal_id===m.id).map(i=>({foodId:String(i.food_id),grams:Number(i.quantity_g)||0,repeat:i.frequency??'',notes:i.notes??'',household_measure:i.household_measure||''}))})):[]}}).filter(d=>d.meals.length);
  fixedMealsDatabase.sort((a,b)=>(a.created_by===user.id?0:1)-(b.created_by===user.id?0:1));
 }
+function renderFixedMealsList(){
+ const list=document.getElementById('fixedMealsList');
+ if(!list)return;
+ const q=normalizeFoodSearch(document.getElementById('fixedMealsSearch')?.value||'');
+ const filtered=fixedMealsDatabase.filter(d=>{
+  if(!q)return true;
+  return normalizeFoodSearch(d.name).includes(q) || normalizeFoodSearch(d.description).includes(q);
+ });
+ if(!filtered.length){
+  list.innerHTML='<div class="text-center py-8 text-slate-400 font-bold">لا توجد دايتات مطابقة للبحث</div>';
+  return;
+ }
+ list.innerHTML=filtered.map(d=>{
+  const i=fixedMealsDatabase.indexOf(d);
+  return `<div class="border border-slate-200 rounded-2xl p-4 bg-white">
+   <div class="flex items-start justify-between gap-3">
+    <div>
+     <h4 class="font-black text-slate-800">${escapeHtml(d.name)}</h4>
+     ${d.description?`<p class="text-xs text-slate-500 mt-1">${escapeHtml(d.description)}</p>`:''}
+    </div>
+    <button onclick="window.dietPlan.applyFixedDiet(${i})" class="bg-sky-600 text-white text-xs font-extrabold px-3 py-2 rounded-xl whitespace-nowrap">تطبيق اليوم</button>
+   </div>
+   <div class="mt-3 space-y-2">
+    ${d.meals.map((m,mi)=>`<div class="rounded-xl bg-slate-50 border border-slate-100 p-3">
+     <h5 class="font-black text-slate-700 text-xs">${mi+1}. ${escapeHtml(m.name)}</h5>
+     <div class="mt-2 overflow-x-auto"><table class="w-full text-[11px]"><tbody>
+      ${m.items.map(it=>{const f=foodDatabase.find(x=>String(x.id)===String(it.foodId));return`<tr class="border-b border-slate-100">
+       <td class="py-1.5 font-bold">${f?escapeHtml(f.name):escapeHtml(it.foodId)}</td>
+       <td class="py-1.5 text-center">${num(it.grams)} جم</td>
+       <td class="py-1.5 text-center">${f?.household?escapeHtml(scaleHouseholdMeasure(f.household,num(it.grams))):'—'}</td>
+       <td class="py-1.5 text-center">${escapeHtml(it.repeat||'')}</td>
+      </tr>`}).join('')}
+     </tbody></table></div>
+    </div>`).join('')}
+   </div>
+  </div>`;
+ }).join('');
+}
+function initFixedMealsSearch(){
+ const input=document.getElementById('fixedMealsSearch');
+ if(!input||input.dataset.bound==='1')return;
+ input.addEventListener('input',renderFixedMealsList);
+ input.dataset.bound='1';
+}
+
 async function openFixedMeals(dayId){
- fixedMealsTargetDayId=dayId;document.getElementById('fixedMealsList').innerHTML='<div class="text-center py-8 text-slate-400 font-bold">جاري تحميل مكتبة الدايت...</div>';document.getElementById('fixedMealsModal').classList.remove('hidden');
- await syncFixedMeals();const list=document.getElementById('fixedMealsList');
- if(!fixedMealsDatabase.length){list.innerHTML='<div class="text-center py-8 text-slate-400 font-bold">لا توجد دايتات منشورة أو دايتات خاصة بك في مكتبة الدايت</div>';return}
- list.innerHTML=fixedMealsDatabase.map((d,i)=>`<div class="border border-slate-200 rounded-2xl p-4 bg-white"><div class="flex items-start justify-between gap-3"><div><h4 class="font-black text-slate-800">${escapeHtml(d.name)}</h4>${d.description?`<p class="text-xs text-slate-500 mt-1">${escapeHtml(d.description)}</p>`:''}</div><button onclick="window.dietPlan.applyFixedDiet(${i})" class="bg-sky-600 text-white text-xs font-extrabold px-3 py-2 rounded-xl">تطبيق اليوم</button></div><div class="mt-3 space-y-2">${d.meals.map((m,mi)=>`<div class="rounded-xl bg-slate-50 border border-slate-100 p-3"><h5 class="font-black text-slate-700 text-xs">${mi+1}. ${escapeHtml(m.name)}</h5><div class="mt-2 overflow-x-auto"><table class="w-full text-[11px]"><tbody>${m.items.map(it=>{const f=foodDatabase.find(x=>String(x.id)===String(it.foodId));return`<tr class="border-b border-slate-100"><td class="py-1.5 font-bold">${f?escapeHtml(f.name):escapeHtml(it.foodId)}</td><td class="py-1.5 text-center">${num(it.grams)} جم</td><td class="py-1.5 text-center">${f?.household?escapeHtml(scaleHouseholdMeasure(f.household,num(it.grams))):'—'}</td><td class="py-1.5 text-center">${escapeHtml(it.repeat||'')}</td></tr>`}).join('')}</tbody></table></div></div>`).join('')}</div></div>`).join('');
+ fixedMealsTargetDayId=dayId;
+ const search=document.getElementById('fixedMealsSearch');
+ if(search)search.value='';
+ document.getElementById('fixedMealsList').innerHTML='<div class="text-center py-8 text-slate-400 font-bold">جاري تحميل مكتبة الدايت...</div>';
+ document.getElementById('fixedMealsModal').classList.remove('hidden');
+ initFixedMealsSearch();
+ await syncFixedMeals();
+ const list=document.getElementById('fixedMealsList');
+ if(!fixedMealsDatabase.length){
+  list.innerHTML='<div class="text-center py-8 text-slate-400 font-bold">لا توجد دايتات منشورة أو دايتات خاصة بك في مكتبة الدايت</div>';
+  return;
+ }
+ renderFixedMealsList();
 }
 function closeFixedMeals(){document.getElementById('fixedMealsModal').classList.add('hidden');fixedMealsTargetDayId=null;}
 function applyFixedDiet(i){
@@ -554,5 +608,5 @@ function init(){
  return dietInitPromise;
 }
 
-window.dietPlan = {confirmAction,escapeHtml, num, cloneDays, showToast, openConfirmModal, closeConfirmModal, scaleHouseholdMeasure, formatHouseholdNumber, currentUser, loadPatient, loadFoods, loadPlan, updateTargets, isDayEditing, setDayEditMode, editDay, saveDay, addNewDay, toggleDayCollapse, updateDayTitle, updateDayNotes, updateMealName, moveMeal, deleteDay, openAddMealModal, closeAddMealModal, confirmCreateMeal, deleteMeal, openFoodModal, closeFoodModal, updateFoodModalHousehold, filterFoodList, selectFoodForMeal, confirmAddFoodItem, updateMealItemGrams, updateMealItemRepeat, deleteFoodItemFromMeal, updateMealItemCalculation, renderDays, metricCard, syncFixedMeals, openFixedMeals, closeFixedMeals, applyFixedDiet, newCloudUuid, savePlan, openPrintSettingsModal, closePrintSettingsModal, executePrint, goBack, init};
+window.dietPlan = {confirmAction,escapeHtml, num, cloneDays, showToast, openConfirmModal, closeConfirmModal, scaleHouseholdMeasure, formatHouseholdNumber, currentUser, loadPatient, loadFoods, loadPlan, updateTargets, isDayEditing, setDayEditMode, editDay, saveDay, addNewDay, toggleDayCollapse, updateDayTitle, updateDayNotes, updateMealName, moveMeal, deleteDay, openAddMealModal, closeAddMealModal, confirmCreateMeal, deleteMeal, openFoodModal, closeFoodModal, updateFoodModalHousehold, filterFoodList, selectFoodForMeal, confirmAddFoodItem, updateMealItemGrams, updateMealItemRepeat, deleteFoodItemFromMeal, updateMealItemCalculation, renderDays, metricCard, syncFixedMeals, renderFixedMealsList, initFixedMealsSearch, openFixedMeals, closeFixedMeals, applyFixedDiet, newCloudUuid, savePlan, openPrintSettingsModal, closePrintSettingsModal, executePrint, goBack, init};
 })();
