@@ -152,4 +152,13 @@
     hasFeature,
     getAccessStatus
   });
+
+  // Access owns its cache, so it also owns cache invalidation.
+  // This keeps Authentication independent from Access.
+  const auth = Auth();
+  if (auth?.onAuthStateChange) {
+    auth.onAuthStateChange(() => {
+      clearCache();
+    });
+  }
 })();
