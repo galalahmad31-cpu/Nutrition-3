@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  const access = window.DietPlannerAccess;
-  const supabase = access?.supabaseClient;
+  const access = window.DietPlannerCoreAccess;
+  const supabase = window.DietPlannerSupabase?.client;
   const patientId = new URLSearchParams(window.location.search).get('id');
 
   const state = {
