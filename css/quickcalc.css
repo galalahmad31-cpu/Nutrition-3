@@ -1,0 +1,481 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+
+*{box-sizing:border-box}
+
+body{
+    font-family:'Cairo',sans-serif !important;
+    background:
+        radial-gradient(circle at 90% 0%,rgba(23,143,132,.08),transparent 28%),
+        radial-gradient(circle at 5% 95%,rgba(23,143,132,.05),transparent 25%),
+        #f7fafb;
+    color:#17252a;
+    letter-spacing:0 !important;
+}
+
+input,select,textarea{
+    width:100%;
+    border:1px solid #d9e7e5;
+    border-radius:10px;
+    padding:9px 10px;
+    background:#fff;
+    text-align:center;
+    font-size:.88rem;
+    outline:none;
+    transition:.2s;
+    font-family:Cairo,Arial,sans-serif !important;
+    color:#263b39 !important;
+}
+
+input:focus,select:focus,textarea:focus{
+    border-color:#178f84;
+    box-shadow:0 0 0 3px rgba(23,143,132,.10);
+}
+
+.ltr-input{direction:ltr!important;text-align:left!important}
+.ltr-block{direction:ltr;text-align:left}
+
+.main-container{
+    border:1px solid #e2e8f0!important;
+    border-radius:24px!important;
+    box-shadow:0 12px 35px rgba(15,71,67,.07)!important;
+}
+
+.page-header{
+    background:#fff!important;
+    border-bottom:1px solid #e5eceb!important;
+    color:#17252a!important;
+    text-align:right;
+}
+
+.page-header h1{color:#173c39!important;font-size:1.65rem!important}
+.page-header .text-slate-400{color:#78908d!important}
+
+.page-header-icon{
+    width:44px!important;
+    height:44px!important;
+    border-radius:14px!important;
+    background:#178f84!important;
+    color:#fff!important;
+    font-size:20px!important;
+    box-shadow:0 8px 18px rgba(23,143,132,.16);
+}
+
+.back-btn{
+    background:#fff!important;
+    color:#11786f!important;
+    border:1px solid #cfe1df!important;
+    border-radius:12px!important;
+}
+.back-btn:hover{background:#eef7f6!important;color:#0d625b!important}
+
+.highlight-box{
+    border-radius:14px;
+    padding:18px;
+}
+
+/* =========================================================
+   QUICK CALCULATOR CARDS
+   The application identity stays unified; each calculator
+   receives a restrained accent color of its own.
+   ========================================================= */
+
+#sub-content-quick-calc{
+    display:flex;
+    flex-direction:column;
+    gap:18px!important;
+}
+
+/* Outer calculator card */
+#sub-content-quick-calc > .border{
+    --qc-accent:#178f84;
+    --qc-soft:#eef8f6;
+    --qc-border:#c9e3df;
+    --qc-strong:#126f67;
+    border-color:var(--qc-border)!important;
+    border-radius:20px!important;
+    background:#fff;
+    box-shadow:0 5px 18px rgba(20,60,56,.045)!important;
+    transition:box-shadow .2s ease,transform .2s ease,border-color .2s ease;
+}
+
+#sub-content-quick-calc > .border:hover{
+    box-shadow:0 9px 26px rgba(20,60,56,.07)!important;
+}
+
+#sub-content-quick-calc > .border:nth-of-type(1){
+    --qc-accent:#168b83;
+    --qc-soft:#eef9f7;
+    --qc-border:#c4e2dd;
+    --qc-strong:#116d66;
+}
+
+#sub-content-quick-calc > .border:nth-of-type(2){
+    --qc-accent:#c27a28;
+    --qc-soft:#fff7eb;
+    --qc-border:#ead5b7;
+    --qc-strong:#965b18;
+}
+
+#sub-content-quick-calc > .border:nth-of-type(3){
+    --qc-accent:#7167b7;
+    --qc-soft:#f5f3fc;
+    --qc-border:#d9d4ee;
+    --qc-strong:#574e99;
+}
+
+#sub-content-quick-calc > .border:nth-of-type(4){
+    --qc-accent:#c45c79;
+    --qc-soft:#fff3f6;
+    --qc-border:#ebcbd5;
+    --qc-strong:#98435b;
+}
+
+/* Calculator header */
+.qc-tab{
+    position:relative!important;
+    min-height:72px!important;
+    padding:15px 20px!important;
+    background:#fff!important;
+    color:#193d3a!important;
+    border:0!important;
+    border-radius:20px!important;
+    font-size:.94rem!important;
+    font-weight:800!important;
+    box-shadow:none!important;
+    text-align:left;
+}
+
+.qc-tab::before{
+    content:'';
+    position:absolute;
+    left:0;
+    top:9px;
+    bottom:9px;
+    width:5px;
+    border-radius:5px;
+    background:var(--qc-accent,#178f84);
+}
+
+.qc-tab:hover{
+    background:var(--qc-soft,#f7fbfa)!important;
+    color:var(--qc-strong,#126f67)!important;
+}
+
+.qc-tab span span:first-child{
+    color:var(--qc-strong,#126f67);
+    font-size:1rem;
+    letter-spacing:.01em;
+}
+
+.qc-tab small{
+    color:#738582!important;
+    margin-top:3px;
+}
+
+.qc-tab svg{color:var(--qc-accent,#178f84)!important}
+
+/* Open content area */
+#sub-content-quick-calc > .border > [id$="-content"]{
+    border-top:1px solid color-mix(in srgb,var(--qc-accent,#178f84) 15%,#e8efee);
+    background:linear-gradient(180deg,var(--qc-soft,#f8fbfb) 0%,#fff 110px)!important;
+    padding:18px 20px 22px!important;
+}
+
+/* Make GIR feel like a dashboard instead of one long form */
+#qc-gir-content:not(.hidden){
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:14px!important;
+}
+
+#qc-gir-content:not(.hidden) > .qc-panel:nth-child(1){
+    grid-column:1 / -1;
+}
+
+#qc-gir-content:not(.hidden) > .qc-panel:nth-child(2),
+#qc-gir-content:not(.hidden) > .qc-panel:nth-child(3){
+    min-width:0;
+}
+
+#qc-gir-content:not(.hidden) > .qc-result{
+    grid-column:1 / -1;
+}
+
+/* Dextrose: compact 2-column workspace */
+#qc-dextrose-content:not(.hidden){
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:14px!important;
+}
+
+#qc-dextrose-content:not(.hidden) > .highlight-box{
+    grid-column:1 / -1;
+}
+
+/* Formula: use a balanced two-column layout where possible */
+#qc-formula-conc-content:not(.hidden){
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:14px!important;
+}
+
+#qc-formula-conc-content:not(.hidden) > .qc-panel:nth-child(1),
+#qc-formula-conc-content:not(.hidden) > .qc-panel:nth-child(2){
+    min-width:0;
+}
+
+#qc-formula-conc-content:not(.hidden) > .qc-panel:nth-child(3){
+    grid-column:1 / -1;
+}
+
+#qc-formula-conc-content:not(.hidden) > .qc-result,
+#qc-formula-conc-content:not(.hidden) > .qc-note{
+    grid-column:1 / -1;
+}
+
+/* Breastmilk: compact, calm clinical layout */
+#qc-bmf-content:not(.hidden){
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:14px!important;
+}
+
+#qc-bmf-content:not(.hidden) > .qc-note:first-child{
+    grid-column:1 / -1;
+}
+
+#qc-bmf-content:not(.hidden) > .qc-result,
+#qc-bmf-content:not(.hidden) > .qc-note:last-child{
+    grid-column:1 / -1;
+}
+
+/* =========================================================
+   Inner panels
+   ========================================================= */
+
+.qc-panel{
+    background:rgba(255,255,255,.84)!important;
+    border:1px solid color-mix(in srgb,var(--qc-accent,#178f84) 13%,#e1ecea)!important;
+    border-radius:15px!important;
+    padding:16px!important;
+    box-shadow:0 2px 8px rgba(15,71,67,.035)!important;
+}
+
+.qc-panel h4{
+    color:#253c39;
+}
+
+.qc-panel > h4{
+    margin-bottom:12px;
+}
+
+.qc-panel-title{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    color:var(--qc-strong,#16433f);
+    font-size:.92rem;
+    font-weight:800;
+    margin-bottom:14px;
+    padding-bottom:10px;
+    border-bottom:1px solid #e7efee;
+}
+
+.qc-panel-title::before{
+    content:'';
+    width:4px;
+    height:18px;
+    border-radius:99px;
+    background:var(--qc-accent,#178f84);
+    flex:none;
+}
+
+/* Repeated form fields become visually grouped */
+.qc-panel label{
+    color:#526764!important;
+}
+
+.qc-panel input,
+.qc-panel select,
+.qc-panel textarea{
+    border-color:#dbe8e6;
+}
+
+.qc-panel input:focus,
+.qc-panel select:focus,
+.qc-panel textarea:focus{
+    border-color:var(--qc-accent,#178f84);
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--qc-accent,#178f84) 11%,transparent);
+}
+
+/* Dynamic IV rows */
+.iv-line-row{
+    border-color:color-mix(in srgb,var(--qc-accent,#178f84) 18%,#dbe8e6)!important;
+    background:linear-gradient(180deg,#fff,var(--qc-soft,#f8fbfb))!important;
+}
+
+/* Action button follows the calculator accent */
+.qc-action{
+    background:var(--qc-accent,#178f84)!important;
+    border:1px solid var(--qc-accent,#178f84)!important;
+    border-radius:9px!important;
+    color:#fff!important;
+}
+
+.qc-action:hover{
+    filter:brightness(.92);
+}
+
+/* Result block */
+.qc-result{
+    background:linear-gradient(180deg,var(--qc-soft,#f1faf8) 0%,#fff 100%)!important;
+    border:1px solid color-mix(in srgb,var(--qc-accent,#178f84) 28%,#d8e8e5)!important;
+    border-radius:16px!important;
+    padding:18px!important;
+    box-shadow:0 5px 16px color-mix(in srgb,var(--qc-accent,#178f84) 9%,transparent)!important;
+}
+
+.qc-result h4{color:var(--qc-strong,#155e57)!important;font-size:1rem!important}
+.qc-result .qc-result-value{color:var(--qc-strong,#147a71)!important}
+
+/* Notes remain neutral so clinical warnings are not confused with results */
+.qc-note{
+    background:#f8fafb!important;
+    border:1px solid #e2e8ec!important;
+    border-left:4px solid #8aa5a1!important;
+    color:#536764!important;
+    border-radius:10px!important;
+}
+
+/* Keep the existing highlighted content useful but visually integrated */
+.highlight-box{
+    border-radius:14px;
+    padding:18px;
+}
+
+
+/* =========================================================
+   Desktop polish — align clinical fields without changing
+   calculator behavior.
+   ========================================================= */
+
+@media(min-width:761px){
+    #qc-gir-content:not(.hidden) > .qc-weight-panel{
+        grid-column:span 1;
+        max-width:420px;
+        justify-self:stretch;
+    }
+
+    #qc-gir-content:not(.hidden) > .qc-panel:nth-child(2),
+    #qc-gir-content:not(.hidden) > .qc-panel:nth-child(3){
+        align-self:stretch;
+    }
+
+    /* Keep IV controls on one clean visual row */
+    .iv-line-row{
+        grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) minmax(0,1.55fr) 36px !important;
+    }
+
+    .iv-line-row > div{
+        min-width:0;
+    }
+
+    /* Dextrose rows stay level and consistent */
+    #qc-dextrose-content:not(.hidden) > .grid{
+        align-items:stretch;
+    }
+
+    #qc-dextrose-content:not(.hidden) > .grid > div{
+        min-width:0;
+    }
+
+    /* Formula cards: clear hierarchy */
+    #qc-formula-conc-content:not(.hidden) > .qc-panel:nth-child(1),
+    #qc-formula-conc-content:not(.hidden) > .fc-required-panel{
+        align-self:stretch;
+    }
+
+    .fc-required-panel > .grid{
+        gap:14px;
+    }
+
+    .fc-required-panel .grid > div{
+        min-width:0;
+    }
+
+    .fc-required-panel label{
+        display:block;
+        min-height:20px;
+    }
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media(max-width:760px){
+    #qc-gir-content:not(.hidden),
+    #qc-dextrose-content:not(.hidden),
+    #qc-formula-conc-content:not(.hidden),
+    #qc-bmf-content:not(.hidden){
+        display:flex!important;
+        flex-direction:column;
+        gap:13px!important;
+    }
+
+    #sub-content-quick-calc > .border > [id$="-content"]{
+        padding:14px!important;
+    }
+
+    .qc-tab{
+        min-height:64px!important;
+        padding:13px 16px!important;
+    }
+
+    .qc-tab span span:first-child{
+        font-size:.9rem;
+    }
+
+    .qc-panel{
+        padding:13px!important;
+    }
+
+    .qc-result{
+        padding:14px!important;
+    }
+}
+
+@media(max-width:640px){
+    body{font-size:.84rem}
+
+    .main-container{border-radius:16px!important}
+
+    .page-header{padding:15px 16px!important}
+    .page-header h1{font-size:1.18rem!important}
+
+    .page-header-icon{
+        width:40px!important;
+        height:40px!important;
+        font-size:18px!important;
+    }
+
+    .back-btn{
+        padding:8px 11px!important;
+        font-size:.72rem!important;
+    }
+
+    input,select,textarea{
+        font-size:.80rem!important;
+        min-height:38px;
+        padding:7px 8px;
+    }
+
+    .qc-tab{
+        min-height:58px!important;
+        padding:12px 14px!important;
+        font-size:.82rem!important;
+    }
+
+    .qc-panel{padding:13px!important}
+    .qc-result{padding:14px!important}
+}
