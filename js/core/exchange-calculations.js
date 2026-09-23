@@ -1,6 +1,7 @@
 /* =========================================================
  * DIET PLANNER — EXCHANGE CALCULATIONS CORE
- * Pure calculation layer. No DOM, Supabase, auth, or page state.
+ * Single source of truth for exchange calculations.
+ * Pure functions only: no DOM, Supabase, auth, or page state.
  * ========================================================= */
 (function (global) {
   'use strict';
@@ -30,18 +31,26 @@
     return GROUPS.find((item) => item.key === key) || null;
   }
 
-  function values(groupDefinition, subgroup) {
-    if (!groupDefinition) return { kcal: 0, carb: 0, protein: 0, fat: 0 };
-    if (groupDefinition.variants) {
-      const selected = groupDefinition.variants[subgroup] || Object.values(groupDefinition.variants)[0];
+  function values(definition, subgroup) {
+    if (!definition) return { kcal: 0, carb: 0, protein: 0, fat: 0 };
+    if (definition.variants) {
+      const selected = definition.variants[subgroup] || Object.values(definition.variants)[0];
       return { kcal: selected[0], carb: selected[1], protein: selected[2], fat: selected[3] };
     }
     return {
-      kcal: groupDefinition.kcal,
-      carb: groupDefinition.carb,
-      protein: groupDefinition.protein,
-      fat: groupDefinition.fat
+      kcal: definition.kcal,
+      carb: definition.carb,
+      protein: definition.protein,
+      fat: definition.fat
     };
+  }
+
+  function createState(overrides = {}) {
+    return Object.fromEntries(GROUPS.map((definition) => [definition.key, {
+      count: number(overrides[definition.key]?.count),
+      sub: overrides[definition.key]?.sub ||
+        (definition.key === 'milk' ? 'خالى الدسم' : definition.key === 'meat' ? 'خالية الدهون' : '')
+    }]));
   }
 
   function totals(exchanges) {
@@ -58,11 +67,7 @@
   }
 
   function calculateTargets(targets, exchanges) {
-    const result = Object.fromEntries(GROUPS.map((definition) => [definition.key, {
-      count: number(exchanges?.[definition.key]?.count),
-      sub: exchanges?.[definition.key]?.sub || ''
-    }]));
-
+    const result = createState(exchanges);
     const manualTotals = ['fruit', 'veg', 'milk', 'legumes'].reduce((total, key) => {
       const definition = group(key);
       const row = result[key];
@@ -78,8 +83,7 @@
     result.starch.count = Math.max(0, round((number(targets?.carb) - manualTotals.carb) / 15));
 
     const starchProtein = result.starch.count * 2;
-    const meat = group('meat');
-    const meatValue = values(meat, result.meat.sub);
+    const meatValue = values(group('meat'), result.meat.sub);
     result.meat.count = Math.max(0, round((number(targets?.protein) - manualTotals.protein - starchProtein) / 7));
 
     result.fat.count = Math.max(0, round(
@@ -95,6 +99,7 @@
     round,
     group,
     values,
+    createState,
     totals,
     calculateTargets
   });
