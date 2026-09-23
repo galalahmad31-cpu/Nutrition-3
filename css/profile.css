@@ -1,4 +1,0 @@
-*{box-sizing:border-box}body{margin:0;font-family:Cairo,sans-serif;background:#f7fafb;color:#17252a}
-.glass{background:rgba(255,255,255,.94);border:1px solid #e5edf0;box-shadow:0 10px 35px rgba(15,71,67,.06)}
-input:focus,textarea:focus{outline:none;border-color:#178f84;box-shadow:0 0 0 3px rgba(23,143,132,.1)}
-.spinner{width:30px;height:30px;border:3px solid #d9efec;border-top-color:#178f84;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}

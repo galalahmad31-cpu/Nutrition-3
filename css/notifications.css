@@ -1,9 +1,0 @@
-*{box-sizing:border-box}
-body{margin:0;font-family:Cairo,sans-serif;background:radial-gradient(circle at 90% 0%,rgba(23,143,132,.10),transparent 28%),radial-gradient(circle at 5% 95%,rgba(23,143,132,.07),transparent 25%),#f7fafb;color:#17252a}
-.glass{background:rgba(255,255,255,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(226,232,240,.9)}
-.card{transition:.2s}
-.card:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(15,71,67,.08)}
-.tab-btn.active{background:#fff;color:#11786f;box-shadow:0 4px 12px rgba(15,71,67,.08)}
-.loading{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:#f7fafb}
-.spinner{width:36px;height:36px;border:3px solid #d9efec;border-top-color:#178f84;border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
