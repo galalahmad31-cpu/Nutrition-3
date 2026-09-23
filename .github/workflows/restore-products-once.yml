@@ -1,0 +1,32 @@
+name: Restore products.js
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    if: "!contains(github.event.head_commit.message, 'restore(products): recover pre-migration implementation')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore products.js from pre-migration parent
+        run: |
+          git checkout 4a376e8f9bd2d8e235e706ac02c17610fa8af09e -- js/products.js
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('js/products.js')
+          s = p.read_text()
+          s = s.replace('const access = window.DietPlannerAccess;\nconst sb = access?.supabaseClient;', 'const access = window.DietPlannerCoreAccess;\nconst sb = window.DietPlannerSupabase?.client || null;')
+          p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add js/products.js
+          git commit -m 'restore(products): recover pre-migration implementation'
+          git push
