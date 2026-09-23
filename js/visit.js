@@ -102,7 +102,12 @@ const db = window.DietPlannerSupabase?.client;
     }
   }
 
-  function toggleModule(module) {
+  async function toggleModule(module) {
+    if (!visit && module !== 'assessment') {
+      showError('جاري تجهيز بيانات الزيارة...');
+      await loadVisit();
+      if (!visit) return;
+    }
     const contents = {
       assessment: document.getElementById('assessmentContent'),
       calculator: document.getElementById('calculatorContent'),
@@ -125,7 +130,7 @@ const db = window.DietPlannerSupabase?.client;
 
     content.classList.remove('hidden');
     if (module === 'assessment') loadAssessment();
-    if (module === 'calculator' && typeof initCalculator === 'function') initCalculator();
+    if (module === 'calculator' && typeof initCalculator === 'function') await initCalculator();
     if (module === 'dietPlan' && window.dietPlan?.init) window.dietPlan.init();
     if (module === 'exchangePlan' && window.exchangePlan?.init) window.exchangePlan.init();
     content.scrollIntoView({ behavior: 'smooth', block: 'start' });
