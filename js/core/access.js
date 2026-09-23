@@ -5,6 +5,12 @@
    No page routing, login UI, DOM manipulation, or page-specific logic.
    ---------------------------------------------------------
    Depends on: core/supabase.js + core/auth.js
+
+   Migration note:
+   - DietPlannerCoreAccess is the canonical API.
+   - DietPlannerAccess is a temporary compatibility facade for pages
+     that have not yet been migrated to the Core namespace.
+   - No second Supabase client is created here.
    ========================================================= */
 
 (() => {
@@ -142,7 +148,7 @@
     };
   }
 
-  window.DietPlannerCoreAccess = Object.freeze({
+  const CoreAccess = Object.freeze({
     clearCache,
     getCurrentUser,
     getUserRole,
@@ -152,6 +158,32 @@
     hasFeature,
     getAccessStatus
   });
+
+  window.DietPlannerCoreAccess = CoreAccess;
+
+  /*
+   * Temporary compatibility facade.
+   * This prevents migrated pages that still reference
+   * window.DietPlannerAccess from creating or requiring another
+   * authentication/access implementation.
+   *
+   * Remove this facade only after all pages have been migrated.
+   */
+  if (!window.DietPlannerAccess) {
+    window.DietPlannerAccess = Object.freeze({
+      supabaseClient: window.DietPlannerSupabase?.client || null,
+      getCurrentUser,
+      getUserRole,
+      hasActiveSubscription,
+      canAddPatient,
+      canWrite,
+      hasFeature,
+      getAccessStatus,
+      logout: Auth()?.signOut || (async () => ({
+        error: new Error("Diet Planner Core Auth is not available.")
+      }))
+    });
+  }
 
   // Access owns its cache, so it also owns cache invalidation.
   // This keeps Authentication independent from Access.
