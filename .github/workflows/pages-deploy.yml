@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -20,6 +20,72 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Temporary Core migration - Nutrition Support Patient
+        if: ${{ !contains(github.event.head_commit.message, 'chore(core): migrate nutrition support patient') }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          js = Path('js/nutritionsupport-patient.js')
+          html = Path('nutritionsupport-patient.html')
+          workflow = Path('.github/workflows/pages-deploy.yml')
+          temp_workflow = Path('.github/workflows/_core_migrate_ns_patient.yml')
+
+          j = js.read_text(encoding='utf-8')
+          old = "const access = window.DietPlannerAccess;\nconst supabaseClient = access?.supabaseClient;"
+          new = "const access = window.DietPlannerCoreAccess;\nconst supabaseClient = window.DietPlannerSupabase?.client;"
+          if old not in j:
+              raise SystemExit('Expected legacy Core boundary not found in JS')
+          j = j.replace(old, new, 1)
+          j = j.replace(
+              "DietPlannerAccess is not available. Check that auth-access.js is loaded from the same folder.",
+              "Diet Planner Core is not available. Check that Core files are loaded before this page script.", 1
+          )
+          j = j.replace(
+              "تعذر تشغيل نظام الاتصال بالتطبيق. تأكد من وجود auth-access.js بجوار الصفحة.",
+              "تعذر تشغيل نظام الاتصال بالتطبيق. تأكد من تحميل ملفات Core.", 1
+          )
+          j = j.replace(
+              "1) auth-access.js\n      - owns authentication/access layer\n      - exposes window.DietPlannerAccess.supabaseClient\n      - exposes getCurrentUser()",
+              "1) Core (supabase.js / auth.js / access.js)\n      - owns authentication/access layer\n      - exposes window.DietPlannerSupabase.client\n      - exposes window.DietPlannerCoreAccess"
+          )
+
+          h = html.read_text(encoding='utf-8')
+          old_scripts = '''<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="js/auth-access.js?v=20260923-1"></script>\n<script src="js/nutritionsupport-patient.js?v=20260922-2"></script>'''
+          new_scripts = '''<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="js/core/supabase.js"></script>\n<script src="js/core/auth.js"></script>\n<script src="js/core/access.js"></script>\n<script src="js/nutritionsupport-patient.js?v=20260922-2"></script>'''
+          if old_scripts not in h:
+              raise SystemExit('Expected legacy script block not found in HTML')
+          h = h.replace(old_scripts, new_scripts, 1)
+
+          # Remove this temporary migration step from the workflow before committing.
+          w = workflow.read_text(encoding='utf-8')
+          start = w.index("      - name: Temporary Core migration - Nutrition Support Patient\n")
+          end = w.index("      - name: Setup Node\n", start)
+          w = w[:start] + w[end:]
+          w = w.replace("  contents: write\n", "  contents: read\n", 1)
+
+          js.write_text(j, encoding='utf-8')
+          html.write_text(h, encoding='utf-8')
+          workflow.write_text(w, encoding='utf-8')
+          temp_workflow.unlink(missing_ok=True)
+          PY
+
+          node --check js/nutritionsupport-patient.js
+
+          if grep -q "const access = window.DietPlannerAccess;" js/nutritionsupport-patient.js; then
+            echo "Legacy access boundary remains"; exit 1
+          fi
+          if grep -q 'js/auth-access.js' nutritionsupport-patient.html; then
+            echo "Legacy auth script remains in HTML"; exit 1
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add js/nutritionsupport-patient.js nutritionsupport-patient.html .github/workflows/pages-deploy.yml .github/workflows/_core_migrate_ns_patient.yml
+          git commit -m 'chore(core): migrate nutrition support patient'
+          git push
 
       - name: Setup Node
         uses: actions/setup-node@v4
