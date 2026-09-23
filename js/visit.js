@@ -43,12 +43,18 @@ const db = window.DietPlannerSupabase?.client;
   }
 
   async function loadVisit() {
+    if (!db) {
+      showError('تعذر الاتصال بقاعدة البيانات. تأكد من تحميل ملفات Core.');
+      return;
+    }
+
     if (!visitId) {
       showError('لم يتم تحديد الزيارة.');
       return;
     }
 
-    const { data, error } = await db
+    try {
+      const { data, error } = await db
       .from('patient_visits')
       .select(`
         id,
@@ -90,6 +96,10 @@ const db = window.DietPlannerSupabase?.client;
 
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('visitContent').classList.remove('hidden');
+    } catch (error) {
+      console.error('Visit load failed:', error);
+      showError('تعذر تحميل بيانات الزيارة.');
+    }
   }
 
   function toggleModule(module) {
@@ -240,7 +250,7 @@ function setAssessmentEditMode(editing){
   }
 
   function escapeHtml(value) {
-    return String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    return String(value ?? '').replace(/[&<>'\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
   }
 
   function addLab() {
@@ -467,11 +477,23 @@ function bindStaticActions() {
 bindStaticActions();
 bindPrintLifecycle();
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('heightCm').addEventListener('input', calculateBMI);
-    document.getElementById('weightKg').addEventListener('input', calculateBMI);
-    loadVisit();
-  });/* =========================================================
+let visitPageInitialized = false;
+
+function initializeVisitPage() {
+  if (visitPageInitialized) return;
+  visitPageInitialized = true;
+
+  document.getElementById('heightCm')?.addEventListener('input', calculateBMI);
+  document.getElementById('weightKg')?.addEventListener('input', calculateBMI);
+  loadVisit();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeVisitPage, { once: true });
+} else {
+  initializeVisitPage();
+}
+/* =========================================================
  * SHARED CONFIRMATION
  * One owner for the page-level confirmation button.
  * Diet modules expose confirmAction() through their public API.
@@ -483,4 +505,3 @@ document.getElementById('confirmOkBtn')?.addEventListener('click', async () => {
   }
   await window.exchangePlan?.confirmAction?.();
 });
-
