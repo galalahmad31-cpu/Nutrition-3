@@ -3,17 +3,19 @@
  * ENERGY / MACRO CALCULATOR
  * ========================================================= */
 
-const calcDb = window.DietPlannerAccess?.supabaseClient;
-if (!calcDb) console.error("Diet Planner access layer is unavailable to the calculator.");
+const calcDb = window.DietPlannerSupabase?.client || null;
+if (!calcDb) console.error("Diet Planner Core Supabase client is unavailable to the calculator.");
 const urlParams = new URLSearchParams(window.location.search);
-let calcVisitId = urlParams.get('visit_id');
-let calcPatientId = urlParams.get('patient_id');
+let calcVisitId = urlParams.get('visit_id') || urlParams.get('id');
+let calcPatientId = urlParams.get('patient_id') || null;
 let calcResolvedPatientId = calcPatientId;
 let calcInitialized = false;
 
 let calcPatient = null;
 let selectedEnergyEquation = 'mifflin';
 let pendingSavedTargetCalories = null;
+let calcLoadedPlan = null;
+let calcWriteInProgress = false;
 
 function calcShowToast(msg, type = 'success') {
     const container = document.getElementById('toastContainer');
@@ -223,8 +225,8 @@ function calcShowToast(msg, type = 'success') {
 
 
 async function loadCalculatorPatientData() {
-    const authUser = await window.DietPlannerAccess?.getCurrentUser?.();
-    if (!authUser) {
+    const access = await window.DietPlannerCoreAccess?.getAccessStatus?.();
+    if (!access?.authenticated || !access.user) {
         calcShowToast('يجب تسجيل الدخول أولاً', 'error');
         return false;
     }
@@ -240,7 +242,7 @@ async function loadCalculatorPatientData() {
      */
     const pageContext = window.visitContext || {};
 
-    if (pageContext.patient_id) {
+    if (pageContext.id && pageContext.patient_id) {
         calcVisitId = pageContext.id || calcVisitId || null;
         calcPatientId = pageContext.patient_id;
         calcResolvedPatientId = pageContext.patient_id;
@@ -258,7 +260,6 @@ async function loadCalculatorPatientData() {
             .from('patient_visits')
             .select('id,patient_id,visit_number,visit_date')
             .eq('id', calcVisitId)
-            .eq('user_id', authUser.id)
             .maybeSingle();
 
         if (visitError || !visit) {
@@ -266,8 +267,15 @@ async function loadCalculatorPatientData() {
             return false;
         }
 
+        calcVisitId = visit.id;
+        calcPatientId = visit.patient_id;
         calcResolvedPatientId = visit.patient_id;
-        window.currentVisit = visit;
+        window.visitContext = {
+            id: visit.id,
+            patient_id: visit.patient_id,
+            visit_number: visit.visit_number ?? null,
+            visit_date: visit.visit_date ?? null
+        };
     }
 
     if (!calcResolvedPatientId) {
@@ -308,40 +316,73 @@ async function loadCalculatorPatientData() {
         document.getElementById('energyWeight').value = Number(weights[0].weight);
     }
 
+    calcLoadedPlan = null;
+    pendingSavedTargetCalories = null;
+
     let plansQuery = calcDb
         .from('nutrition_plans')
-        .select('target_calories,target_protein,target_carb,target_fat')
-        .eq('patient_id', calcResolvedPatientId);
-
-    if (calcVisitId) plansQuery = plansQuery.eq('visit_id', calcVisitId);
-
-    const { data: plans } = await plansQuery
-        .order('updated_at', { ascending:false })
-        .order('created_at', { ascending:false })
+        .select('id,patient_id,visit_id,target_calories,target_protein,target_carb,target_fat,updated_at,created_at')
+        .eq('patient_id', calcResolvedPatientId)
+        .order('updated_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(1);
 
-    const plan = plans?.[0];
+    if (calcVisitId) {
+        plansQuery = calcDb
+            .from('nutrition_plans')
+            .select('id,patient_id,visit_id,target_calories,target_protein,target_carb,target_fat,updated_at,created_at')
+            .eq('patient_id', calcResolvedPatientId)
+            .eq('visit_id', calcVisitId)
+            .order('updated_at', { ascending: false })
+            .order('created_at', { ascending: false })
+            .limit(1);
+    }
+
+    const { data: plans, error: planError } = await plansQuery;
+    if (planError) {
+        console.warn('Calculator plan load warning:', planError);
+    }
+
+    const plan = plans?.[0] || null;
     if (plan) {
-        if (plan.target_calories != null) {
-            pendingSavedTargetCalories = Number(plan.target_calories);
-        }
-        if (plan.target_protein && plan.target_calories) {
-            document.getElementById('macroProPercent').value = Math.round(Number(plan.target_protein) * 4 / Number(plan.target_calories) * 100);
-        }
-        if (plan.target_carb && plan.target_calories) {
-            document.getElementById('macroCarbPercent').value = Math.round(Number(plan.target_carb) * 4 / Number(plan.target_calories) * 100);
-        }
-        if (plan.target_fat && plan.target_calories) {
-            document.getElementById('macroFatPercent').value = Math.round(Number(plan.target_fat) * 9 / Number(plan.target_calories) * 100);
+        calcLoadedPlan = plan;
+
+        const savedTarget = Number(plan.target_calories);
+        if (Number.isFinite(savedTarget) && savedTarget > 0) {
+            pendingSavedTargetCalories = savedTarget;
+
+            const pro = Number(plan.target_protein);
+            const carb = Number(plan.target_carb);
+            const fat = Number(plan.target_fat);
+
+            if (Number.isFinite(pro) && pro >= 0) {
+                document.getElementById('macroProPercent').value =
+                    Math.round((pro * 4 / savedTarget) * 100);
+            }
+            if (Number.isFinite(carb) && carb >= 0) {
+                document.getElementById('macroCarbPercent').value =
+                    Math.round((carb * 4 / savedTarget) * 100);
+            }
+            if (Number.isFinite(fat) && fat >= 0) {
+                document.getElementById('macroFatPercent').value =
+                    Math.round((fat * 9 / savedTarget) * 100);
+            }
         }
     }
 
     updateSchofieldGroupHint();
 
-    // Calculate the current TDEE first so a saved absolute target can be
-    // displayed correctly as (target - TDEE) in the adjustment field.
+    // Persisted target_calories is absolute. The UI field is only the
+    // adjustment relative to TDEE, so the conversion happens once.
     if (pendingSavedTargetCalories != null) {
+        const savedTarget = pendingSavedTargetCalories;
+        pendingSavedTargetCalories = null;
+
         calculateSelectedEnergy();
+
+        const tdee = Number(document.getElementById('resTDEE').textContent) || 0;
+        document.getElementById('calcAdjustment').value = String(savedTarget - tdee);
+        updateTargetAndMacros();
     } else {
         updateTargetAndMacros();
     }
@@ -349,103 +390,106 @@ async function loadCalculatorPatientData() {
 }
 
 async function applyCustomTargetToPatient() {
-    const user = await window.DietPlannerAccess?.getCurrentUser?.();
-    const canWrite = user
-      ? (await window.DietPlannerAccess?.canWrite?.(user.id)) === true
-      : false;
+    if (calcWriteInProgress) return;
+
+    const access = await window.DietPlannerCoreAccess?.getAccessStatus?.();
+    if (!access?.authenticated || !access.user) {
+        calcShowToast('يجب تسجيل الدخول أولاً', 'error');
+        return;
+    }
+
+    const canWrite = access.isAdmin === true ||
+        (await window.DietPlannerCoreAccess?.canWrite?.(access.user.id)) === true;
+
     if (!canWrite) {
         calcShowToast('حفظ أهداف المريض متاح أثناء الاشتراك المدفوع فقط', 'error');
         return;
     }
-    const targetCal = parseInt(document.getElementById('finalTargetCal').textContent, 10) || 0;
-    const proGrams = parseInt(document.getElementById('macroProGrams').textContent, 10) || 0;
-    const carbGrams = parseInt(document.getElementById('macroCarbGrams').textContent, 10) || 0;
-    const fatGrams = parseInt(document.getElementById('macroFatGrams').textContent, 10) || 0;
 
-    const totalPercent =
-        (parseFloat(document.getElementById('macroProPercent').value) || 0) +
-        (parseFloat(document.getElementById('macroCarbPercent').value) || 0) +
-        (parseFloat(document.getElementById('macroFatPercent').value) || 0);
+    const targetCal = Number(document.getElementById('finalTargetCal').textContent) || 0;
+    const proGrams = Number.parseInt(document.getElementById('macroProGrams').textContent, 10) || 0;
+    const carbGrams = Number.parseInt(document.getElementById('macroCarbGrams').textContent, 10) || 0;
+    const fatGrams = Number.parseInt(document.getElementById('macroFatGrams').textContent, 10) || 0;
 
-    if (totalPercent !== 100) {
+    const pPercent = Number(document.getElementById('macroProPercent').value) || 0;
+    const cPercent = Number(document.getElementById('macroCarbPercent').value) || 0;
+    const fPercent = Number(document.getElementById('macroFatPercent').value) || 0;
+    const totalPercent = pPercent + cPercent + fPercent;
+
+    if (Math.abs(totalPercent - 100) > 0.001) {
         calcShowToast('يجب أن يكون مجموع نسب الماكروز 100% بالضبط', 'error');
         return;
     }
 
-    if (!calcResolvedPatientId || targetCal <= 0) return;
-
-    const authUser = await window.DietPlannerAccess?.getCurrentUser?.();
-    if (!authUser) {
-        calcShowToast('يجب تسجيل الدخول أولاً', 'error');
-        return;
-    }
-    const authData = { user: authUser };
-
-    let existingQuery = calcDb
-        .from('nutrition_plans')
-        .select('id')
-        .eq('patient_id', calcResolvedPatientId);
-
-    if (calcVisitId) existingQuery = existingQuery.eq('visit_id', calcVisitId);
-
-    const { data: existing, error: findError } = await existingQuery
-        .order('updated_at', { ascending:false })
-        .order('created_at', { ascending:false })
-        .limit(1);
-
-    if (findError) {
-        calcShowToast('تعذر الوصول إلى خطة المريض', 'error');
+    if (!calcResolvedPatientId || targetCal <= 0) {
+        calcShowToast('أكمل بيانات المريض وحساب السعرات أولاً', 'error');
         return;
     }
 
-    const planId = existing?.[0]?.id || crypto.randomUUID();
+    calcWriteInProgress = true;
+    const button = document.querySelector('[data-action="applyCustomTargetToPatient"]');
+    if (button) button.disabled = true;
 
-    const { error } = await calcDb
-        .from('nutrition_plans')
-        .upsert({
+    try {
+        let existingQuery = calcDb
+            .from('nutrition_plans')
+            .select('id')
+            .eq('patient_id', calcResolvedPatientId)
+            .limit(1);
+
+        if (calcVisitId) {
+            existingQuery = calcDb
+                .from('nutrition_plans')
+                .select('id')
+                .eq('patient_id', calcResolvedPatientId)
+                .eq('visit_id', calcVisitId)
+                .limit(1);
+        }
+
+        const { data: existing, error: findError } = await existingQuery;
+        if (findError) {
+            console.error('Calculator existing plan lookup error:', findError);
+            calcShowToast('تعذر الوصول إلى خطة المريض', 'error');
+            return;
+        }
+
+        const planId = existing?.[0]?.id || crypto.randomUUID();
+
+        const payload = {
             id: planId,
             patient_id: calcResolvedPatientId,
             visit_id: calcVisitId || null,
             plan_name: 'الخطة الغذائية',
-            start_date: new Date().toISOString().slice(0,10),
+            start_date: new Date().toISOString().slice(0, 10),
             target_calories: targetCal,
             target_protein: proGrams,
             target_carb: carbGrams,
             target_fat: fatGrams
-        }, { onConflict:'id' });
+        };
 
-    if (error) {
-        calcShowToast('تعذر حفظ الهدف في قاعدة البيانات', 'error');
-        return;
-    }
-
-    window.__dietPlannerCalculatorApproved = true;
-    window.__dietPlannerApprovedPlan = {
-        id: planId,
-        patient_id: calcResolvedPatientId,
-        visit_id: calcVisitId || null,
-        target_calories: targetCal,
-        target_protein: proGrams,
-        target_carb: carbGrams,
-        target_fat: fatGrams
-    };
-
-    calcShowToast(`تم اعتماد الهدف (${targetCal} سعر) والماكروز بنجاح`);
-}
-
-async function initCalculator(){
+        const { data: savedPlan, error: saveError } = awaiasync function initCalculator(){
     if (calcInitialized) return true;
 
-    const ctx = window.visitContext || {};
-    calcVisitId = ctx.id || urlParams.get('visit_id') || null;
-    calcPatientId = ctx.patient_id || urlParams.get('patient_id') || null;
-    calcResolvedPatientId = calcPatientId;
-
     selectEnergyEquation('mifflin');
-    calcInitialized = true;
 
     try {
-        return await loadCalculatorPatientData();
+        const access = await window.DietPlannerCoreAccess?.getAccessStatus?.();
+        if (!access?.authenticated) {
+            calcShowToast('يجب تسجيل الدخول أولاً', 'error');
+            return false;
+        }
+
+        const hasContext = !!(window.visitContext?.id && window.visitContext?.patient_id);
+        const hasFallback = !!(urlParams.get('id') || urlParams.get('visit_id') || urlParams.get('patient_id'));
+
+        if (!hasContext && !hasFallback) {
+            calcShowToast('لم تكتمل بيانات الزيارة بعد', 'error');
+            return false;
+        }
+
+        const ok = await loadCalculatorPatientData();
+        calcInitialized = ok;
+        return ok;
     } catch (error) {
         console.error('Calculator initialization error:', error);
         calcInitialized = false;
