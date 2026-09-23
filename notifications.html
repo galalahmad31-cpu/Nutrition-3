@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>الإشعارات | Diet Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><link rel="stylesheet" href="css/tailwind.css?v=20260923-2">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{cairo:['Cairo','sans-serif']},colors:{brand:{50:'#eef7f6',100:'#d9efec',500:'#178f84',600:'#11786f',700:'#0d625b',800:'#0b504b'}}}}}
+</script>
+<link rel="stylesheet" href="css/notifications.css">
+  <link rel="stylesheet" href="css/theme.css?v=20260921-3">
+  <script src="js/theme.js?v=20260921-3"></script>
+</head>
+
+<body class="min-h-screen">
+
+<div id="loading" class="loading">
+  <div class="flex flex-col items-center gap-3">
+    <div class="spinner"></div>
+    <div class="text-sm font-semibold text-slate-500">جاري تحميل الإشعارات...</div>
+  </div>
+</div>
+
+<main class="min-h-screen px-4 py-5 sm:px-6 lg:px-8">
+<div class="mx-auto max-w-4xl">
+
+<header class="glass rounded-3xl px-5 py-5 sm:px-7 sm:py-6 shadow-sm">
+  <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center gap-4">
+      <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-lg">
+        <i class="fa-solid fa-bell text-2xl"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-extrabold text-slate-800 sm:text-3xl">الإشعارات</h1>
+        <p class="mt-1 text-sm font-medium text-slate-500">تنبيهات الاشتراكات ومواعيد المتابعة</p>
+      </div>
+    </div>
+
+    <a href="app.html" class="flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600">
+      <i class="fa-solid fa-arrow-right"></i>
+      الرئيسية
+    </a>
+  </div>
+</header>
+
+<section class="mt-6 glass rounded-3xl p-3 sm:p-4">
+  <div class="grid grid-cols-3 gap-2 rounded-2xl bg-slate-100 p-1.5">
+    <button data-tab="today" class="tab-btn active rounded-xl px-2 py-3 text-xs sm:text-sm font-extrabold transition">
+      <i class="fa-solid fa-calendar-day ml-1"></i> متابعات اليوم
+      <span id="todayCount" class="mr-1 inline-flex min-w-6 items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[10px]">0</span>
+    </button>
+    <button data-tab="tomorrow" class="tab-btn rounded-xl px-2 py-3 text-xs sm:text-sm font-extrabold text-slate-500 transition">
+      <i class="fa-solid fa-calendar-plus ml-1"></i> متابعات الغد
+      <span id="tomorrowCount" class="mr-1 inline-flex min-w-6 items-center justify-center rounded-full bg-white/70 px-1.5 py-0.5 text-[10px]">0</span>
+    </button>
+    <button data-tab="subscriptions" class="tab-btn rounded-xl px-2 py-3 text-xs sm:text-sm font-extrabold text-slate-500 transition">
+      <i class="fa-solid fa-credit-card ml-1"></i> الاشتراكات
+      <span id="subscriptionCount" class="mr-1 inline-flex min-w-6 items-center justify-center rounded-full bg-white/70 px-1.5 py-0.5 text-[10px]">0</span>
+    </button>
+  </div>
+  <div class="mt-4 flex items-center justify-between gap-3 px-1">
+    <div>
+      <h2 id="tabTitle" class="font-extrabold text-slate-800">متابعات اليوم</h2>
+      <p id="tabSubtitle" class="mt-1 text-xs text-slate-500">المرضى الذين موعد متابعتهم اليوم.</p>
+    </div>
+    <div id="count" class="flex h-9 min-w-9 items-center justify-center rounded-full bg-brand-50 px-3 text-sm font-extrabold text-brand-700">0</div>
+  </div>
+</section>
+
+<section class="mt-5">
+  <div id="notifications" class="space-y-3"></div>
+  <div id="empty" class="hidden glass rounded-3xl p-12 text-center">
+    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-500">
+      <i class="fa-regular fa-calendar-check text-2xl"></i>
+    </div>
+    <h3 id="emptyTitle" class="mt-4 font-extrabold text-slate-800">لا توجد متابعات اليوم</h3>
+    <p id="emptyText" class="mt-2 text-sm text-slate-500">لا توجد مواعيد متابعة مسجلة لهذا اليوم.</p>
+  </div>
+</section>
+
+<footer class="py-8 text-center text-xs text-slate-400">Diet Planner • Clinical Nutrition</footer>
+</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/auth-access.js?v=20260923-1"></script>
+<script src="js/notifications.js"></script>
+  
+</body>
+</html>
