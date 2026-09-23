@@ -22,3 +22,5 @@ function vals(g){return ExchangeCalc.values(g,S.r)}
 function manual(){return ExchangeCalc.manual(G,S.r)}
 function calc(){ExchangeCalc.applyTargets(G,S.r,S.t)}
 function total(){return ExchangeCalc.total(G,S.r)}
+$(function(){})
+})();
