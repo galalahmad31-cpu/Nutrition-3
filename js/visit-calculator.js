@@ -467,7 +467,30 @@ async function applyCustomTargetToPatient() {
             target_fat: fatGrams
         };
 
-        const { data: savedPlan, error: saveError } = awaiasync function initCalculator(){
+        const { data: savedPlan, error: saveError } = await calcDb
+            .from('nutrition_plans')
+            .upsert(payload, { onConflict: 'id' })
+            .select('id,patient_id,visit_id,target_calories,target_protein,target_carb,target_fat')
+            .single();
+
+        if (saveError) {
+            console.error('Calculator plan save error:', saveError);
+            calcShowToast('تعذر حفظ الهدف في قاعدة البيانات', 'error');
+            return;
+        }
+
+        calcLoadedPlan = savedPlan;
+        window.__dietPlannerCalculatorApproved = true;
+        window.__dietPlannerApprovedPlan = savedPlan;
+
+        calcShowToast(`تم اعتماد الهدف (${targetCal} سعر) والماكروز بنجاح`);
+    } finally {
+        calcWriteInProgress = false;
+        if (button) button.disabled = false;
+    }
+}
+
+async function initCalculator(){
     if (calcInitialized) return true;
 
     selectEnergyEquation('mifflin');
