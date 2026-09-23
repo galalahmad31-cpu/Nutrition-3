@@ -1,6 +1,8 @@
 (function(){
 'use strict';
-const access=window.DietPlannerAccess, sb=access?.supabaseClient;
+const access=window.DietPlannerCoreAccess;
+const auth=window.DietPlannerCoreAuth;
+const sb=window.DietPlannerSupabase?.client;
 const PLAN_FEATURES=[{key:'nutrition_support',label:'الدعم الغذائي'},{key:'diet',label:'الدايت المتقدم'},{key:'article',label:'المقال المتقدم'},{key:'product',label:'المنتجات الغذائية'}];
 const state={plans:[],subs:[],profiles:[],patients:[],activeTab:'requests'};
 let confirmAction=null;
@@ -80,7 +82,6 @@ function renderDoctors(){
  <td class="actions-cell">${s?'<button class="icon-btn" title="تعديل الاشتراك" data-edit-sub="'+esc(s.id)+'"><i class="fa-solid fa-pen"></i></button><button class="icon-btn danger" title="حذف الاشتراك" data-del-sub="'+esc(s.id)+'"><i class="fa-solid fa-trash"></i></button>':'—'}</td></tr>`}).join('');
  setState('doctor','',true)
 }
-
 function planForm(p){
  const f=p?.features||{},keys=PLAN_FEATURES.map(x=>x.key);
  return `<form id="planForm"><div class="grid">
@@ -161,7 +162,7 @@ function switchTab(tab){
 
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 $('newPlanBtn').onclick=()=>openPlan(null);$('refreshBtn').onclick=()=>loadAll();$('refreshDoctorsBtn').onclick=()=>loadAll();$('doctorSearch').oninput=renderDoctors;
-$('dashboardBtn').onclick=()=>location.href='app.html';$('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.replace('index.html')};
+$('dashboardBtn').onclick=()=>location.href='app.html';$('logoutBtn').onclick=async()=>{await auth?.signOut();location.replace('index.html')};
 $('modalClose').onclick=closeModal;$('modalBg').onclick=e=>{if(e.target===e.currentTarget)closeModal()};
 $('confirmClose').onclick=closeConfirm;$('confirmNo').onclick=closeConfirm;$('confirmYes').onclick=async()=>{const a=confirmAction;if(!a)return;confirmAction=null;$('confirmBg').style.display='none';await a()};
 $('confirmBg').onclick=e=>{if(e.target===e.currentTarget)closeConfirm()};$('proofClose').onclick=()=>{$('proofBg').style.display='none'};$('proofBg').onclick=e=>{if(e.target===e.currentTarget)$('proofBg').style.display='none'};
