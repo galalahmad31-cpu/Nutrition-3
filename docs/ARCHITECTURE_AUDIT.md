@@ -1,106 +1,156 @@
 # Diet Planner — Architecture Audit
 
-> **Audit mode:** READ-ONLY analysis. No application source code is being refactored in this document.
-> The audit is maintained on the `architecture-audit` branch. `main` is not being modified.
+> READ-ONLY audit. No application source files are being refactored here. This document lives on `architecture-audit`; `main` is not modified.
 
-## Purpose
+## Goal
 
-This file is the central map for understanding the current Diet Planner frontend before refactoring. The goal is to identify responsibilities, dependencies, duplication, and safe future boundaries.
+Build a reliable map of the current frontend before refactoring. Every function/file must eventually be classified as `KEEP`, `MOVE`, `MERGE`, `DELETE`, or `REVIEW`, with dependencies understood first.
 
-## Target Architecture
+## Target architecture
 
 ```text
 js/
-├── core/          # authentication, access, shared application state/contracts
+├── core/          # auth, access, shared application contracts
 ├── services/      # database/domain operations
 ├── components/    # reusable UI behavior
-├── utils/         # pure helpers, formatting, validation, calculations
-└── pages/         # page-specific orchestration and rendering
+├── utils/         # pure helpers, validation, formatting, clinical calculations
+└── pages/         # page-specific orchestration/rendering
 
 css/
 ├── core/          # variables, base, layout
-├── components/    # reusable UI styles
+├── components/    # reusable component styles
 └── pages/         # page-specific styles
 ```
 
-The target is a destination, not a reason to split files blindly. A function moves only when its responsibility and dependencies are understood.
+This is a target, not a command to split everything. A function moves only when its responsibility and dependencies are verified.
 
 ---
 
-# Audits 01–29
+# 1. Cross-cutting JavaScript findings
 
-The audits recorded cover the main HTML/JS modules, visit submodules, patient/diet/food/nutrition-support domains, admin/subscription/profile/finance/notifications, utility-like modules, and authentication/recovery pages. The detailed findings below are the current architectural map.
-
-## Cross-cutting JS findings
-
-- `auth-access.js` mixes authentication, access/subscription logic, and index-page routing/UI.
-- Patient CRUD is repeated across patient, patient-profile, nutrition-support, and admin workflows.
+- `auth-access.js` mixes authentication, access/subscription state, and routing/UI.
+- Patient CRUD is repeated across patient, patient-profile, nutrition-support, and admin.
 - Subscription logic is repeated across auth/access, profile, subscription pages, and admin.
-- Visit is a container for several substantial domains and should not be forced into one giant page module.
-- Diet/food/visit modules mix UI, state, Supabase operations, and clinical calculations.
-- Toast, modal/confirm, date formatting, HTML escaping, and numeric helpers are repeatedly implemented.
+- Visit is a domain container: assessment + calculator + gram diet + exchange diet. Do not force it into one service.
+- Diet/food/visit modules commonly mix UI, state, Supabase calls, and clinical calculations.
+- Toast, modal/confirm, date formatting, HTML escaping, and numeric helpers are repeated.
 - Pure clinical equations are mixed with DOM/database orchestration.
-- Existing IIFEs contain state but do not by themselves create architectural separation.
-- `data-action`/event delegation is already used in several places and should be preserved where practical.
-- Supabase RPCs and RLS are part of the contract and must be mapped before moving database logic.
+- Existing IIFEs protect local state but do not by themselves provide architectural separation.
+- `data-action` / event delegation already appears in several modules and should generally be preserved.
+- Supabase RPCs, Functions, Triggers and RLS are contracts; map them before moving database operations.
 
-## CSS Audit — `css/theme.css`
+---
 
-### Role
+# 2. Page / JS domain map
 
-`theme.css` acts as a global theme layer. It defines CSS variables under `:root`, dark-mode overrides under `html[data-theme="dark"]`, and broad overrides for common Tailwind utility classes, forms, tables, modals, buttons, and shared UI elements.
+## Auth / recovery
 
-### Findings
+### `auth-access.js`
+Responsibilities: Supabase auth, session, profile/role, subscription/access checks, routing. Candidate split: `core/supabase.js`, `core/auth.js`, `core/access.js`, `core/subscription.js`.
 
-- The CSS-variable approach is a useful single source of truth for the application's visual tokens.
-- Dark mode is explicitly scoped by `[data-theme="dark"]`, matching the existing `theme.js` contract.
-- The file is broader than a pure theme/token file: it contains rules for specific Quick Calculator classes such as `.qc-panel`, `.iv-line-row`, `.qc-result`, and `.highlight-box`.
-- Those calculator-specific rules are candidates for `css/pages/quickcalc.css` after checking cascade/order dependencies.
-- Global Tailwind utility overrides should not be removed blindly; each override needs a usage/cascade check because the current application may rely on them for consistent light/dark presentation.
-- Theme and CSS architecture must be audited together with `theme.js` and script/style loading order.
+### `forgot-password.html`
+Password recovery form, direct Supabase client, `resetPasswordForEmail`, inline status UI. Candidate: `pages/forgot-password.js` + shared `core/supabase.js`. Keep independent of normal subscription guards.
 
-### Candidate target
+### `update-password.html`
+Recovery session, `PASSWORD_RECOVERY`, password validation, `updateUser`. Candidate: `pages/update-password.js` + auth/recovery service + validation utility.
 
-```text
-css/core/variables.css
-css/core/base.css
-css/components/*.css
-css/pages/quickcalc.css
-```
+### `privacy.html`
+Static content only. No page JS required.
 
-Do not split rules merely by selector name; preserve cascade behavior and verify every affected page.
+## Patients
 
-## CSS Audit — `css/food.css`
+### `patient.js`
+Patient list/search/form/CRUD/access. Candidate service: `services/patients.js`; page remains orchestration/UI.
 
-### Role
+### `patient-profile.js`
+Patient profile, visits, weight/finance/support links and patient-specific operations. Strong overlap with patient and visit services.
 
-Page-specific food/exchange library styling: responsive tables, horizontal scrolling, sticky first column, modal background, spinner, focus styles, exchange table formatting, and tab states.
+### `weight.js`
+`weight_logs` CRUD, BMI summary, chart, delete modal, access/write checks. Candidates: `services/weight.js`, `utils/nutrition/bmi.js`, shared modal/toast.
 
-### Findings
+## Visits
 
-- The file is mostly page-specific and is a reasonable candidate for `css/pages/food.css`.
-- It repeats global rules such as `*{box-sizing:border-box}`, `body` typography/background, and input focus behavior. These should be compared against `theme.css`, `tailwind.css`, and other page CSS before centralizing.
-- The sticky first table column and mobile horizontal-scroll behavior are intentional page behavior and should remain local.
-- `.spinner` and generic modal/focus rules may be reusable, but extraction should wait until all consumers are identified.
+### `visit.js`
+Main visit orchestration and assessment. It is the container for multiple visit subdomains.
 
-Source reviewed: `main/css/food.css`.
+### `visit-calculator.js`
+Energy equations, TDEE/macros, patient/weight/plan loading and persistence, UI. Pure `schofieldBMR()`-style logic is a candidate for `utils/nutrition/energy.js`; persistence overlaps nutrition-plan services.
 
-## CSS Audit — `css/visit.css`
+### `visit-diet-plan.js`
+Gram diet: foods, nutrition plans, days/meals/items, gram/household calculations, persistence and UI. Candidate shared service: `services/nutrition-plans.js`; food access: `services/foods.js`.
 
-### Role
+### `visit-exchange-plan.js`
+Exchange reference/calculation, `exchange_values`, plan/day/meal/item persistence. Candidate `services/exchange-plans.js` plus `utils/nutrition/exchanges.js`. Plan persistence should overlap the gram-plan service rather than be duplicated.
 
-`visit.css` is a large composite stylesheet covering the Visit page, assessment sections, embedded calculator, embedded diet plan, exchange-plan workspace, print output, and responsive behavior.
+## Diet / Food
 
-### Findings
+### `diet.js`
+Diet library/page logic, filtering, templates and access. Candidate domain service around diet templates.
 
-- The file contains multiple labeled "Original style block" sections, indicating incremental accumulation rather than a clean layer structure.
-- It contains several distinct domains in one stylesheet: assessment, calculator, gram diet, exchange plan, module cards, and print layout.
-- The print rules are substantial and should be treated as a separate responsibility during refactoring; they should not be deleted just because they are long.
-- Embedded modules are intentionally scoped with selectors such as `.embedded-calculator`, `.embedded-diet-plan`, and `.exchange-plan-module`; preserve these scopes to avoid collisions.
-- Some global-looking rules such as `body` styling and generic print selectors (`textarea,input,select`, `.shadow-*`) can affect unrelated content when this stylesheet is loaded. Their cascade impact must be tested before moving them.
-- The file is the strongest CSS candidate for staged decomposition, but only after the embedded module boundaries and print dependencies are mapped.
+### `food.js`
+Food library/table/exchange operations. Candidate `services/foods.js`.
 
-### Candidate target
+## Nutrition support
+
+### `nutritionsupport.js`
+Nutrition-support library/domain UI and database operations.
+
+### `nutritionsupport-patient.js`
+EN + TPN, patient context, support days CRUD, calculations, UI state and printing. This is a large domain module. Candidate separation: page orchestration + `services/nutrition-support.js` + clinical utilities (`enteral.js`, `tpn.js`, `glucose.js`) only after all consumers are mapped.
+
+## Admin / subscriptions
+
+### `admin.js`
+Admin access, plans, subscriptions, doctors, patient counts, requests, modals/toasts. Candidate services: `subscriptions.js`, `subscription-plans.js`, `profiles.js`; page remains orchestration.
+
+### `subscription_plans.js`
+Plans, active/pending subscription, free trial, payment proof, `create_subscription()` RPC, cancellation/replacement. Strong candidate for `services/subscriptions.js` + `services/subscription-plans.js`.
+
+### `subscription_plans_index.js`
+Repeats much of subscription lookup/submission/replacement logic from `subscription_plans.js`. This is confirmed duplication and should eventually share the same subscription service.
+
+### `profile.js`
+Profile + subscription display/selection/edit/logout. Subscription checks overlap core/service logic.
+
+## Other domains
+
+### `finance.js`
+Finance CRUD/rendering + write-access checks. Repeats access orchestration and date helpers. Candidate `services/finance.js` + `utils/date.js`.
+
+### `notifications.js`
+Derives notifications from finance/subscription data. Date helpers overlap finance. Keep notification rendering separate from shared date logic.
+
+### `feedback.js`
+Feedback CRUD, rating UI, profile/display-name lookup, confirmation and rendering. Candidate `services/feedback.js` + shared components/helpers.
+
+### `article.js`
+Article CRUD, search/filter, rich editor/table editor, sanitization. `safe()` is security-sensitive; do not move blindly to generic utils until all HTML-sanitization consumers are mapped.
+
+### `products.js`
+Categories/subcategories/products/formulas, filters, CRUD, admin UI, parallel loading. Candidate `services/products.js` and category service if reuse is demonstrated.
+
+### `about.js`
+About sections CRUD, editor, admin UI. Candidate `services/about.js`. Rich editor should remain local unless another consumer appears.
+
+### `theme.js`
+One coherent global responsibility: light/dark theme, system preference, storage, `[data-theme]`, meta theme color, toggle, public `window.DietPlannerTheme`. This module is already close to the desired architecture; keep it cohesive.
+
+---
+
+# 3. CSS audit
+
+## `theme.css`
+Global theme/token layer with `:root`, dark mode, broad Tailwind utility overrides, forms, tables, modals and shared UI. It also contains Quick Calculator selectors such as `.qc-panel`, `.iv-line-row`, `.qc-result`, `.highlight-box`; these are candidates for page CSS after cascade verification.
+
+**Do not remove global utility overrides blindly.** Test light/dark/responsive behavior and script/style order first.
+
+## `food.css`
+Mostly page-specific: food/exchange tables, horizontal scroll, sticky first column, modal/spinner/focus and responsive behavior. It repeats some global `box-sizing`, body and input rules. Candidate `css/pages/food.css` with shared rules moved only after consumer/cascade checks.
+
+## `visit.css`
+Large composite stylesheet: assessment, embedded calculator, gram diet, exchange plan, responsive and print rules. Multiple labeled original style blocks show incremental accumulation. Embedded scopes such as `.embedded-calculator`, `.embedded-diet-plan`, `.exchange-plan-module` should be preserved. Print rules are a real responsibility, not dead code merely because they are large.
+
+Candidate staged target:
 
 ```text
 css/pages/visit.css
@@ -110,486 +160,180 @@ css/pages/visit-exchange-plan.css
 css/components/print.css
 ```
 
-These are candidates, not an instruction to split immediately.
+## `quickcalc.css`
+Coherent Quick Calculator stylesheet with useful `--qc-*` variables, responsive rules and calculator-specific UI. It repeats global body/input/focus rules and locally imports Google Fonts; review these during global typography/base cleanup. Keep calculator-specific variables local unless reused.
 
-## CSS Audit — `css/quickcalc.css`
+## `nutritionsupport-patient.css`
+Large dedicated Nutrition Support Patient stylesheet (~30 KB). It defines its own theme tokens, EN/TPN visual identities, patient header, support-day UI, tabs, tables, clinical callouts, glucose controls, delete modal, print behavior and many Tailwind overrides. It is a **domain stylesheet**, not automatically spaghetti. Main future concern is duplicated global base rules (`body`, `input/select/textarea`, `box-sizing`, font import) and the mixing of page, component and print concerns.
 
-### Role
-
-Dedicated Quick Calculator styling: page shell, calculator cards, per-calculator accent variables, panels, results, dynamic IV rows, form controls, desktop layouts, and responsive layouts.
-
-### Findings
-
-- The file has a coherent page/domain responsibility and is already much closer to the desired `css/pages/quickcalc.css` boundary.
-- It uses scoped CSS variables (`--qc-accent`, `--qc-soft`, `--qc-border`, `--qc-strong`) to give each calculator a restrained accent without duplicating entire style blocks. This should be preserved.
-- It repeats global `body`, input, focus, and `box-sizing` rules that overlap with other CSS. These are candidates for comparison/centralization, not automatic deletion.
-- Responsive behavior is explicit and reasonably localized to the calculator domain.
-- `@import` for Google Fonts inside the page stylesheet is a deployment/performance concern and should be considered when the global typography strategy is reviewed.
-
-### Candidate target
+Candidate staged target:
 
 ```text
-css/pages/quickcalc.css
+css/pages/nutrition-support-patient.css
+css/components/print.css
+css/components/modal.css
 css/core/base.css
 ```
 
-Keep calculator-specific variables and layout in the page stylesheet unless another consumer is found.
+Do not extract the EN/TPN scoped rules until the HTML/JS selectors and print behavior are mapped.
+
+## Other CSS files found in repository
+
+```text
+about.css
+admin.css
+app.css
+article.css
+diet.css
+feedback.css
+finance.css
+food.css
+forgot-password.css
+index.css
+notifications.css
+nutritionsupport.css
+nutritionsupport-patient.css
+patient.css
+patient-profile.css
+privacy.css
+profile.css
+quickcalc.css
+subscription_plans.css
+subscription_plans_index.css
+theme.css
+update-password.css
+visit.css
+weight.css
+tailwind-input.css
+```
+
+`tailwind-input.css` is only an input/source file and must be distinguished from the generated Tailwind output during the deployment audit.
 
 ---
 
-# Current CSS conclusions
+# 4. Important architectural duplications
 
 ```text
-Global/theme layer
-    ↓
-Tailwind/generated utility layer
-    ↓
-Page CSS
-    ↓
-Embedded module CSS
-    ↓
-Print/responsive overrides
-```
+Subscription
+auth-access ─┐
+profile ─────┼──> candidate services/subscriptions.js
+plans ───────┤
+plans_index ─┤
+admin ───────┘
 
-The current application does not have a clean separation of these layers everywhere. In particular, `theme.css` contains some page-specific Quick Calculator rules, while `visit.css` contains several embedded modules and print rules. This is a refactoring opportunity, but not evidence that the current application is broken.
+Nutrition plans
+visit-calculator ─┐
+visit-diet-plan ──┼──> candidate services/nutrition-plans.js
+visit-exchange ───┘
 
-### CSS rules for future refactoring
+Patients
+patient ──────────┐
+patient-profile ──┼──> candidate services/patients.js
+nutrition support ┤
+admin ────────────┘
 
-1. Do not remove a duplicated-looking CSS rule until its consumers and cascade order are verified.
-2. Do not move Tailwind utility overrides without testing light/dark and responsive states.
-3. Keep print styles isolated conceptually even if they remain in one file initially.
-4. Preserve scoped embedded-module selectors to prevent cross-page collisions.
-5. Move global design tokens to `variables.css`; move true global resets/base rules to `base.css`; keep page behavior in page styles.
-6. Avoid creating a CSS file for every small selector. Split by stable responsibility/domain.
+Shared UI
+local toast ──────┐
+local modal ──────┼──> candidate components/
+confirm helpers ──┘
 
----
-
-# Audit 21 — `js/feedback.js`
-
-## Responsibilities
-
-```text
-Feedback
-├── own feedback state
-├── rating UI
-├── CRUD
-├── display-name lookup
-├── rendering
-├── delete confirmation
-└── event delegation
-```
-
-## Findings
-
-- Positive: the module explicitly depends on `DietPlannerAccess` rather than recreating authentication setup.
-- `getDisplayName()` directly queries `profiles`; candidate for a profile service if this lookup is shared.
-- `loadFeedbacks()`, `saveFeedback()`, and `performDeleteFeedback()` directly access `app_feedback`; candidate for `services/feedback.js`.
-- `escapeHtml()` and `formatDate()` duplicate shared concerns.
-- Status UI and confirmation modal behavior are local implementations that should be compared with the eventual shared components.
-- Owner/admin checks in the UI are not a security boundary; RLS must remain authoritative.
-
-### Candidate target
-
-```text
-services/feedback.js
-pages/feedback.js
-components/toast.js / components/confirm.js
-utils/security.js
-utils/date.js
-```
-
----
-
-# Audit 22 — `js/weight.js`
-
-## Responsibilities
-
-```text
-Weight tracking
-├── access/write checks
-├── patient lookup
-├── weight_logs CRUD
-├── BMI summary
-├── table rendering
-├── chart rendering
-├── delete modal
-└── toast
-```
-
-## Findings
-
-- `refreshWriteAccess()` repeats page-level access orchestration already present in other pages.
-- `loadPage()`, `addWeightEntry()`, and delete logic directly access `patients` and `weight_logs`.
-- `showToast()`, `escapeHtml()`, and `formatDate()` duplicate shared helpers.
-- BMI calculation is sufficiently pure to be considered for a nutrition/clinical calculation utility after all BMI consumers are mapped.
-- Chart construction should remain page/component-specific unless another page uses the same chart behavior.
-- The dynamically created delete modal is another example of repeated modal infrastructure.
-
-### Candidate target
-
-```text
-services/weight.js
-pages/weight.js
-utils/nutrition/bmi.js
-components/modal.js
-components/toast.js
+Shared helpers
+formatDate / date math / escapeHtml / numeric helpers
+        ↓
+ candidate utils/ (only after all consumers are mapped)
 ```
 
 ---
 
-# Audit 23 — `js/theme.js`
+# 5. Rules for refactoring
 
-## Responsibility
-
-`theme.js` has one coherent responsibility: global light/dark mode.
-
-It handles stored preference, system preference, `[data-theme]`, `color-scheme`, theme-color meta, toggle creation, storage synchronization, and the public `window.DietPlannerTheme` API.
-
-## Findings
-
-This module is already close to the desired architecture. It is isolated, has a narrow public API, and does not contain unrelated business logic.
-
-**Recommendation for refactoring:** keep it as one shared Core/UI module rather than splitting it into many small files.
-
-The remaining issue is CSS integration: `[data-theme]` styles and Tailwind/page styles must be verified for cascade conflicts.
-
----
-
-# Audit 24 — `js/visit-calculator.js`
-
-## Responsibilities
-
-```text
-Visit calculator
-├── patient/visit context
-├── energy equations
-│   ├── Mifflin-St Jeor
-│   └── Schofield
-├── TDEE / target calories
-├── macro calculation
-├── patient/weight/plan loading
-├── plan persistence
-├── UI updates
-├── toast
-└── event handling
-```
-
-## Findings
-
-- The module mixes clinical calculations with DOM operations and Supabase access.
-- `schofieldBMR()` is a pure clinical calculation and is a strong candidate for `utils/nutrition/energy.js` after all consumers are mapped.
-- `updateTargetAndMacros()` mixes calculation and DOM rendering; the pure calculation portion should be separable without changing page behavior.
-- It directly accesses `patients`, `weight_logs`, and `nutrition_plans`, creating overlap with other visit/diet modules.
-- It consumes `window.visitContext` when embedded in `visit.html`, which is a useful existing boundary. Preserve that contract during refactoring.
-- It contains a local toast implementation; compare with shared toast infrastructure.
-- Compatibility aliases such as `calculateTDEE()` and `calculateSchofield()` indicate existing callers/UI references; preserve them temporarily if functions are extracted.
-
-### Candidate target
-
-```text
-pages/visit-calculator.js
-services/nutrition-plans.js
-services/patients.js
-utils/nutrition/energy.js
-utils/nutrition/macros.js
-components/toast.js
-```
+1. Do not move a function just because it is long.
+2. Pure calculation → candidate `utils`.
+3. Database/domain operation → candidate `services`.
+4. Reusable UI behavior → candidate `components`.
+5. Page-specific orchestration/rendering → `pages`.
+6. Authentication/access contract → `core`.
+7. RLS is the security boundary; frontend access checks are UX/orchestration, not authorization.
+8. Preserve public function names/aliases temporarily when HTML or other scripts may call them.
+9. Do not change clinical formulas while performing architecture refactoring.
+10. Do not change database schema, RLS, triggers or RPC behavior during frontend extraction unless separately audited and tested.
+11. Test one architectural change at a time.
+12. Every extraction must be followed by a search for old references.
 
 ---
 
-# Audit 25 — `js/visit-diet-plan.js`
-
-## Responsibilities
+# 6. Current target folder map
 
 ```text
-Gram-based diet plan
-├── visit/patient context
-├── food library loading
-├── nutrition plan loading
-├── plan/day/meal/item state
-├── day editing
-├── meal editing
-├── food selection
-├── gram calculations
-├── household-measure scaling
-├── plan persistence
-├── confirmations/toast
-└── rendering/events
-```
-
-## Findings
-
-- The IIFE protects module state, but the module still combines domain data access, state, calculations, UI, and persistence.
-- `loadFoods()` directly accesses `foods`; candidate for `services/foods.js`.
-- `loadPlan()` directly orchestrates `nutrition_plans`, `plan_days`, `plan_meals`, and `plan_items`; candidate for a diet-plan service/repository boundary.
-- `scaleHouseholdMeasure()` and `formatHouseholdNumber()` are pure enough to consider for a nutrition/measurements utility after comparison with other modules.
-- Toast and confirmation logic duplicate shared UI infrastructure.
-- `canWriteVisitData()` delegates to `DietPlannerAccess`, which is preferable to duplicating the subscription policy itself. Keep this delegation pattern while extracting.
-- Temporary local IDs for unsaved days/meals must be preserved during persistence refactoring.
-
-### Candidate target
-
-```text
-pages/visit-diet-plan.js
-services/nutrition-plans.js
-services/foods.js
-utils/nutrition/measurements.js
-components/toast.js
-components/confirm.js
-```
-
----
-
-# Audit 26 — `js/visit-exchange-plan.js`
-
-## Responsibilities
-
-```text
-Exchange-based diet plan
-├── exchange reference definitions
-├── target macro state
-├── exchange calculations
-├── nutrition-plan creation/loading
-├── exchange_values persistence
-├── day/meal/item loading
-├── day editing
-├── rendering
-├── access checks
-├── toast/status
-└── event delegation
-```
-
-## Findings
-
-- Exchange reference data and calculation functions are domain logic and should not be moved merely because they are not UI code.
-- `findPlans()` and `ensureExchangePlan()` directly access `nutrition_plans`, overlapping with the gram-based diet module and visit calculator.
-- `loadExchangeValues()` directly accesses `exchange_values`.
-- `loadDays()` directly accesses `plan_days`, `plan_meals`, and `plan_items`, overlapping with `visit-diet-plan.js`.
-- `canWriteExchangePlan()` delegates the write decision to `DietPlannerAccess`; preserve this boundary.
-- The module uses `data-xaction` event delegation, which is a good existing pattern.
-- Status/toast and formatting helpers are repeated.
-
-### Candidate target
-
-```text
-pages/visit-exchange-plan.js
-services/nutrition-plans.js
-services/exchange-plans.js
-utils/nutrition/exchanges.js
-components/toast.js
-components/confirm.js
-```
-
-The strongest architectural opportunity is to share the nutrition-plan persistence layer while keeping gram/exchange clinical rules separate.
-
----
-
-# Audit 27 — `forgot-password.html`
-
-## Responsibilities
-
-```text
-Password recovery
-├── Supabase client creation
-├── email input/validation
-├── resetPasswordForEmail()
-├── status message UI
-└── form event handling
-```
-
-## Findings
-
-- The page creates a second Supabase client directly inside inline JavaScript instead of using the application's shared core layer.
-- The recovery redirect is hard-coded to the Vercel `update-password.html` URL; this is a deployment/configuration concern.
-- `showMessage()` is a page-local notification helper.
-- Inline script is an exception to the desired `pages/*.js` structure.
-- The recovery page should remain independent from normal subscription/access guards.
-
-### Candidate target
-
-```text
-pages/forgot-password.js
-core/supabase.js
-utils/config.js
-components/status-message.js
-```
-
----
-
-# Audit 28 — `update-password.html`
-
-## Responsibilities
-
-```text
-Password update
-├── Supabase client creation
-├── recovery-session detection
-├── PASSWORD_RECOVERY listener
-├── password strength validation
-├── confirmation validation
-├── updateUser({ password })
-└── status UI
-```
-
-## Findings
-
-- It also creates its own Supabase client and keeps logic inline.
-- `isStrongPassword()` is pure validation and can eventually move to `utils/validation.js` if reused.
-- `updatePasswordStrength()` is UI-specific.
-- `prepareRecoverySession()` and the `PASSWORD_RECOVERY` listener form an authentication/recovery contract that must be preserved exactly during extraction.
-- Local `saving`/`recoveryReady` state does not need global state.
-
-### Candidate target
-
-```text
-pages/update-password.js
-core/supabase.js
-core/auth.js or services/password-recovery.js
-utils/validation.js
-components/status-message.js
-```
-
----
-
-# Audit 29 — `privacy.html`
-
-## Responsibility
-
-Static privacy content with theme support and navigation.
-
-## Findings
-
-- No application business logic.
-- It uses Tailwind/generated CSS plus page CSS plus theme CSS, so precedence should be checked during CSS audit.
-- It does not need a page JavaScript module.
-- Keep it static.
-
----
-
-# Cross-cutting finding — authentication/recovery pages
-
-```text
-Normal application
-index → auth/access → subscription → app
-
-Password recovery
-forgot-password → Supabase recovery email → update-password
-```
-
-The final architecture should keep recovery independent from subscription/access checks while avoiding unnecessary duplicate Supabase client construction.
-
----
-
-# Current CSS conclusions
-
-```text
-Global/theme layer
-    ↓
-Tailwind/generated utility layer
-    ↓
-Page CSS
-    ↓
-Embedded module CSS
-    ↓
-Print/responsive overrides
-```
-
-### CSS-specific findings
-
-1. `theme.css` is a global theme layer but also contains page-specific Quick Calculator selectors such as `.qc-panel`, `.iv-line-row`, `.qc-result`, and `.highlight-box`. These are candidates for page CSS after cascade verification.
-2. `food.css` is mostly page-specific, but repeats global `box-sizing`, body typography/background, and input focus rules. These should be compared before centralization. fileciteturn126file0
-3. `visit.css` is a large composite stylesheet containing assessment, embedded calculator, embedded gram diet, exchange plan, responsive rules, and substantial print rules. Its labeled "Original style block" sections show incremental accumulation. The embedded scopes should be preserved during staged decomposition. fileciteturn127file0
-4. `quickcalc.css` is already a coherent page/domain stylesheet. Its `--qc-*` variables are useful and should be preserved. It nevertheless repeats global body/input rules and imports Google Fonts locally, both of which should be reviewed in the global CSS strategy. fileciteturn128file0
-5. Do not interpret duplication as automatic deletion. Cascade order and page-specific behavior must be mapped first.
-
-### Candidate CSS target
-
-```text
-css/
+js/
 ├── core/
-│   ├── variables.css
-│   ├── base.css
-│   └── layout.css
+│   ├── supabase.js
+│   ├── auth.js
+│   ├── access.js
+│   └── subscription.js
+├── services/
+│   ├── patients.js
+│   ├── nutrition-plans.js
+│   ├── foods.js
+│   ├── subscriptions.js
+│   ├── subscription-plans.js
+│   ├── finance.js
+│   ├── weight.js
+│   ├── feedback.js
+│   ├── products.js
+│   └── nutrition-support.js
 ├── components/
-│   ├── buttons.css
-│   ├── cards.css
-│   ├── modal.css
-│   ├── table.css
-│   └── print.css
+│   ├── navbar.js
+│   ├── modal.js
+│   ├── confirm.js
+│   ├── toast.js
+│   └── loading.js
+├── utils/
+│   ├── date.js
+│   ├── validation.js
+│   ├── security.js
+│   └── nutrition/
+│       ├── energy.js
+│       ├── macros.js
+│       ├── bmi.js
+│       ├── tpn.js
+│       ├── enteral.js
+│       └── exchanges.js
 └── pages/
-    ├── food.css
-    ├── visit.css
-    ├── visit-calculator.css
-    ├── visit-diet-plan.css
-    ├── visit-exchange-plan.css
-    └── quickcalc.css
+    └── page-specific orchestration
 ```
 
-This is a target only. No CSS has been moved yet.
+This is **not yet implemented**. It is the architectural destination derived from the audit.
 
 ---
 
-# Updated audit status
-
-## JavaScript/page modules audited
+# 7. Remaining audit work
 
 ```text
-✓ auth/access + index
-✓ dashboard
-✓ visit
-✓ visit-calculator
-✓ visit-diet-plan
-✓ visit-exchange-plan
-✓ patient
-✓ patient-profile
-✓ diet
-✓ quickcalc
-✓ food
-✓ nutrition support
-✓ nutrition-support-patient
-✓ about
-✓ article
-✓ products
-✓ finance
-✓ profile
-✓ notifications
-✓ subscription_plans
-✓ subscription_plans_index
-✓ admin
-✓ feedback
-✓ weight
-✓ theme
-✓ forgot-password (inline)
-✓ update-password (inline)
-✓ privacy (static)
-```
+✓ Main HTML/JS domains inventoried
+✓ Visit submodules audited
+✓ Subscription duplication identified
+✓ Shared UI/helper duplication identified
+✓ Main CSS domains audited
+✓ Nutrition-support patient CSS audited
 
-## CSS audited so far
-
-```text
-✓ theme.css
-✓ food.css
-✓ visit.css
-✓ quickcalc.css
-```
-
-## Still required before final architecture
-
-```text
-□ Enumerate every HTML/CSS/JS file from the repository tree
-□ Inspect remaining page modules and script-loading order
-□ Audit all HTML script-loading order
-□ Audit remaining CSS and Tailwind/generated CSS interactions
-□ Audit global window dependencies
-□ Inventory Supabase RPCs/functions used by frontend
-□ Inventory relevant RLS policies/triggers and map them to services
+□ Enumerate every HTML + JS script/style loading order
+□ Audit remaining CSS files for global/component duplication
+□ Audit Tailwind source/generated/deployment chain
+□ Audit window/global dependencies
+□ Inventory Supabase tables used by frontend
+□ Inventory RPCs
+□ Inventory database Functions
+□ Inventory Triggers
+□ Inventory RLS policies
+□ Map frontend access checks to backend enforcement
 □ Build verified dependency graph
-□ Produce KEEP / MOVE / MERGE / DELETE / REVIEW table
-□ Produce staged refactoring plan
+□ Final KEEP / MOVE / MERGE / DELETE / REVIEW table
+□ Staged refactoring plan
 ```
 
-## Current status
+## Status
 
 **AUDIT ONLY. Application source code has not been refactored.**
 
-The next step is the remaining repository inventory and CSS/backend-contract audit. Only after that should we start moving files toward `core / services / components / utils / pages`.
+The next stage is the backend contract audit: Supabase tables → RPCs → Functions → Triggers → RLS → frontend callers.
