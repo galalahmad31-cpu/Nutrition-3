@@ -292,17 +292,201 @@ index.html
 
 ---
 
+# Audit 02 — `app.html` + `js/app-dashboard.js`
+
+## 1. Page responsibility
+
+`app.html` is the authenticated application dashboard. Its primary responsibility is **navigation/presentation**, not database logic.
+
+It renders cards linking to application areas such as:
+
+- Patients (`patient.html`)
+- Food library (`food.html`)
+- Food products (`products.html`)
+- Diet library (`diet.html`)
+- Nutrition support (`nutritionsupport.html`)
+- Quick calculator (`quickcalc.html`)
+- Patient finances (`finance.html`)
+- Notifications (`notifications.html`)
+- Articles (`article.html`)
+- Profile (`profile.html`)
+- Feedback (`feedback.html`)
+- About (`about.html`)
+- Admin (`admin.html`)
+
+Some cards carry `data-feature` attributes (`product`, `article`) for feature-based UI locking. The admin card is initially hidden and is controlled by JavaScript. fileciteturn10file0
+
+## 2. Direct dependencies
+
+```text
+app.html
+│
+├── Supabase JS CDN
+├── Google Fonts
+├── Font Awesome
+├── css/tailwind.css
+├── css/app.css
+├── css/theme.css
+├── js/theme.js
+├── js/auth-access.js
+└── js/app-dashboard.js
+```
+
+The important JS relationship is:
+
+```text
+app.html
+   │
+   ├── auth-access.js
+   │       ↓
+   │   window.DietPlannerAccess
+   │
+   └── app-dashboard.js
+```
+
+`app-dashboard.js` therefore assumes `auth-access.js` has already loaded. fileciteturn10file0 fileciteturn11file0
+
+## 3. Functions in `app-dashboard.js`
+
+### `hideLoading()`
+- Responsibility: hides the dashboard loading screen and makes the document visible.
+- DOM dependency: yes.
+- Category candidate: `components/loading` or page UI helper.
+
+### `renderAccountName(user)`
+- Responsibility: retrieves `profiles.full_name` and displays the user's name, with metadata/email fallbacks.
+- Dependencies:
+  - DOM (`doctorName`)
+  - `window.DietPlannerAccess.supabaseClient`
+  - `profiles` table
+- Category candidate after refactoring: dashboard page controller + profile service/data access.
+- Important observation: this function performs a direct Supabase query from the dashboard page layer.
+
+### `renderAdminCard(isAdmin)`
+- Responsibility: shows/hides the admin navigation card.
+- DOM dependency: yes.
+- Category candidate: page UI helper.
+
+### `addLockStyles()`
+- Responsibility: dynamically injects CSS used by locked feature cards.
+- DOM dependency: yes (`document.head`).
+- Category candidate: component/style layer.
+- Observation: the component's CSS currently lives inside JavaScript rather than a dedicated CSS component file.
+
+### `lockCard(card)`
+- Responsibility: marks a feature card as locked and adds its visual lock overlay.
+- DOM dependency: yes.
+- Category candidate: reusable feature-card component/helper.
+
+### `bindLockedCard(card)`
+- Responsibility: attaches a click listener that prevents navigation and shows a locked-feature message when the card is locked.
+- DOM/event dependency: yes.
+- Category candidate: component behavior.
+- Important observation: uses `addEventListener`, not inline `onclick`.
+
+### `showLockedMessage()`
+- Responsibility: creates/reuses a fixed notification element and temporarily displays the unavailable-feature message.
+- DOM dependency: yes.
+- Category candidate: `components/toast` or notification component.
+- Important observation: this is effectively a local Toast-like implementation and should later be compared with the project's existing `toast.js` if one exists.
+
+### `renderFeatureCards(userId, isAdmin)`
+- Responsibility: evaluates feature access for dashboard cards and locks unavailable features.
+- Dependencies:
+  - `window.DietPlannerAccess.hasFeature()`
+  - DOM feature cards
+  - `addLockStyles()`
+  - `bindLockedCard()`
+  - `lockCard()`
+- Category candidate: page controller + feature-access UI component.
+- Positive observation: it caches each distinct feature check within the operation using a `Map`, avoiding repeated checks for the same feature.
+
+### `logoutUser()`
+- Responsibility: disables the logout button and delegates logout to the centralized access API.
+- Dependency: `window.DietPlannerAccess.logout()`.
+- Category candidate: page event handler.
+- Good separation observation: the dashboard does not directly call Supabase Auth for logout.
+
+### `initializeDashboard()`
+- Responsibility: initializes dashboard state, gets access status, renders account/admin/feature UI, and handles initialization errors.
+- Dependencies:
+  - `hideLoading()`
+  - `window.DietPlannerAccess.getAccessStatus()`
+  - `renderAccountName()`
+  - `renderAdminCard()`
+  - `renderFeatureCards()`
+- Category candidate: `pages/app.js` or dashboard page controller.
+- Important observation: it correctly treats `auth-access.js` as the access layer and does not perform its own routing.
+
+### `start()`
+- Responsibility: attaches the logout event and starts dashboard initialization.
+- Category candidate: page bootstrap/entry function.
+
+## 4. Public API
+
+`app-dashboard.js` exposes:
+
+```text
+window.DietPlannerDashboard
+├── init → initializeDashboard
+└── logout → logoutUser
+```
+
+This public API is small and page-specific. It should not be considered Core merely because it is attached to `window`.
+
+## 5. Dependency map
+
+```text
+app.html
+    │
+    ├── auth-access.js
+    │       └── window.DietPlannerAccess
+    │
+    └── app-dashboard.js
+            │
+            ├── getAccessStatus()
+            │       └── auth-access.js
+            │
+            ├── renderAccountName()
+            │       └── Supabase → profiles
+            │
+            ├── renderAdminCard()
+            │
+            ├── renderFeatureCards()
+            │       └── hasFeature()
+            │              └── Supabase RPC
+            │
+            ├── lockCard()
+            ├── bindLockedCard()
+            ├── showLockedMessage()
+            └── logoutUser()
+                    └── DietPlannerAccess.logout()
+```
+
+## 6. Architecture observations — NOT fixes
+
+1. `app.html` is comparatively clean as a dashboard HTML page: most behavior is moved to `app-dashboard.js` rather than embedded inline.
+2. `app-dashboard.js` is mostly page/UI logic, which fits the eventual `js/pages/` layer.
+3. `renderAccountName()` is an exception: it contains direct data access to `profiles`. In the target architecture this is a candidate for a profile service, but we will not move it yet.
+4. `showLockedMessage()` duplicates the conceptual role of a Toast component. This should be compared with any existing `toast.js` before deciding what to extract.
+5. `addLockStyles()` injects component CSS from JavaScript. The target architecture suggests moving reusable feature-card styling into CSS/components, but this is a later refactoring decision.
+6. `renderFeatureCards()` has reasonable local caching of repeated feature checks; this should be preserved unless a later service-level cache makes it unnecessary.
+7. `app-dashboard.js` correctly depends on the shared access API instead of recreating authentication/subscription logic.
+8. No application code was changed during this audit.
+
+---
+
 # Audit status
 
 - [x] `index.html` structure mapped
-- [x] Direct dependencies mapped
-- [x] Direct relationship with `auth-access.js` mapped
+- [x] `app.html` structure mapped
+- [x] `app-dashboard.js` mapped
+- [x] Direct relationships with `auth-access.js` recorded
 - [ ] Full `auth-access.js` audit as shared Core candidate
-- [ ] `app.html`
 - [ ] `visit.html`
-- [ ] `patients.html`
-- [ ] `diet.html`
-- [ ] `food.html`
+- [ ] `patients.html` / current patient page(s)
+- [ ] `diet.html` / current diet page(s)
+- [ ] `food.html` / current food page(s)
 - [ ] Remaining application pages
 - [ ] CSS architecture audit
 - [ ] Final dependency graph
