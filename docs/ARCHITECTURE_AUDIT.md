@@ -381,6 +381,214 @@ patient.html
 
 ---
 
+# Audit 05 — `diet.html` + `js/diet.js`
+
+## Page responsibility
+
+Diet-template/library management: load foods and diet templates, create/edit/duplicate/delete diet templates, edit days/meals/items, calculate nutritional totals, and render the editor.
+
+## Functions identified by responsibility
+
+| Area | Functions / logic | Target candidate |
+|---|---|---|
+| Access/auth | `getSession()` and access checks | core/auth + core/access |
+| Data loading | `loadFoods()`, `loadDiets()`, `openDiet()` | services/foods + services/diets |
+| Persistence | `saveDietTemplateViaRpc()`, `save()`, delete/duplicate logic | services/diets |
+| State | diets, foods, day, editing id, selected food | pages/diet state |
+| Calculations | `calcTotals()`, `scaleHouseholdMeasure()`, `formatHouseholdNumber()` | utils/nutrition + utils/formatting |
+| Rendering | `renderDiets()`, `renderSummary()`, `renderDay()`, `mealHTML()` | pages/diet |
+| UI | `toggleEditor()`, confirmation/modal handlers | components/modal + pages/diet |
+| Events | click/change/submit handlers | pages/diet/event layer |
+
+## Important findings
+
+1. `diet.js` mixes Page + State + Rendering + Calculations + Supabase + Access + Persistence.
+2. `save()` is orchestration-heavy: validation → totals/payload construction → RPC persistence → local state/UI updates.
+3. `saveDietTemplateViaRpc()` delegates persistence to the database RPC `save_diet_template`; the RPC must be mapped before refactoring this layer.
+4. The file uses an IIFE, which protects internal state but does not separate responsibilities.
+5. Some handlers use direct `.onclick` assignment; record for later event-layer normalization only.
+
+## Preliminary target
+
+```text
+pages/diet.js
+    ├── state
+    ├── rendering
+    └── event orchestration
+
+services/diets.js
+    ├── load diets
+    ├── save/duplicate/delete
+    └── RPC calls
+
+services/foods.js
+    └── food queries
+
+utils/nutrition.js
+    └── pure diet calculations
+```
+
+---
+
+# Audit 06 — `quickcalc.html` + `js/quickcalc.js`
+
+## Page responsibility
+
+Standalone quick clinical calculator page containing several nutrition calculations and dynamic calculator sections.
+
+## Functions identified
+
+| Function | Responsibility | Target candidate |
+|---|---|---|
+| `addIVLine()` | Add dynamic IV calculation row | pages/quickcalc |
+| `removeIVLine()` | Remove dynamic row | pages/quickcalc |
+| `toggleQuickAccordion()` | UI accordion | pages/quickcalc/component |
+| `toggleDexMode()` | Toggle dextrose mode | pages/quickcalc |
+| `calculateQuickGIR()` | GIR calculation | utils/nutrition/gir |
+| `calculateDextrosePrep()` | Dextrose preparation calculation | utils/nutrition/dextrose |
+| `calculateFormulaConcentration()` | Formula concentration calculation | utils/nutrition/formula |
+| `calculateBreastmilkFortification()` | Breastmilk fortification calculation | utils/nutrition/fortification |
+| `convertDensityToKcalPerMl()` | Density conversion | utils/nutrition |
+| `initializeQuickCalculatorAccess()` | Access initialization | core/access + page bootstrap |
+| event listeners | Calculator interaction/validation | pages/quickcalc |
+
+## Important findings
+
+1. Clinical calculations are mixed with DOM manipulation and validation.
+2. Pure equations are strong candidates for small testable utility modules.
+3. The file contains wrapper/override logic around `calculateFormulaConcentration()`; this should be mapped before removing or merging anything.
+4. Event delegation is used for several dynamic calculator controls, which is a positive pattern.
+
+## Preliminary target
+
+```text
+pages/quickcalc.js
+    ├── inputs
+    ├── rendering
+    └── orchestration
+
+utils/nutrition/
+    ├── gir.js
+    ├── dextrose.js
+    ├── formula-concentration.js
+    └── fortification.js
+```
+
+No calculation is to be rewritten during the audit; formulas will be compared and tested separately during refactoring.
+
+---
+
+# Audit 07 — `food.html` + `js/food.js`
+
+## Page responsibility
+
+Food library page with two tabs: foods and food exchanges. Supports searching/filtering, displaying nutrition values, and CRUD operations for user-created custom foods.
+
+## Functions identified
+
+| Function | Responsibility | Target candidate |
+|---|---|---|
+| `$()` | DOM lookup | utils/dom |
+| `num()` | Numeric normalization | utils/formatting |
+| `toast()` | Local toast implementation | components/toast |
+| `esc()` | HTML escaping | utils/security |
+| `loadExchanges()` | Query `food_exchanges` | services/foods/exchanges |
+| `renderExchanges()` | Filter/render exchanges | pages/food |
+| `switchTab()` | Toggle food/exchange sections | pages/food |
+| `loadFoods()` | Query `foods` | services/foods |
+| `render()` | Filter/render foods and stats | pages/food |
+| `openModal()` | Open/reset food form | components/modal + pages/food |
+| `closeModal()` | Close food form | components/modal |
+| `closeDeleteConfirm()` | Close delete modal | components/modal |
+| `openDeleteConfirm()` | Prepare delete confirmation | components/modal + pages/food |
+| `init()` | Access check + initial loading | pages/food + core/access |
+| CRUD handlers | Insert/update/delete custom foods | services/foods |
+
+## Important findings
+
+1. Food CRUD is directly implemented inside the page module; this is a clear `services/foods.js` candidate.
+2. `toast()` and `esc()` are page-local implementations of responsibilities already found elsewhere.
+3. Modal logic is duplicated again.
+4. The page uses event delegation for edit/delete rows, which is a good pattern to preserve.
+5. Access is obtained through `window.DietPlannerAccess`, which is consistent with the shared access layer.
+
+## Preliminary target
+
+```text
+services/foods.js
+    ├── list foods
+    ├── create custom food
+    ├── update custom food
+    └── delete custom food
+
+services/food-exchanges.js
+    └── list exchange values
+
+pages/food.js
+    ├── filtering
+    ├── rendering
+    ├── tabs
+    └── UI orchestration
+```
+
+---
+
+# Audit 08 — `patient-profile.html` + `js/patient-profile.js`
+
+## Page responsibility
+
+Patient profile page: load one patient, display/edit patient data, list visits, add/delete visits, and link to weight tracking.
+
+## Functions identified
+
+| Function | Responsibility | Target candidate |
+|---|---|---|
+| `setLink()` | Build patient-specific navigation links | pages/patient-profile/router |
+| `showError()` | Render page error state | pages/patient-profile |
+| `getUserForWrite()` | Resolve current write user from state | core/auth/page controller |
+| `refreshWriteAccess()` | Refresh access/subscription state | core/access + page controller |
+| `updateWriteControls()` | Enable/disable edit/add-visit controls | pages/patient-profile |
+| `canWrite()` | Local write-access decision | core/access candidate |
+| `loadPatient()` | Query patient + initialize profile | services/patients + page controller |
+| `loadVisits()` | Query/render patient visits | services/visits + page UI |
+| `escapeHtml()` | HTML escaping | utils/security |
+| `formatVisitDate()` | Date formatting | utils/date |
+| `deleteVisit()` | Confirm and delete visit | services/visits + page UI |
+| `addVisit()` | Determine next visit number and insert visit | services/visits + page controller |
+| `fillPatientData()` | Map patient data to form | pages/patient-profile |
+| `setEditing()` | Toggle patient form edit mode | pages/patient-profile |
+| `enableEditing()` | Enter edit mode after access check | pages/patient-profile |
+| `cancelEditing()` | Restore original values and exit edit mode | pages/patient-profile |
+| `savePatient()` | Validate/build payload/update patient | services/patients + page controller |
+
+## Important findings
+
+1. Patient and visit database operations are mixed directly into the page controller.
+2. `escapeHtml()` and `formatVisitDate()` duplicate utilities identified elsewhere.
+3. Access state is partly delegated to `DietPlannerAccess`, but the page also maintains its own `isAdmin` and subscription state.
+4. Visit numbering is calculated in the client before insert; this should be reviewed against database constraints/RPC behavior later, because concurrency can make client-side `max + 1` fragile.
+5. The page uses `addEventListener()` for dynamically created visit delete buttons, which is a positive pattern.
+6. SweetAlert is used directly for confirmation/feedback; during component extraction we should decide whether SweetAlert remains a shared UI dependency or is wrapped by a modal/confirm service.
+
+## Preliminary target
+
+```text
+services/patients.js
+services/visits.js
+
+pages/patient-profile.js
+    ├── profile rendering/editing
+    ├── access orchestration
+    └── navigation
+
+utils/security.js
+utils/date.js
+
+components/confirm.js  (or modal adapter)
+```
+
+---
+
 # Cross-page findings so far
 
 1. `auth-access.js` is currently a shared Core candidate but also contains index-page behavior.
@@ -394,6 +602,8 @@ patient.html
 9. Inline `onclick` handlers still exist in dynamically generated visit-module HTML; this is recorded for later review, not changed now.
 10. `patient.js` demonstrates a cleaner event pattern using `data-action` delegation, which can serve as a reference when reviewing older modules.
 11. The actual repository uses names such as `patient.html`, `diet.html`, `quickcalc.html`, and `food.html`; the earlier conceptual names `patients.html`, `diet-plan.html`, `calculator.html`, and `food-library.html` are target concepts, not current filenames.
+12. `patient-profile.js` introduces a second layer of visit management that overlaps conceptually with `visit.js`; this relationship needs to be mapped before extracting `services/visits.js`.
+13. Client-side access checks are UI guards only; final authorization must remain enforced by Supabase RLS/policies.
 
 ---
 
@@ -407,10 +617,10 @@ patient.html
 - [x] `visit-diet-plan.js`
 - [x] `visit-exchange-plan.js`
 - [x] `patient.html`
-- [ ] `diet.html`
-- [ ] `quickcalc.html`
-- [ ] `food.html`
-- [ ] `patient-profile.html`
+- [x] `diet.html`
+- [x] `quickcalc.html`
+- [x] `food.html`
+- [x] `patient-profile.html`
 - [ ] `nutritionsupport.html`
 - [ ] `nutritionsupport-patient.html`
 - [ ] `admin.html`
