@@ -1,493 +1,344 @@
 # Diet Planner — Architecture Audit
 
-> **Audit mode:** READ-ONLY analysis of the existing application.
+> **Audit mode:** READ-ONLY analysis. No application code is being refactored in this document.
 >
-> **Important:** No application code has been changed. This document is being built on the `architecture-audit` branch so the `main` branch remains untouched.
+> The audit is maintained on the `architecture-audit` branch. `main` is not being modified.
 
 ## Target Architecture
 
 ```text
-pages/
 js/
 ├── core/
 ├── services/
 ├── components/
 ├── utils/
 └── pages/
+
 css/
 ├── core/
 ├── components/
 └── pages/
-assets/
 ```
 
-The target is not being applied yet. We are first mapping the current codebase.
+The target architecture is a destination only. We are mapping the current application first.
 
 ---
 
-# Audit 01 — `index.html`
+# Audit 01 — `index.html` + `js/auth-access.js`
 
-## 1. Page responsibility
+## Page responsibility
 
-`index.html` is the authentication entry page. Its visible responsibilities are:
+Authentication entry page: login, registration, Google OAuth, auth messages, tab switching and authentication bootstrap.
 
-- Login form.
-- Registration form.
-- Google login button.
-- Switching between login/register tabs.
-- Displaying authentication messages.
-- Linking to password recovery and privacy policy.
-- Loading the shared authentication/access script.
-- Loading page-specific CSS and the shared theme script.
+## Important functions identified
 
-The HTML itself does **not** contain inline `onclick` handlers for the authentication buttons. The buttons use IDs/data attributes and are wired from JavaScript.
-
-## 2. DOM elements used by JavaScript
-
-| Element | Purpose | Used by |
+| Function | Current responsibility | Target candidate |
 |---|---|---|
-| `authMessage` | Authentication feedback | `showAuthMessage()` |
-| `loginForm` | Login form | Tab switching |
-| `loginEmail` | Login email input | `loginUser()` |
-| `loginPassword` | Login password input | `loginUser()` |
-| `loginButton` | Login action | `initializeIndex()` |
-| `googleLoginButton` | Google OAuth | `initializeIndex()` |
-| `registerForm` | Registration form | Tab switching |
-| `registerName` | Registration name | `registerUser()` |
-| `registerEmail` | Registration email | `registerUser()` |
-| `registerPassword` | Registration password | `registerUser()` |
-| `registerButton` | Registration action | `initializeIndex()` |
-| `[data-auth-tab]` | Login/register tab controls | `initializeIndex()` |
-| `.auth-form` | Forms switched by tabs | `initializeIndex()` |
+| `clearAccessCache()` | Clears access cache | core/access |
+| `getToday()` | Current date string | utils/date or subscription utility |
+| `isIndexPage()` | Detects index page | pages/index |
+| `showAuthMessage()` | Writes auth message to DOM | component/page UI |
+| `setBusy()` | Button loading state | component/UI utility |
+| `isStrongPassword()` | Password validation | utils/validation |
+| `getCurrentUser()` | Supabase current session user | core/auth |
+| `getUserRole()` | Reads role from profiles | core/access |
+| `hasActiveSubscription()` | Subscription access check + fallback query | core/subscription/access |
+| `canAddPatient()` | Patient quota RPC | core/access/service |
+| `canWrite()` | Write permission check | core/access |
+| `hasFeature()` | Feature RPC | core/access |
+| `getAccessStatus()` | Auth/access snapshot | core/access |
+| `checkUserAccess()` | Index routing based on role/subscription | pages/index/router |
+| `checkSession()` | Reads Supabase session | core/auth; compare with getCurrentUser |
+| `loginUser()` | DOM + Supabase login + routing | pages/index + auth service |
+| `registerUser()` | DOM + validation + signup + routing | pages/index + auth service |
+| `loginWithGoogle()` | OAuth + UI | pages/index + auth service |
+| `logoutUser()` | Sign out + redirect | core/auth + page routing |
+| `initializeIndex()` | Index event/bootstrap logic | pages/index |
 
-## 3. Direct dependencies
+## Preliminary finding
 
-```text
-index.html
-│
-├── Supabase JS CDN
-├── Google Fonts
-├── Font Awesome
-├── css/index.css
-├── css/theme.css
-├── js/theme.js
-└── js/auth-access.js
-```
-
-### Important architectural observation
-
-`index.html` directly loads `js/auth-access.js`, which currently contains both:
-
-- shared authentication/access functionality, and
-- page-specific UI behavior for `index.html`.
-
-This does **not** mean it should be changed now. It is an item for the later refactoring phase.
-
----
-
-# Direct JS dependency — `js/auth-access.js`
-
-This file is shared infrastructure and therefore will be audited as a separate Core candidate later. For this page audit, only its relationship with `index.html` is recorded.
-
-## Functions identified in the current file
-
-### `clearAccessCache()`
-- Responsibility: clears cached user/role access information.
-- Category candidate: `core/access`.
-- Called by: `logoutUser()`.
-- UI dependency: none.
-
-### `getToday()`
-- Responsibility: returns today's date in `YYYY-MM-DD` format.
-- Category candidate: `utils` or subscription/access utility.
-- Called by: `hasActiveSubscription()` fallback.
-
-### `isIndexPage()`
-- Responsibility: determines whether the current URL is the index page.
-- Category candidate: page/router utility rather than pure Core.
-- Called by: `initializeIndex()`.
-- Observation: this is specifically tied to `index.html`.
-
-### `showAuthMessage(message, type)`
-- Responsibility: writes an authentication message into `#authMessage`.
-- Category candidate: page/UI component utility.
-- Called by authentication and access-routing functions.
-- Observation: DOM-specific; therefore not a pure Core function.
-
-### `setBusy(button, busy, text)`
-- Responsibility: changes button disabled state/text during async actions.
-- Category candidate: UI utility/component helper.
-- DOM dependency: yes.
-
-### `isStrongPassword(password)`
-- Responsibility: validates password strength.
-- Category candidate: validation utility.
-- DOM dependency: no.
-
-### `getCurrentUser()`
-- Responsibility: reads the current Supabase session and returns the session user.
-- Category candidate: `core/auth`.
-- Database/API dependency: Supabase Auth.
-
-### `getUserRole(userId)`
-- Responsibility: reads the user's role from `profiles`, with a small in-memory cache.
-- Category candidate: `core/access`.
-- Database dependency: `profiles` table.
-
-### `hasActiveSubscription(userId)`
-- Responsibility: determines whether a user has active subscription access.
-- Current dependencies:
-  - `getUserRole()`
-  - Supabase RPC `has_active_subscription`
-  - fallback query against `subscriptions`
-  - `getToday()`
-- Category candidate: `core/subscription` / access layer.
-- Important observation: this function currently contains both primary RPC logic and a UI-oriented fallback query. This needs later architectural review, not immediate modification.
-
-### `canAddPatient(userId)`
-- Responsibility: checks patient quota through RPC `can_add_patient`.
-- Category candidate: access/subscription feature service.
-
-### `canWrite(userId)`
-- Responsibility: determines whether writing is allowed by checking active subscription.
-- Current dependency: `hasActiveSubscription()`.
-- Category candidate: `core/access`.
-
-### `hasFeature(userId, featureKey)`
-- Responsibility: checks a feature through RPC `has_feature`.
-- Category candidate: `core/access` / feature-access layer.
-
-### `getAccessStatus()`
-- Responsibility: creates a page-level access snapshot containing authentication state, user and role.
-- Current dependencies:
-  - `getCurrentUser()`
-  - `getUserRole()`
-- Category candidate: `core/access`.
-
-### `checkUserAccess(session)`
-- Responsibility: routes a successfully authenticated user from `index.html` based on role/subscription.
-- Current dependencies:
-  - `getUserRole()`
-  - `hasActiveSubscription()`
-  - `showAuthMessage()`
-  - browser navigation
-- Category candidate: page/router access flow, not pure Core.
-- Important observation: this is one of the functions where shared access logic and page-specific routing are currently mixed.
-
-### `checkSession()`
-- Responsibility: reads the current Supabase session.
-- Category candidate: `core/auth`.
-- Note: overlaps conceptually with `getCurrentUser()` and requires later review for duplication.
-
-### `loginUser()`
-- Responsibility: reads login inputs, validates presence, performs Supabase password login, updates UI state, then routes the user.
-- Current dependencies:
-  - DOM
-  - `setBusy()`
-  - `showAuthMessage()`
-  - Supabase Auth
-  - `checkUserAccess()`
-- Category candidate after refactoring: page controller + auth service/core interaction.
-- Observation: currently mixes UI handling, authentication, and routing.
-
-### `registerUser()`
-- Responsibility: reads registration inputs, validates them, performs Supabase signup, updates UI and routes when a session exists.
-- Current dependencies:
-  - DOM
-  - `isStrongPassword()`
-  - `setBusy()`
-  - `showAuthMessage()`
-  - Supabase Auth
-  - `checkUserAccess()`
-- Category candidate after refactoring: page controller + auth service/core interaction.
-- Observation: currently mixes UI, validation, authentication and routing.
-
-### `loginWithGoogle()`
-- Responsibility: starts Google OAuth and updates the button/message UI on failure.
-- Current dependencies:
-  - DOM
-  - Supabase OAuth
-  - `showAuthMessage()`
-- Category candidate after refactoring: auth service/core + page UI controller.
-
-### `logoutUser()`
-- Responsibility: clears access cache, signs out, and navigates to `index.html`.
-- Current dependencies:
-  - `clearAccessCache()`
-  - Supabase Auth
-  - browser navigation
-- Category candidate: auth core/service plus page routing.
-
-### `initializeIndex()`
-- Responsibility: initializes index-page event listeners and handles OAuth callback detection/processing.
-- Current dependencies:
-  - DOM event listeners
-  - `isIndexPage()`
-  - `loginUser()`
-  - `registerUser()`
-  - `loginWithGoogle()`
-  - `checkUserAccess()`
-  - `checkSession()`
-- Category candidate: `pages/index.js`.
-- Observation: this is clearly page-specific logic currently living inside the shared `auth-access.js` file.
-
-## Public API currently exposed
-
-`window.DietPlannerAccess` exposes:
-
-- `supabaseClient`
-- `getCurrentUser`
-- `getUserRole`
-- `hasActiveSubscription`
-- `canAddPatient`
-- `canWrite`
-- `hasFeature`
-- `getAccessStatus`
-- `logout`
-
-This global API is an important architectural dependency and will be mapped against the other pages before any refactoring.
-
----
-
-# Preliminary dependency map for `index.html`
-
-```text
-index.html
-    │
-    └── auth-access.js
-          │
-          ├── Authentication
-          │    ├── getCurrentUser()
-          │    ├── checkSession()
-          │    ├── loginUser()
-          │    ├── registerUser()
-          │    ├── loginWithGoogle()
-          │    └── logoutUser()
-          │
-          ├── Access
-          │    ├── getUserRole()
-          │    ├── hasActiveSubscription()
-          │    ├── canAddPatient()
-          │    ├── canWrite()
-          │    ├── hasFeature()
-          │    └── getAccessStatus()
-          │
-          └── Index-specific behavior
-               ├── isIndexPage()
-               ├── showAuthMessage()
-               ├── setBusy()
-               ├── checkUserAccess()
-               └── initializeIndex()
-```
-
-## First findings — NOT fixes
-
-1. `auth-access.js` is carrying multiple responsibilities: authentication, access/subscription logic, and index-page UI/event logic.
-2. `getCurrentUser()` and `checkSession()` appear conceptually overlapping and should be compared before deciding whether they are actually duplicated.
-3. `hasActiveSubscription()` combines an RPC check with a fallback direct table query; the reason and security boundary should be documented before changing it.
-4. `checkUserAccess()` contains routing behavior specific to `index.html`; this is a candidate for the future `pages/index.js` layer.
-5. `showAuthMessage()` and `setBusy()` are DOM/UI helpers and therefore are not ideal candidates for the final `core` layer.
-6. The current page uses `addEventListener()` rather than inline `onclick`, which is consistent with the separation approach we discussed.
-7. No code has been changed as part of this audit.
+`auth-access.js` currently combines Authentication + Access/Subscription + Index-page UI/routing. This is the strongest early candidate for later separation, but **no change should be made until the full dependency map is complete**.
 
 ---
 
 # Audit 02 — `app.html` + `js/app-dashboard.js`
 
-## 1. Page responsibility
+## Page responsibility
 
-`app.html` is the authenticated application dashboard. Its primary responsibility is **navigation/presentation**, not database logic.
+Authenticated dashboard/navigation page. It mainly presents navigation cards and feature locks.
 
-It renders cards linking to application areas such as:
+## Functions identified
 
-- Patients (`patient.html`)
-- Food library (`food.html`)
-- Food products (`products.html`)
-- Diet library (`diet.html`)
-- Nutrition support (`nutritionsupport.html`)
-- Quick calculator (`quickcalc.html`)
-- Patient finances (`finance.html`)
-- Notifications (`notifications.html`)
-- Articles (`article.html`)
-- Profile (`profile.html`)
-- Feedback (`feedback.html`)
-- About (`about.html`)
-- Admin (`admin.html`)
+| Function | Responsibility | Target candidate |
+|---|---|---|
+| `hideLoading()` | Hide dashboard loading state | components/loading or page UI |
+| `renderAccountName()` | Reads `profiles.full_name` and renders account name | services/profile + page UI |
+| `renderAdminCard()` | Show/hide admin card | page UI |
+| `addLockStyles()` | Inject feature-lock CSS | components/style; later CSS |
+| `lockCard()` | Apply locked state/overlay | components/feature-card |
+| `bindLockedCard()` | Lock click behavior | components/feature-card |
+| `showLockedMessage()` | Local notification for locked feature | components/toast candidate |
+| `renderFeatureCards()` | Feature checks + lock unavailable cards | page controller + feature component |
+| `logoutUser()` | Delegate logout to shared access API | page event handler |
+| `initializeDashboard()` | Dashboard bootstrap | pages/app |
+| `start()` | Attach events + start initialization | pages/app bootstrap |
 
-Some cards carry `data-feature` attributes (`product`, `article`) for feature-based UI locking. The admin card is initially hidden and is controlled by JavaScript. fileciteturn10file0
+## Positive observations
 
-## 2. Direct dependencies
+- Dashboard delegates access decisions to `window.DietPlannerAccess`.
+- `renderFeatureCards()` caches duplicate feature checks with a `Map`.
+- Event handling uses `addEventListener()` rather than inline `onclick`.
+
+## Candidate issues for later review
+
+- Direct `profiles` query inside page code.
+- CSS injected from JavaScript.
+- Local `showLockedMessage()` may duplicate a shared Toast component.
+
+---
+
+# Audit 03 — `visit.html` + visit modules
+
+## Page responsibility
+
+`visit.html` is a **container page** for several clinical/nutrition modules within one patient visit:
 
 ```text
-app.html
+Visit
+├── Assessment
+├── Energy / Macro Calculator
+├── Gram-based Diet Plan
+└── Exchange-based Diet Plan
+```
+
+It loads:
+
+```text
+js/auth-access.js
+js/visit.js
+js/visit-calculator.js
+js/visit-diet-plan.js
+js/visit-exchange-plan.js
+```
+
+The HTML uses `data-action` attributes for static actions, but there are still dynamically generated inline `onclick` handlers inside some modules. This is recorded only; **not a fix yet**.
+
+---
+
+## 03-A — `js/visit.js`
+
+### Functions identified
+
+| Function | Responsibility | Target candidate |
+|---|---|---|
+| `showError()` | Page error UI | pages/visit |
+| `refreshVisitWriteAccess()` | Access check | core/access |
+| `formatVisitDate()` | Date formatting | utils/date |
+| `loadVisit()` | Visit + patient context + header rendering | services/visits + pages/visit |
+| `toggleModule()` | Switch visit modules | pages/visit |
+| `setAssessmentSaveLabel()` | Assessment button UI | pages/visit/component |
+| `setAssessmentEditMode()` | Lock/unlock assessment fields | pages/visit |
+| `editAssessment()` | Enter assessment edit mode | pages/visit |
+| `deleteAssessment()` | Open assessment delete modal | pages/visit |
+| `closeDeleteAssessmentModal()` | Close modal | components/modal |
+| `confirmDeleteAssessment()` | Delete assessment row | services/assessment |
+| `calculateBMI()` | BMI calculation | utils/calculations |
+| `renderLabs()` | Render lab list | pages/visit/component |
+| `escapeHtml()` | HTML escaping | utils/security |
+| `addLab()` | Add local lab draft | pages/visit |
+| `deleteLab()` | Open lab delete confirmation | pages/visit |
+| `closeDeleteLabModal()` | Close lab modal | components/modal |
+| `handleDeleteModalBackdrop()` | Modal backdrop behavior | components/modal |
+| `confirmDeleteLab()` | Remove lab from local state | pages/visit |
+| `handleLabModalKeydown()` | Escape key handling | components/modal |
+| `setAssessmentForm()` | Map DB assessment into form | pages/visit |
+| `loadAssessment()` | Read assessment row | services/assessment |
+| `saveAssessment()` | Access check + write assessment | services/assessment + page controller |
+| `backToPatient()` | Navigate to patient profile | pages/visit/router |
+| `resolveAction()` | Resolve action path to window function | utility/action dispatcher |
+| `executeActivePrint()` | Delegate print to active module | pages/visit |
+| `bindPrintLifecycle()` | afterprint cleanup | pages/visit |
+| `bindStaticActions()` | Delegated click/input/keyup dispatcher | pages/visit/event layer |
+
+### Important architecture finding
+
+`visit.js` contains page infrastructure **and a complete Assessment feature**. It is therefore a major later refactoring candidate.
+
+---
+
+## 03-B — `js/visit-calculator.js`
+
+| Function | Responsibility | Target candidate |
+|---|---|---|
+| `calcShowToast()` | Calculator-specific toast | components/toast |
+| `selectEnergyEquation()` | Select Mifflin/Schofield + update UI | pages/visit/calculator |
+| `updateSchofieldGroupHint()` | Update age-group UI | pages/visit/calculator |
+| `calculateSelectedEnergy()` | Calculate BMR/TDEE | utils/calculations + page UI |
+| `schofieldBMR()` | Schofield equation | utils/calculations |
+| `calculateTDEE()` | Compatibility wrapper | legacy compatibility |
+| `calculateSchofield()` | Compatibility wrapper | legacy compatibility |
+| `updateTargetAndMacros()` | Target calories + macro calculation/rendering | utils/calculations + page UI |
+| `loadCalculatorPatientData()` | Auth + patient/visit/weight/plan queries + form population | services + page controller |
+
+### Important findings
+
+- Pure clinical calculations are mixed with DOM and Supabase code.
+- `schofieldBMR()` is a strong pure-function candidate for `utils/calculations.js`.
+- `calcShowToast()` duplicates notification logic.
+- `loadCalculatorPatientData()` is an orchestration-heavy function and should later be split.
+- Compatibility aliases should be preserved until all callers are mapped.
+
+---
+
+## 03-C — `js/visit-diet-plan.js`
+
+This module is isolated in an IIFE, which is a positive containment mechanism for internal state.
+
+| Function | Responsibility | Target candidate |
+|---|---|---|
+| `num()` | Numeric normalization | utils |
+| `cloneDays()` | Deep clone day state | utils |
+| `showToast()` | Diet-module notification | components/toast |
+| `openConfirmModal()` | Open confirmation UI | components/modal |
+| `closeConfirmModal()` | Close confirmation UI | components/modal |
+| `scaleHouseholdMeasure()` | Scale household measure by grams | utils/nutrition |
+| `formatHouseholdNumber()` | Format household number | utils/formatting |
+| `currentUser()` | Current authenticated user | core/auth |
+| `canWriteVisitData()` | Write access check | core/access |
+| `loadPatient()` | Resolve patient/visit context | services/patients/visits |
+| `loadFoods()` | Load foods | services/foods |
+| `loadPlan()` | Load plan/days/meals/items | services/diets |
+| `updateTargets()` | Render targets | page UI |
+| `isDayEditing()` | Read day edit state | page state |
+| `setDayEditMode()` | Lock/unlock day fields | page state |
+| `editDay()` | Enter day edit mode | page state |
+| `saveDay()` | Persist one day | services/diets + page state |
+| `addNewDay()` | Add local day | page state |
+| `toggleDayCollapse()` | Collapse/expand day | page UI |
+| `updateDayTitle()` | Update title | page state |
+| `updateDayNotes()` | Update notes | page state |
+| `updateMealName()` | Update meal name | page state |
+| `moveMeal()` | Reorder meals | page state |
+| `deleteDay()` | Delete day + persistence | services/diets + page UI |
+| `openAddMealModal()` | Open meal modal | components/modal |
+| `closeAddMealModal()` | Close meal modal | components/modal |
+| `confirmCreateMeal()` | Create local meal | page state |
+| `deleteMeal()` | Delete meal | page state/components |
+| `openFoodModal()` | Open food selector | component/page UI |
+
+### Important findings
+
+- IIFE isolation is useful.
+- State, rendering, calculations, modal handling and Supabase access are still mixed.
+- This is a large feature module and should later become page controller + service + components.
+
+---
+
+## 03-D — `js/visit-exchange-plan.js`
+
+This module is also isolated in an IIFE.
+
+| Function/logic | Responsibility | Target candidate |
+|---|---|---|
+| `currentExchangeUser()` | Current authenticated user | core/auth |
+| `canWriteExchangePlan()` | Write access | core/access |
+| `ctx()` | Visit context | page context |
+| `status()` | Render status | page UI |
+| `vals()` | Resolve exchange nutritional values | utils/nutrition |
+| `manual()` | Calculate manual exchange totals | utils/nutrition |
+| `calc()` | Derive exchange counts from targets | utils/nutrition |
+| `total()` | Calculate exchange totals | utils/nutrition |
+| `setButtons()` | Button state | page UI |
+| `updateDisplay()` | Update exchange table/totals | page UI |
+| `render()` | Render exchange table/targets | page UI |
+| `findPlans()` | Query nutrition plans | services/diets |
+| `loadExchangeValues()` | Query exchange values | services/diets |
+| `ensureExchangePlan()` | Auth/access + create/find plan | services/diets + page controller |
+| `loadDays()` | Load plan days/meals/items | services/diets |
+| `clone()` | Deep clone state | utils |
+| `dayEditing()` | Read day edit state | page state |
+| `renderDays()` | Render exchange days | page UI |
+
+### Important findings
+
+- Pure exchange calculations are mixed into the UI module.
+- Database queries are mixed into rendering/state logic.
+- IIFE isolation helps prevent global collisions but does not separate responsibilities.
+
+---
+
+# Visit-page dependency map
+
+```text
+visit.html
 │
-├── Supabase JS CDN
-├── Google Fonts
-├── Font Awesome
-├── css/tailwind.css
-├── css/app.css
-├── css/theme.css
-├── js/theme.js
-├── js/auth-access.js
-└── js/app-dashboard.js
+├── auth-access.js
+│
+├── visit.js
+│    ├── patient_visits
+│    ├── assessment
+│    ├── access API
+│    ├── Assessment state/UI
+│    ├── module navigation
+│    └── action dispatcher
+│
+├── visit-calculator.js
+│    ├── patients
+│    ├── weight_logs
+│    ├── nutrition_plans
+│    └── energy/macro calculations
+│
+├── visit-diet-plan.js
+│    ├── foods
+│    ├── nutrition_plans
+│    ├── plan_days
+│    ├── plan_meals
+│    ├── plan_items
+│    └── gram-plan state/rendering
+│
+└── visit-exchange-plan.js
+     ├── nutrition_plans
+     ├── exchange_values
+     ├── plan_days/meals/items
+     └── exchange calculations/rendering
 ```
 
-The important JS relationship is:
+## Strong preliminary observation
 
-```text
-app.html
-   │
-   ├── auth-access.js
-   │       ↓
-   │   window.DietPlannerAccess
-   │
-   └── app-dashboard.js
-```
+The visit feature is the clearest example so far of why we should **not** simply make one JS file per HTML page and put everything inside it. One HTML page contains four substantial domains. The eventual page controller should coordinate them without owning every database query and calculation.
 
-`app-dashboard.js` therefore assumes `auth-access.js` has already loaded. fileciteturn10file0 fileciteturn11file0
+---
 
-## 3. Functions in `app-dashboard.js`
+# Cross-page findings so far
 
-### `hideLoading()`
-- Responsibility: hides the dashboard loading screen and makes the document visible.
-- DOM dependency: yes.
-- Category candidate: `components/loading` or page UI helper.
-
-### `renderAccountName(user)`
-- Responsibility: retrieves `profiles.full_name` and displays the user's name, with metadata/email fallbacks.
-- Dependencies:
-  - DOM (`doctorName`)
-  - `window.DietPlannerAccess.supabaseClient`
-  - `profiles` table
-- Category candidate after refactoring: dashboard page controller + profile service/data access.
-- Important observation: this function performs a direct Supabase query from the dashboard page layer.
-
-### `renderAdminCard(isAdmin)`
-- Responsibility: shows/hides the admin navigation card.
-- DOM dependency: yes.
-- Category candidate: page UI helper.
-
-### `addLockStyles()`
-- Responsibility: dynamically injects CSS used by locked feature cards.
-- DOM dependency: yes (`document.head`).
-- Category candidate: component/style layer.
-- Observation: the component's CSS currently lives inside JavaScript rather than a dedicated CSS component file.
-
-### `lockCard(card)`
-- Responsibility: marks a feature card as locked and adds its visual lock overlay.
-- DOM dependency: yes.
-- Category candidate: reusable feature-card component/helper.
-
-### `bindLockedCard(card)`
-- Responsibility: attaches a click listener that prevents navigation and shows a locked-feature message when the card is locked.
-- DOM/event dependency: yes.
-- Category candidate: component behavior.
-- Important observation: uses `addEventListener`, not inline `onclick`.
-
-### `showLockedMessage()`
-- Responsibility: creates/reuses a fixed notification element and temporarily displays the unavailable-feature message.
-- DOM dependency: yes.
-- Category candidate: `components/toast` or notification component.
-- Important observation: this is effectively a local Toast-like implementation and should later be compared with the project's existing `toast.js` if one exists.
-
-### `renderFeatureCards(userId, isAdmin)`
-- Responsibility: evaluates feature access for dashboard cards and locks unavailable features.
-- Dependencies:
-  - `window.DietPlannerAccess.hasFeature()`
-  - DOM feature cards
-  - `addLockStyles()`
-  - `bindLockedCard()`
-  - `lockCard()`
-- Category candidate: page controller + feature-access UI component.
-- Positive observation: it caches each distinct feature check within the operation using a `Map`, avoiding repeated checks for the same feature.
-
-### `logoutUser()`
-- Responsibility: disables the logout button and delegates logout to the centralized access API.
-- Dependency: `window.DietPlannerAccess.logout()`.
-- Category candidate: page event handler.
-- Good separation observation: the dashboard does not directly call Supabase Auth for logout.
-
-### `initializeDashboard()`
-- Responsibility: initializes dashboard state, gets access status, renders account/admin/feature UI, and handles initialization errors.
-- Dependencies:
-  - `hideLoading()`
-  - `window.DietPlannerAccess.getAccessStatus()`
-  - `renderAccountName()`
-  - `renderAdminCard()`
-  - `renderFeatureCards()`
-- Category candidate: `pages/app.js` or dashboard page controller.
-- Important observation: it correctly treats `auth-access.js` as the access layer and does not perform its own routing.
-
-### `start()`
-- Responsibility: attaches the logout event and starts dashboard initialization.
-- Category candidate: page bootstrap/entry function.
-
-## 4. Public API
-
-`app-dashboard.js` exposes:
-
-```text
-window.DietPlannerDashboard
-├── init → initializeDashboard
-└── logout → logoutUser
-```
-
-This public API is small and page-specific. It should not be considered Core merely because it is attached to `window`.
-
-## 5. Dependency map
-
-```text
-app.html
-    │
-    ├── auth-access.js
-    │       └── window.DietPlannerAccess
-    │
-    └── app-dashboard.js
-            │
-            ├── getAccessStatus()
-            │       └── auth-access.js
-            │
-            ├── renderAccountName()
-            │       └── Supabase → profiles
-            │
-            ├── renderAdminCard()
-            │
-            ├── renderFeatureCards()
-            │       └── hasFeature()
-            │              └── Supabase RPC
-            │
-            ├── lockCard()
-            ├── bindLockedCard()
-            ├── showLockedMessage()
-            └── logoutUser()
-                    └── DietPlannerAccess.logout()
-```
-
-## 6. Architecture observations — NOT fixes
-
-1. `app.html` is comparatively clean as a dashboard HTML page: most behavior is moved to `app-dashboard.js` rather than embedded inline.
-2. `app-dashboard.js` is mostly page/UI logic, which fits the eventual `js/pages/` layer.
-3. `renderAccountName()` is an exception: it contains direct data access to `profiles`. In the target architecture this is a candidate for a profile service, but we will not move it yet.
-4. `showLockedMessage()` duplicates the conceptual role of a Toast component. This should be compared with any existing `toast.js` before deciding what to extract.
-5. `addLockStyles()` injects component CSS from JavaScript. The target architecture suggests moving reusable feature-card styling into CSS/components, but this is a later refactoring decision.
-6. `renderFeatureCards()` has reasonable local caching of repeated feature checks; this should be preserved unless a later service-level cache makes it unnecessary.
-7. `app-dashboard.js` correctly depends on the shared access API instead of recreating authentication/subscription logic.
-8. No application code was changed during this audit.
+1. `auth-access.js` is currently a shared Core candidate but also contains index-page behavior.
+2. Several modules directly query Supabase instead of using dedicated services.
+3. Toast/notification logic is duplicated or locally implemented.
+4. Modal logic is repeated across modules.
+5. Pure calculations are mixed with DOM and database code.
+6. IIFEs isolate state but do not by themselves create a clean architecture.
+7. `visit.js` contains both page infrastructure and a full Assessment domain.
+8. `schofieldBMR()` is a good example of a pure function surrounded by UI/data orchestration.
+9. Inline `onclick` handlers still exist in dynamically generated visit-module HTML; this is recorded for later review, not changed now.
+10. No application behavior has been changed by this audit.
 
 ---
 
 # Audit status
 
-- [x] `index.html` structure mapped
-- [x] `app.html` structure mapped
-- [x] `app-dashboard.js` mapped
-- [x] Direct relationships with `auth-access.js` recorded
-- [ ] Full `auth-access.js` audit as shared Core candidate
-- [ ] `visit.html`
-- [ ] `patients.html` / current patient page(s)
-- [ ] `diet.html` / current diet page(s)
-- [ ] `food.html` / current food page(s)
-- [ ] Remaining application pages
+- [x] `index.html`
+- [x] `app.html`
+- [x] `visit.html`
+- [x] `visit.js`
+- [x] `visit-calculator.js`
+- [x] `visit-diet-plan.js`
+- [x] `visit-exchange-plan.js`
+- [ ] `patients.html`
+- [ ] `diet-plan.html`
+- [ ] `calculator.html`
+- [ ] `food-library.html`
+- [ ] Remaining application pages actually present in repository
+- [ ] Full standalone `auth-access.js` audit
 - [ ] CSS architecture audit
 - [ ] Final dependency graph
 - [ ] Final target mapping
