@@ -27,9 +27,9 @@ The target is a destination, not a reason to split files blindly. A function mov
 
 ---
 
-# Audits 01–20
+# Audits 01–26
 
-The audits already recorded cover `index/auth-access`, `app-dashboard`, the complete visit feature and its modules, patient and patient-profile, diet, quick calculator, food, nutrition-support, nutrition-support-patient, about, article, products, finance, profile, notifications, subscription pages, and admin.
+The audits already recorded cover `index/auth-access`, `app-dashboard`, the complete visit feature and its modules, patient and patient-profile, diet, quick calculator, food, nutrition-support, nutrition-support-patient, about, article, products, finance, profile, notifications, subscription pages, admin, feedback, weight, and theme.
 
 The main findings from those audits are:
 
@@ -279,33 +279,119 @@ The strongest architectural opportunity is to share the **nutrition plan persist
 
 ---
 
-# New dependency observations from visit modules
+# Audit 27 — `forgot-password.html`
+
+## Responsibilities
 
 ```text
-visit.html
-   ├── visit.js
-   ├── visit-calculator.js
-   ├── visit-diet-plan.js
-   └── visit-exchange-plan.js
-          │
-          ├── DietPlannerAccess
-          ├── patients
-          ├── patient_visits
-          ├── nutrition_plans
-          ├── plan_days
-          ├── plan_meals
-          ├── plan_items
-          ├── foods
-          └── exchange_values
+Password recovery
+├── Supabase client creation
+├── email input/validation
+├── resetPasswordForEmail()
+├── status message UI
+└── form event handling
 ```
 
-This is a significant domain boundary. Instead of creating separate database implementations in every module, the eventual architecture should consider a shared `nutrition-plans` service/repository while keeping calculator/diet/exchange rules in their own domain modules.
+## Findings
+
+- This page is self-contained but creates a second Supabase client directly inside inline HTML JavaScript instead of using the application's shared access/core layer.
+- The production recovery redirect is hard-coded to the Vercel `update-password.html` URL. This is a deployment concern and should eventually live in a shared configuration/environment layer rather than page code.
+- `showMessage()` is a page-local notification helper, another candidate for comparison with shared toast/status components.
+- The inline script is a clear exception to the desired `pages/*.js` structure.
+- This page does not need the full authenticated `DietPlannerAccess` layer because recovery occurs before normal application authentication, but Supabase client creation should still have one well-defined source if practical.
+
+### Candidate target
+
+```text
+pages/forgot-password.js
+core/supabase.js
+utils/config.js
+components/status-message.js
+```
+
+Do not force this page through the normal subscription/access guard.
+
+---
+
+# Audit 28 — `update-password.html`
+
+## Responsibilities
+
+```text
+Password update
+├── Supabase client creation
+├── recovery-session detection
+├── PASSWORD_RECOVERY listener
+├── password strength validation
+├── confirmation validation
+├── updateUser({ password })
+└── status UI
+```
+
+## Findings
+
+- Like `forgot-password.html`, it creates its own Supabase client and keeps all logic inline.
+- `isStrongPassword()` is pure validation and can eventually move to `utils/validation.js` if reused elsewhere.
+- `updatePasswordStrength()` is UI-specific and should remain near the page/component unless reused.
+- `prepareRecoverySession()` and the `PASSWORD_RECOVERY` listener form a small authentication/recovery contract that should be preserved exactly during extraction.
+- `saving`/`recoveryReady` are local page state and do not need global state.
+- The page uses `window.location.replace('index.html')` for the login return; this is page navigation rather than business logic.
+
+### Candidate target
+
+```text
+pages/update-password.js
+core/supabase.js
+core/auth.js or services/password-recovery.js
+utils/validation.js
+components/status-message.js
+```
+
+---
+
+# Audit 29 — `privacy.html`
+
+## Responsibility
+
+`privacy.html` is a static content page with theme support and navigation back to the application.
+
+```text
+Static content
+├── privacy policy markup
+├── theme.js
+├── theme.css
+├── privacy.css
+└── navigation
+```
+
+## Findings
+
+- No application business logic is present.
+- It uses the generated Tailwind CSS plus page CSS plus theme CSS, so CSS precedence should be checked during the CSS audit.
+- It does not need a page JavaScript module.
+- Keep this page static; do not introduce architectural machinery without a concrete need.
+
+---
+
+# Cross-cutting finding — authentication/recovery pages
+
+There are now two distinct authentication layers that must not be confused:
+
+```text
+Normal application
+index → auth/access → subscription → app
+
+Password recovery
+forgot-password → Supabase recovery email → update-password
+```
+
+The final architecture should keep the recovery flow independent from subscription/access checks while still avoiding unnecessary duplicate Supabase client construction.
 
 ---
 
 # Updated audit status
 
-## JavaScript modules audited
+## JavaScript/page modules audited
 
 ```text
 ✓ auth/access + index
@@ -333,13 +419,16 @@ This is a significant domain boundary. Instead of creating separate database imp
 ✓ feedback
 ✓ weight
 ✓ theme
+✓ forgot-password (inline)
+✓ update-password (inline)
+✓ privacy (static)
 ```
 
 ## Still required before the final architecture
 
 ```text
 □ Enumerate every HTML/CSS/JS file from the repository tree
-□ Inspect remaining page modules such as authentication/password pages
+□ Inspect any remaining page modules and script-loading order
 □ Audit every HTML script-loading order
 □ Audit all CSS and Tailwind/theme/page-style interactions
 □ Audit global window dependencies
