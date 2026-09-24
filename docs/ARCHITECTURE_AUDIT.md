@@ -309,6 +309,78 @@ The visit feature is the clearest example so far of why we should **not** simply
 
 ---
 
+# Audit 04 — `patient.html` + `js/patient.js`
+
+## Page responsibility
+
+Patient directory page: list the authenticated user's patient records, search, open a patient profile, create a patient, and delete a patient.
+
+`patient.html` loads the shared `auth-access.js`, the page-specific `patient.js`, and theme/CSS resources. The page uses `data-action` attributes for most UI actions and does not use inline `onclick` in the static HTML.
+
+## Functions identified
+
+| Function | Responsibility | Target candidate |
+|---|---|---|
+| `$()` | DOM lookup helper | utils/dom or page helper |
+| `escapeHtml()` | HTML escaping | utils/security |
+| `showStatus()` | Page status/notification UI | components/toast/status |
+| `showLoadError()` | Render patient-load error | pages/patient |
+| `refreshAccess()` | Reads access status, active subscription and patient quota | core/access; page controller |
+| `updateWriteControls()` | Enable/disable add-patient UI and access message | pages/patient |
+| `loadPatients()` | Supabase query for patients | services/patients |
+| `renderPatients()` | Filter and render patient list | pages/patient |
+| `openPatient()` | Navigate to patient profile | pages/patient/router |
+| `openAddPatientModal()` | Open add-patient modal + access guard | page controller + components/modal |
+| `closeAddPatientModal()` | Close/reset add-patient modal | components/modal |
+| `createPatient()` | Validate input + insert patient + navigate | services/patients + page controller |
+| `askDelete()` | Prepare delete confirmation | page controller |
+| `closeDeleteModal()` | Close delete modal | components/modal |
+| `deletePatient()` | Delete patient row + update local state | services/patients + page controller |
+| `handleClick()` | Delegated action dispatcher | pages/patient/event layer |
+| `bindEvents()` | Bind page events | pages/patient |
+| `init()` | Page bootstrap | pages/patient |
+
+## Important architecture findings
+
+1. `patient.js` is already using an IIFE, so its state is contained rather than exported globally.
+2. `loadPatients()`, `createPatient()`, and `deletePatient()` directly access Supabase. These are strong `services/patients.js` candidates.
+3. `refreshAccess()` calls several shared access APIs and also updates page state. The access calls belong in Core; the orchestration can remain in the page controller.
+4. `showStatus()` is a page-local notification system and should later be compared with the existing Toast implementations before extracting a shared component.
+5. `escapeHtml()` is duplicated conceptually with the same helper already identified in `visit.js`; this is a strong utility-extraction candidate.
+6. Modal open/close logic is repeated and is a candidate for `components/modal.js`, but behavior should not be changed during audit.
+7. The page uses delegated `data-action` handling, which is architecturally cleaner than adding inline `onclick` handlers.
+
+## Patient dependency map
+
+```text
+patient.html
+│
+├── auth-access.js
+│    └── authentication/access/subscription APIs
+│
+└── patient.js
+     ├── refreshAccess()
+     │    └── DietPlannerAccess
+     │
+     ├── loadPatients()
+     │    └── Supabase → patients
+     │
+     ├── renderPatients()
+     │    └── DOM/state
+     │
+     ├── createPatient()
+     │    └── Supabase → patients
+     │
+     └── deletePatient()
+          └── Supabase → patients
+```
+
+## Preliminary assessment
+
+`patient.js` is **not yet a clean Service/Page separation**, but it is relatively understandable: the main architectural problem is that database operations, access orchestration, UI rendering, and modal behavior live in the same module. It is a good candidate for incremental extraction rather than a full rewrite.
+
+---
+
 # Cross-page findings so far
 
 1. `auth-access.js` is currently a shared Core candidate but also contains index-page behavior.
@@ -320,7 +392,8 @@ The visit feature is the clearest example so far of why we should **not** simply
 7. `visit.js` contains both page infrastructure and a full Assessment domain.
 8. `schofieldBMR()` is a good example of a pure function surrounded by UI/data orchestration.
 9. Inline `onclick` handlers still exist in dynamically generated visit-module HTML; this is recorded for later review, not changed now.
-10. No application behavior has been changed by this audit.
+10. `patient.js` demonstrates a cleaner event pattern using `data-action` delegation, which can serve as a reference when reviewing older modules.
+11. The actual repository uses names such as `patient.html`, `diet.html`, `quickcalc.html`, and `food.html`; the earlier conceptual names `patients.html`, `diet-plan.html`, `calculator.html`, and `food-library.html` are target concepts, not current filenames.
 
 ---
 
@@ -333,10 +406,27 @@ The visit feature is the clearest example so far of why we should **not** simply
 - [x] `visit-calculator.js`
 - [x] `visit-diet-plan.js`
 - [x] `visit-exchange-plan.js`
-- [ ] `patients.html`
-- [ ] `diet-plan.html`
-- [ ] `calculator.html`
-- [ ] `food-library.html`
+- [x] `patient.html`
+- [ ] `diet.html`
+- [ ] `quickcalc.html`
+- [ ] `food.html`
+- [ ] `patient-profile.html`
+- [ ] `nutritionsupport.html`
+- [ ] `nutritionsupport-patient.html`
+- [ ] `admin.html`
+- [ ] `article.html`
+- [ ] `feedback.html`
+- [ ] `finance.html`
+- [ ] `products.html`
+- [ ] `profile.html`
+- [ ] `notifications.html`
+- [ ] `subscription_plans.html`
+- [ ] `subscription_plans_index.html`
+- [ ] `about.html`
+- [ ] `forgot-password.html`
+- [ ] `update-password.html`
+- [ ] `privacy.html`
+- [ ] `weight.html`
 - [ ] Remaining application pages actually present in repository
 - [ ] Full standalone `auth-access.js` audit
 - [ ] CSS architecture audit
