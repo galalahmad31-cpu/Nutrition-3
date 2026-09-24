@@ -1,7 +1,6 @@
 # Diet Planner — Architecture Audit
 
 > **Audit mode:** READ-ONLY analysis. No application source code is being refactored in this document.
->
 > The audit is maintained on the `architecture-audit` branch. `main` is not being modified.
 
 ## Purpose
@@ -149,170 +148,162 @@ The remaining issue is not JavaScript responsibility but CSS integration: the CS
 
 ---
 
-# Updated cross-module duplication map
+# Audit 24 — `js/visit-calculator.js`
 
-## Access
+## Responsibilities
 
 ```text
-patient.js
-patient-profile.js
-nutrition support
-finance.js
-weight.js
-other feature pages
-        ↓
-page-level access wrappers
-        ↓
-DietPlannerAccess
+Visit calculator
+├── patient/visit context
+├── energy equations
+│   ├── Mifflin-St Jeor
+│   └── Schofield
+├── TDEE / target calories
+├── macro calculation
+├── patient/weight/plan loading
+├── plan persistence
+├── UI updates
+├── toast
+└── event handling
 ```
 
-Future direction:
+## Findings
+
+- The module mixes clinical calculations with DOM operations and Supabase access.
+- `schofieldBMR()` is a pure clinical calculation and is a strong candidate for `utils/nutrition/energy.js` after all consumers are mapped.
+- `updateTargetAndMacros()` mixes calculation and DOM rendering; the pure calculation portion should be separable without changing the page behavior.
+- The module directly accesses `patients`, `weight_logs`, and `nutrition_plans`, creating overlap with other visit/diet modules.
+- It consumes `window.visitContext` when embedded in `visit.html`, which is a useful existing boundary. Preserve that contract during refactoring.
+- It contains a local `calcShowToast()` implementation; compare with shared toast infrastructure.
+- Compatibility aliases such as `calculateTDEE()` and `calculateSchofield()` indicate existing callers/UI references; preserve them temporarily if functions are extracted.
+
+### Candidate target
 
 ```text
-core/auth.js
-core/access.js
-core/subscription.js
-        ↓
-page controllers
-```
-
-## Patients
-
-```text
-patient.js
-patient-profile.js
-nutritionsupport.js
-admin.js
-weight.js
-```
-
-Likely domain boundary:
-
-```text
+pages/visit-calculator.js
+services/nutrition-plans.js
 services/patients.js
-```
-
-## Subscriptions
-
-```text
-auth-access.js
-profile.js
-subscription_plans.js
-subscription_plans_index.js
-admin.js
-finance.js
-```
-
-Likely boundaries:
-
-```text
-core/subscription.js
-services/subscriptions.js
-services/subscription-plans.js
-```
-
-## UI infrastructure
-
-Repeated implementations exist for:
-
-```text
-Toast
-Modal
-Confirm
-Loading/status
-Locked feature message
-```
-
-Likely shared components:
-
-```text
+utils/nutrition/energy.js
+utils/nutrition/macros.js
 components/toast.js
-components/modal.js
+```
+
+The exact split must wait until all visit modules and their shared contracts are mapped.
+
+---
+
+# Audit 25 — `js/visit-diet-plan.js`
+
+## Responsibilities
+
+```text
+Gram-based diet plan
+├── visit/patient context
+├── food library loading
+├── nutrition plan loading
+├── plan/day/meal/item state
+├── day editing
+├── meal editing
+├── food selection
+├── gram calculations
+├── household-measure scaling
+├── plan persistence
+├── confirmations/toast
+└── rendering/events
+```
+
+## Findings
+
+- The IIFE protects module state, which is useful, but the module still combines domain data access, state, calculations, UI, and persistence.
+- `loadFoods()` directly accesses `foods`; candidate for `services/foods.js`.
+- `loadPlan()` directly orchestrates `nutrition_plans`, `plan_days`, `plan_meals`, and `plan_items`; candidate for a diet-plan service/repository boundary.
+- `scaleHouseholdMeasure()` and `formatHouseholdNumber()` are pure enough to consider for `utils/nutrition/measurements.js` after comparison with other modules.
+- `showToast()` and confirmation logic duplicate shared UI infrastructure.
+- `canWriteVisitData()` delegates to `DietPlannerAccess`, which is preferable to duplicating the subscription policy itself. Keep this delegation pattern while extracting.
+- The module creates temporary local IDs for unsaved days/meals. This behavior must be preserved during any persistence refactor.
+
+### Candidate target
+
+```text
+pages/visit-diet-plan.js
+services/nutrition-plans.js
+services/foods.js
+utils/nutrition/measurements.js
+components/toast.js
 components/confirm.js
-components/loading.js
 ```
-
-The final component API must be based on actual behavior, not just names.
-
-## Utilities
-
-Repeated helpers include:
-
-```text
-escapeHtml / esc
-formatDate / formatISODate / todayISO
-num
-DOM lookup
-```
-
-Potential utilities:
-
-```text
-utils/date.js
-utils/security.js
-utils/formatting.js
-utils/dom.js
-utils/nutrition/*
-```
-
-Security-sensitive sanitization remains a separate review item.
 
 ---
 
-# Preliminary dependency map
+# Audit 26 — `js/visit-exchange-plan.js`
+
+## Responsibilities
 
 ```text
-                         ┌───────────────┐
-                         │ Supabase/RLS  │
-                         └───────┬───────┘
-                                 │
-                         ┌───────▼───────┐
-                         │ Core          │
-                         │ auth/access/  │
-                         │ subscription  │
-                         └───────┬───────┘
-                                 │
-          ┌──────────────────────┼──────────────────────┐
-          │                      │                      │
-   ┌──────▼──────┐       ┌───────▼──────┐       ┌──────▼──────┐
-   │ Services    │       │ Components   │       │ Utils       │
-   │ patients    │       │ toast        │       │ date        │
-   │ visits      │       │ modal        │       │ validation  │
-   │ diets       │       │ confirm      │       │ security    │
-   │ foods       │       │ loading      │       │ nutrition   │
-   │ subscriptions│      └───────┬──────┘       └──────┬──────┘
-   └──────┬──────┘               │                     │
-          └──────────────────────┼─────────────────────┘
-                                 │
-                         ┌───────▼───────┐
-                         │ Page modules  │
-                         │ visit/patient │
-                         │ diet/food/... │
-                         └───────────────┘
+Exchange-based diet plan
+├── exchange reference definitions
+├── target macro state
+├── exchange calculations
+├── nutrition-plan creation/loading
+├── exchange_values persistence
+├── day/meal/item loading
+├── day editing
+├── rendering
+├── access checks
+├── toast/status
+└── event delegation
 ```
 
-This is a **target dependency direction**, not a claim that the current code already follows it.
+## Findings
+
+- The exchange reference data (`G`) and calculation functions (`manual`, `calc`, `total`) are domain logic and should not be moved merely because they are not UI code. They are candidates for a dedicated nutrition/exchange utility or service after validation.
+- `findPlans()` and `ensureExchangePlan()` directly access `nutrition_plans`; this overlaps with the gram-based diet module and visit calculator.
+- `loadExchangeValues()` directly accesses `exchange_values`.
+- `loadDays()` directly accesses `plan_days`, `plan_meals`, and `plan_items`, overlapping with `visit-diet-plan.js`.
+- `canWriteExchangePlan()` correctly delegates the write decision to `DietPlannerAccess`; preserve this boundary.
+- The module uses `data-xaction` event delegation, which is a good existing pattern.
+- It has its own status/toast handling and repeated formatting helpers.
+
+### Candidate target
+
+```text
+pages/visit-exchange-plan.js
+services/nutrition-plans.js
+services/exchange-plans.js
+utils/nutrition/exchanges.js
+components/toast.js
+components/confirm.js
+```
+
+The strongest architectural opportunity is to share the **nutrition plan persistence layer** between gram-based and exchange-based plans while keeping their clinical calculation/domain rules separate.
 
 ---
 
-# Refactoring rules
+# New dependency observations from visit modules
 
-1. No big-bang rewrite.
-2. Audit first, refactor second.
-3. One responsibility at a time.
-4. Preserve database/RPC contracts.
-5. Preserve public function names temporarily when callers still depend on them.
-6. Do not duplicate access logic while extracting it; establish one source of truth.
-7. Do not move clinical equations merely because they are mathematical; domain ownership matters.
-8. Do not create components that are used only once unless they provide a real boundary.
-9. Keep RLS/database authorization authoritative; frontend checks are UX/access guidance, not security.
-10. After every extraction, test the affected page before continuing.
-11. Keep commits small and reversible.
-12. Do not modify `main` during the architecture refactor until the branch has been validated.
+```text
+visit.html
+   ├── visit.js
+   ├── visit-calculator.js
+   ├── visit-diet-plan.js
+   └── visit-exchange-plan.js
+          │
+          ├── DietPlannerAccess
+          ├── patients
+          ├── patient_visits
+          ├── nutrition_plans
+          ├── plan_days
+          ├── plan_meals
+          ├── plan_items
+          ├── foods
+          └── exchange_values
+```
+
+This is a significant domain boundary. Instead of creating separate database implementations in every module, the eventual architecture should consider a shared `nutrition-plans` service/repository while keeping calculator/diet/exchange rules in their own domain modules.
 
 ---
 
-# Audit status
+# Updated audit status
 
 ## JavaScript modules audited
 
