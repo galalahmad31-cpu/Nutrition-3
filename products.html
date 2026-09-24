@@ -14,7 +14,7 @@ body{font-family:Cairo,sans-serif;background:#f6faf9}
 .glass{background:rgba(255,255,255,.94);border:1px solid #e7efed}
 .product-card{transition:.18s ease}.product-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,118,110,.08)}
 .admin-modal-backdrop{background:rgba(15,23,42,.62);backdrop-filter:blur(5px)}
-.admin-modal{max-height:92vh;overflow:hidden;display:flex;flex-direction:column}.admin-modal>form{min-height:0;overflow-y:auto;display:flex;flex-direction:column}.admin-modal>form>.mt-7.flex.flex-col-reverse{position:sticky;bottom:0;z-index:20;margin-top:auto;background:#fff}
+.admin-modal{height:92vh;max-height:92vh;overflow:hidden;display:flex;flex-direction:column}.admin-modal>form{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column}.admin-modal>form>.mt-7.flex.flex-col-reverse{position:sticky;bottom:0;z-index:20;flex-shrink:0;margin-top:auto;background:#fff}
 .field-label{display:block;margin-bottom:.4rem;font-size:.75rem;font-weight:800;color:#64748b}
 .field-input{width:100%;border:1px solid #dbe4e1;border-radius:.85rem;background:#fff;padding:.72rem .8rem;font-size:.85rem;font-weight:600;outline:none}
 .field-input:focus{border-color:#178f84;box-shadow:0 0 0 3px rgba(23,143,132,.12)}
@@ -23,7 +23,6 @@ body{font-family:Cairo,sans-serif;background:#f6faf9}
 .formula-item-header{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:.75rem}
 .formula-item-title{font-size:.85rem;font-weight:800;color:#334155}
 .formula-remove{height:2rem;width:2rem;border-radius:.65rem;background:#fff1f2;color:#e11d48;display:flex;align-items:center;justify-content:center}
-
 </style>
 </head>
 <body class="min-h-screen">
@@ -72,7 +71,6 @@ body{font-family:Cairo,sans-serif;background:#f6faf9}
 <div class="md:col-span-2 flex flex-wrap gap-5 rounded-2xl bg-slate-50 p-4">
 <label class="flex items-center gap-2 text-sm font-bold text-slate-700"><input id="formProductActive" type="checkbox" checked> الصنف نشط</label>
 </div>
-
 </div>
 </div>
 
@@ -92,9 +90,8 @@ body{font-family:Cairo,sans-serif;background:#f6faf9}
 <div id="formulaProductInfo" class="mb-4 hidden rounded-2xl bg-slate-50 p-3 text-sm font-bold text-slate-600"></div>
 <div id="formulaList"></div>
 </div>
-</div>
 
-<div class="mt-7 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+<div class="mt-7 flex flex-col-reverse gap-3 border-t border-slate-100 bg-white pt-5 sm:flex-row sm:justify-end">
 <button id="cancelEditorBtn" type="button" class="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-slate-600 hover:bg-slate-50">إلغاء</button>
 <button id="saveEditorBtn" type="submit" class="rounded-xl bg-brand-600 px-6 py-3 text-sm font-extrabold text-white hover:bg-brand-700">حفظ</button>
 </div>
