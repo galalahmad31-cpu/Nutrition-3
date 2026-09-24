@@ -1,6 +1,6 @@
 # Diet Planner — Architecture Audit
 
-> **Audit mode:** READ-ONLY analysis. No application source files are being refactored in this document.
+> **Audit mode:** READ-ONLY analysis. No application source code is being refactored in this document.
 >
 > The audit is maintained on the `architecture-audit` branch. `main` is not being modified.
 
@@ -28,403 +28,145 @@ The target is a destination, not a reason to split files blindly. A function mov
 
 ---
 
-# Audit 01 — `index.html` + `js/auth-access.js`
+# Audits 01–20
 
-`auth-access.js` currently combines three domains: authentication, access/subscription logic, and index-page routing/UI.
+The audits already recorded cover `index/auth-access`, `app-dashboard`, the complete visit feature and its modules, patient and patient-profile, diet, quick calculator, food, nutrition-support, nutrition-support-patient, about, article, products, finance, profile, notifications, subscription pages, and admin.
 
-Important functions identified: `clearAccessCache`, `getToday`, `isIndexPage`, `showAuthMessage`, `setBusy`, `isStrongPassword`, `getCurrentUser`, `getUserRole`, `hasActiveSubscription`, `canAddPatient`, `canWrite`, `hasFeature`, `getAccessStatus`, `checkUserAccess`, `checkSession`, `loginUser`, `registerUser`, `loginWithGoogle`, `logoutUser`, `initializeIndex`.
+The main findings from those audits are:
 
-Future candidates: `core/auth.js`, `core/access.js`, `core/subscription.js`, plus a thin `pages/index.js`.
-
-**Important:** `auth-access.js` is a major refactoring candidate, but no behavior should change until all consumers are mapped.
-
----
-
-# Audit 02 — `app.html` + `js/app-dashboard.js`
-
-Primarily dashboard/navigation UI.
-
-Functions include dashboard loading, `renderAccountName`, `renderAdminCard`, `addLockStyles`, `lockCard`, `bindLockedCard`, `showLockedMessage`, `renderFeatureCards`, `logoutUser`, `initializeDashboard`, and `start`.
-
-Findings:
-- Direct profile/Supabase query exists in page code.
-- Lock CSS is injected from JavaScript.
-- Local locked-message behavior may duplicate a shared Toast.
-- `renderFeatureCards` uses a `Map` to avoid repeated feature checks.
-- Event handling uses listeners rather than inline handlers.
-
-Future candidates: profile service, feature-card component, shared toast, CSS component styles.
+- `auth-access.js` mixes authentication, access/subscription logic, and index-page routing/UI.
+- Patient CRUD is repeated across patient, patient-profile, nutrition-support, and admin workflows.
+- Subscription logic is repeated across auth/access, profile, subscription pages, and admin.
+- Visit is a container for several substantial domains and should not be forced into one giant page module.
+- Diet/food/visit modules mix UI, state, Supabase operations, and clinical calculations.
+- Toast, modal/confirm, date formatting, HTML escaping, and numeric helpers are repeatedly implemented.
+- Pure clinical equations are mixed with DOM/database orchestration.
+- Existing IIFEs contain state but do not by themselves create architectural separation.
+- `data-action`/event delegation is already used in several places and should be preserved where practical.
+- Supabase RPCs and RLS are part of the contract and must be mapped before moving database logic.
 
 ---
 
-# Audit 03 — `visit.html` + visit modules
+# Audit 21 — `js/feedback.js`
 
-`visit.html` is a container for four substantial domains:
+## Responsibilities
 
 ```text
-Visit
-├── Assessment
-├── Energy / Macro Calculator
-├── Gram-based Diet Plan
-└── Exchange-based Diet Plan
-```
-
-Loaded modules include `visit.js`, `visit-calculator.js`, `visit-diet-plan.js`, and `visit-exchange-plan.js`.
-
-## `visit.js`
-
-Combines visit loading, access checks, assessment CRUD, BMI/labs, modal behavior, module navigation, printing, and action dispatch.
-
-Important functions include `refreshVisitWriteAccess`, `formatVisitDate`, `loadVisit`, `toggleModule`, `calculateBMI`, `renderLabs`, `escapeHtml`, `loadAssessment`, `saveAssessment`, `resolveAction`, `executeActivePrint`, and event/print lifecycle handlers.
-
-Future candidates: `services/visits.js`, assessment service, `core/access.js`, `utils/date.js`, `utils/security.js`, shared modal.
-
-## `visit-calculator.js`
-
-Mixes clinical calculations with patient/visit queries and DOM updates.
-
-Important calculations include `schofieldBMR`, `calculateSelectedEnergy`, `calculateTDEE`, `calculateSchofield`, and `updateTargetAndMacros`.
-
-Strong candidate: pure equations in `utils/nutrition/`, data loading in services, orchestration in page module.
-
-## `visit-diet-plan.js`
-
-IIFE with contained state. Combines food loading, diet-plan persistence, day/meal/item state, rendering, calculations, modals, and access checks.
-
-Strong candidates: `services/foods.js`, `services/diets.js`, shared modal/toast, nutrition/formatting utilities.
-
-## `visit-exchange-plan.js`
-
-IIFE with exchange-plan state, database queries, exchange calculations, rendering, and access checks.
-
-Strong candidates: diet/exchange service plus pure exchange calculations in nutrition utilities.
-
-### Visit dependency map
-
-```text
-visit.html
-├── auth-access.js
-├── visit.js
-├── visit-calculator.js
-├── visit-diet-plan.js
-└── visit-exchange-plan.js
-```
-
-**Key finding:** one HTML page can legitimately contain several domains. We should not force all its logic into one page JS file.
-
----
-
-# Audit 04 — `patient.html` + `js/patient.js`
-
-Patient directory combines UI, access, Supabase CRUD, state, modal behavior, search/filtering, and events.
-
-Important functions include `$`, `escapeHtml`, `showStatus`, `refreshAccess`, `updateWriteControls`, `loadPatients`, `renderPatients`, `openPatient`, `openAddPatientModal`, `createPatient`, `askDelete`, `closeDeleteModal`, `deletePatient`, `handleClick`, `bindEvents`, and `init`.
-
-Findings:
-- Patient queries and CRUD are direct Supabase operations: strong `services/patients.js` candidate.
-- `escapeHtml` is duplicated across pages.
-- Modal/status behavior is repeated.
-- Delegated `data-action` events are a positive pattern to preserve.
-
----
-
-# Audit 05 — `diet.html` + `js/diet.js`
-
-`diet.js` combines access, Supabase/data operations, state, calculations, rendering, modal/UI, and persistence.
-
-The `save()` flow spans validation → calculations → payload construction → RPC → local state update → render → feedback.
-
-The module uses an IIFE, which is a positive containment mechanism.
-
-Persistence calls the `save_diet_template` RPC; the database contract must be preserved during future extraction.
-
-Strong future candidates: `services/diets.js`, nutrition calculations, shared modal/toast, page controller.
-
----
-
-# Audit 06 — `quickcalc.html` + `js/quickcalc.js`
-
-Combines dynamic UI, nutrition calculations, validation, events, and access initialization.
-
-Important calculations include GIR, dextrose preparation, formula concentration, and breastmilk fortification.
-
-A wrapper replaces `calculateFormulaConcentration` after preserving the original function. This layering should be reviewed before refactoring.
-
-Uses data attributes/event delegation, which should be preserved.
-
-Future candidates: `utils/nutrition/gir.js`, `dextrose.js`, `formula-concentration.js`, with page UI remaining in the page module.
-
----
-
-# Audit 07 — `food.html` + `js/food.js`
-
-Combines access, food/exchange Supabase CRUD, state, rendering, UI/modals, validation/formatting, events, and initialization.
-
-Strong candidate: `services/foods.js` + page controller.
-
-Repeated local helpers include `toast`, `esc`, and `num`; compare all implementations before consolidating.
-
-CSS dependencies include Tailwind/theme/page styles and require a separate CSS audit.
-
----
-
-# Audit 08 — `patient-profile.html` + `js/patient-profile.js`
-
-Patient profile functionality overlaps patient management and support workflows.
-
-Important architectural finding: patient CRUD/profile concerns are distributed across multiple files. This strengthens the case for a shared `services/patients.js`, while keeping profile-specific rendering/orchestration in the page module.
-
----
-
-# Audit 09 — `nutritionsupport.html` + `js/nutritionsupport.js`
-
-Combines access checks, patient loading/CRUD, rendering, modals, events, and initialization.
-
-Functions include access refresh/write checks, patient loading, save/delete patient operations, rendering, modal controls, event binding, and initialization.
-
-Strong finding: patient CRUD/access concerns are repeated here and in patient/profile modules.
-
-Future candidate: shared patient service; compare support-specific access with central access before extraction.
-
----
-
-# Audit 10 — `nutritionsupport-patient.html` + `js/nutritionsupport-patient.js`
-
-Large nutrition-support feature containing:
-
-```text
-UI / interaction
-├── EN accordion
-├── patient header
-├── glucose input/mode controls
-└── TPN mode controls
-
-Calculations
-├── calorie-based calculations
-├── TPN
-├── glucose
-└── EN/nutrition-support calculations
-
-Data / state
-├── patient context
-├── nutrition-support days
-├── EN state
-└── TPN state
-
-Other
+Feedback
+├── own feedback state
+├── rating UI
 ├── CRUD
-├── printing/report generation
-└── event handling
+├── display-name lookup
+├── rendering
+├── delete confirmation
+└── event delegation
 ```
 
-Important finding: not all calculations should automatically become generic utilities. Clinical-domain calculations may deserve a nutrition-specific module/service after their inputs/outputs are mapped.
+## Findings
 
-The `nutrition_support_days` database contract must be audited together with this frontend module before extraction.
+- Positive: the module explicitly depends on `DietPlannerAccess` rather than recreating authentication setup.
+- `getDisplayName()` directly queries `profiles`; candidate for a profile service if this lookup is shared.
+- `loadFeedbacks()`, `saveFeedback()`, and `performDeleteFeedback()` directly access `app_feedback`; candidate for `services/feedback.js`.
+- `escapeHtml()` and `formatDate()` duplicate shared concerns.
+- Status UI and confirmation modal behavior are local implementations that should be compared with the eventual shared components.
+- Owner/admin checks in the UI are not a security boundary; RLS must remain authoritative.
 
----
-
-# Audit 11 — `about.html` + `js/about.js`
-
-Combines content management, admin access, database CRUD for `about_sections`, editor behavior, rendering, state, and events.
-
-Uses `data-action`/`data-cmd` event delegation.
-
-Contains `escapeHtml` and rich-editor/table editing behavior.
-
-Future candidate: `services/about.js` plus page-specific editor orchestration. Do not create a generic rich-editor component unless another page actually needs it.
-
-Security note: HTML sanitization is security-sensitive and must not be moved into a generic utility without comparing all trust boundaries.
-
----
-
-# Audit 12 — `article.js`
-
-Article domain combines:
+### Candidate target
 
 ```text
-CRUD
-Search/filter
-Rich-text editor
-Table editor
-Access control
-Toast/confirm UI
-HTML sanitization
-Supabase
+services/feedback.js
+pages/feedback.js
+components/toast.js / components/confirm.js
+utils/security.js
+utils/date.js
 ```
 
-Important helpers include `safe()` and `escapeHtml()`.
-
-Security finding: sanitization deserves a dedicated, clearly named security boundary rather than being treated as an ordinary formatting helper.
-
-Future candidate: `services/articles.js` + page controller + shared modal/toast; security utility only after comparing every HTML injection path.
-
 ---
 
-# Audit 13 — `products.js`
+# Audit 22 — `js/weight.js`
 
-Combines product categories, subcategories, products, formulas, search/filter, CRUD, admin UI, and Supabase.
-
-Uses `Promise.all()` to load related datasets concurrently.
-
-Future candidates: `services/products.js` and possibly a category service, with page-specific rendering remaining in the page module.
-
-Do not split into many files merely because it is possible; split around stable responsibilities.
-
----
-
-# Audit 14 — `finance.js`
-
-Finance page contains data loading, finance CRUD, access checks, rendering, date helpers, and UI.
-
-Important access functions include `refreshFinanceWriteAccess`, `canWriteFinance`, and `applyFinanceWriteAccessUI`.
-
-It also contains date helpers such as `todayISO`, `formatISODate`, `addDays`, and `addMonths`.
-
-Finding: page-level access logic overlaps the central `DietPlannerAccess` layer; date helpers overlap other pages. Strong candidates: `core/access.js` and `utils/date.js` after consumer mapping.
-
----
-
-# Audit 15 — `profile.js`
-
-Profile domain combines profile data, subscription display, subscription selection, profile editing, access checks, and logout.
-
-It contains local subscription-state checks such as `isActive` and subscription-selection logic.
-
-Finding: subscription logic is distributed across profile, plan pages, and `auth-access.js`. This is a major candidate for one subscription service/core boundary.
-
----
-
-# Audit 16 — `notifications.js`
-
-Notifications are derived from finance/subscription data rather than stored as independent notification rows.
-
-Conceptual flow:
+## Responsibilities
 
 ```text
-patient_finances
-      ↓
-buildNotifications()
-      ↓
-due/overdue/subscription conditions
-      ↓
-render()
+Weight tracking
+├── access/write checks
+├── patient lookup
+├── weight_logs CRUD
+├── BMI summary
+├── table rendering
+├── chart rendering
+├── delete modal
+└── toast
 ```
 
-The module also contains date helpers overlapping `finance.js`.
+## Findings
 
-Future candidate: shared `utils/date.js`; notification derivation remains page/domain logic unless reused elsewhere.
+- `refreshWriteAccess()` repeats page-level access orchestration already present in other pages.
+- `loadPage()`, `addWeightEntry()`, and delete logic directly access `patients` and `weight_logs`.
+- `showToast()`, `escapeHtml()`, and `formatDate()` duplicate shared helpers.
+- BMI calculation is sufficiently pure to be considered for a nutrition/clinical calculation utility after all BMI consumers are mapped.
+- Chart construction should remain page/component-specific unless another page uses the same chart behavior.
+- The dynamically created delete modal is another example of repeated modal infrastructure.
 
----
-
-# Audit 17 — `subscription_plans.js`
-
-Subscription domain includes plan loading/rendering, active/pending subscription state, free-trial checks, payment-proof upload/replacement, subscription creation, and cancellation.
-
-Uses `create_subscription` RPC rather than a simple client-side insert.
-
-This is a real domain boundary and should eventually have a shared subscription service.
-
----
-
-# Audit 18 — `subscription_plans_index.js`
-
-Duplicates substantial subscription behavior found in `subscription_plans.js`, including active/pending subscription checks, free-trial state, submission, and payment-proof replacement.
-
-Strongest current evidence for:
+### Candidate target
 
 ```text
-services/subscriptions.js
+services/weight.js
+pages/weight.js
+utils/nutrition/bmi.js
+components/modal.js
+components/toast.js
 ```
 
-with both subscription pages acting as consumers.
-
 ---
 
-# Audit 19 — `admin.js`
+# Audit 23 — `js/theme.js`
 
-Admin page is a full domain surface, combining:
+## Responsibility
+
+`theme.js` has one coherent responsibility: global light/dark mode.
+
+It handles:
 
 ```text
-Admin access
-Plans
-Subscriptions
-Doctors/profiles
-Patient counts
-CRUD
-Feature configuration
-Modal
-Toast
-State
-Supabase
+stored preference
+system preference
+[data-theme]
+color-scheme meta
+theme-color meta
+toggle creation
+storage synchronization
+window.DietPlannerTheme API
 ```
 
-`loadAll()` orchestrates multiple datasets including plans, subscriptions, profiles, and patients.
+## Findings
 
-`PLAN_FEATURES` is important because it overlaps frontend feature/access concepts already present in `auth-access.js` and subscription plan data.
+This module is already close to the desired architecture. It is isolated, has a narrow public API, and does not contain unrelated business logic.
 
-Future candidates:
-- `pages/admin.js` for orchestration/UI
-- `services/subscriptions.js`
-- `services/subscription-plans.js`
-- `services/profiles.js`
-- `core/access.js`
-- shared modal/toast
+**Recommendation for refactoring:** keep it as one shared Core/UI module rather than splitting it into many small files.
 
-The admin page should not become the source of truth for security; RLS/database policies remain authoritative.
+The remaining issue is not JavaScript responsibility but CSS integration: the CSS audit must verify that `[data-theme]` styles are consistent and do not fight Tailwind/page styles.
 
 ---
 
-# Audit 20 — Remaining shared/application files identified in repository
+# Updated cross-module duplication map
 
-The current repository tree also contains shared/domain modules such as:
-
-```text
-js/
-├── auth-access.js
-├── app-dashboard.js
-├── visit.js
-├── visit-calculator.js
-├── visit-diet-plan.js
-├── visit-exchange-plan.js
-├── patient.js
-├── patient-profile.js
-├── diet.js
-├── quickcalc.js
-├── food.js
-├── nutritionsupport.js
-├── nutritionsupport-patient.js
-├── article.js
-├── products.js
-├── finance.js
-├── notifications.js
-├── profile.js
-├── subscription_plans.js
-├── subscription_plans_index.js
-├── admin.js
-├── feedback.js
-├── theme.js
-└── weight.js
-```
-
-`feedback.js`, `theme.js`, and `weight.js` remain explicit audit targets before the JavaScript inventory can be considered complete.
-
----
-
-# Cross-file dependency findings
-
-## 1. Authentication / Access
-
-Repeated across many pages:
+## Access
 
 ```text
-auth-access.js
-      ↓
+patient.js
+patient-profile.js
+nutrition support
+finance.js
+weight.js
+other feature pages
+        ↓
 page-level access wrappers
-      ↓
-UI enable/disable decisions
+        ↓
+DietPlannerAccess
 ```
 
-The desired direction is:
+Future direction:
 
 ```text
 core/auth.js
@@ -434,28 +176,23 @@ core/subscription.js
 page controllers
 ```
 
-The database/RLS layer remains the final security boundary.
-
-## 2. Patients
-
-Patient operations appear in:
+## Patients
 
 ```text
 patient.js
 patient-profile.js
 nutritionsupport.js
 admin.js
+weight.js
 ```
 
-Likely future boundary:
+Likely domain boundary:
 
 ```text
 services/patients.js
 ```
 
-## 3. Subscriptions
-
-Subscription logic appears in:
+## Subscriptions
 
 ```text
 auth-access.js
@@ -463,87 +200,62 @@ profile.js
 subscription_plans.js
 subscription_plans_index.js
 admin.js
+finance.js
 ```
 
-Likely future boundary:
+Likely boundaries:
 
 ```text
-services/subscriptions.js
 core/subscription.js
+services/subscriptions.js
+services/subscription-plans.js
 ```
 
-The distinction must be deliberate: core answers shared access/state questions; service owns subscription-domain data operations.
+## UI infrastructure
 
-## 4. Diets
-
-Diet logic appears in:
-
-```text
-diet.js
-visit-diet-plan.js
-visit-exchange-plan.js
-```
-
-Future candidates include `services/diets.js` plus nutrition-specific pure calculations.
-
-## 5. Foods
-
-Food access/data appears in:
-
-```text
-food.js
-diet.js
-visit-diet-plan.js
-```
-
-Likely future boundary: `services/foods.js`.
-
-## 6. UI components
-
-Repeated concepts include:
+Repeated implementations exist for:
 
 ```text
 Toast
 Modal
-Confirm modal
-Loading
+Confirm
+Loading/status
 Locked feature message
 ```
 
-Likely components:
+Likely shared components:
 
 ```text
 components/toast.js
 components/modal.js
+components/confirm.js
 components/loading.js
 ```
 
-Only extract after comparing behavior so we do not accidentally change UX.
+The final component API must be based on actual behavior, not just names.
 
-## 7. Utilities
+## Utilities
 
 Repeated helpers include:
 
 ```text
-date formatting
-number normalization
-HTML escaping
-formatting
-cloning
-nutrition calculations
+escapeHtml / esc
+formatDate / formatISODate / todayISO
+num
+DOM lookup
 ```
 
-Potential utility areas:
+Potential utilities:
 
 ```text
 utils/date.js
-utils/formatting.js
-utils/validation.js
 utils/security.js
+utils/formatting.js
+utils/dom.js
 utils/nutrition/*
 ```
 
-Security-sensitive helpers must remain explicit and reviewed.
+Security-sensitive sanitization remains a separate review item.
 
 ---
 
@@ -566,10 +278,10 @@ Security-sensitive helpers must remain explicit and reviewed.
    │ Services    │       │ Components   │       │ Utils       │
    │ patients    │       │ toast        │       │ date        │
    │ visits      │       │ modal        │       │ validation  │
-   │ diets       │       │ loading      │       │ security    │
-   │ foods       │       └───────┬──────┘       │ nutrition   │
-   │ subscriptions│              │              └──────┬──────┘
-   └──────┬──────┘              │                     │
+   │ diets       │       │ confirm      │       │ security    │
+   │ foods       │       │ loading      │       │ nutrition   │
+   │ subscriptions│      └───────┬──────┘       └──────┬──────┘
+   └──────┬──────┘               │                     │
           └──────────────────────┼─────────────────────┘
                                  │
                          ┌───────▼───────┐
@@ -583,9 +295,9 @@ This is a **target dependency direction**, not a claim that the current code alr
 
 ---
 
-# Refactoring rules agreed for this project
+# Refactoring rules
 
-1. **No big-bang rewrite.**
+1. No big-bang rewrite.
 2. Audit first, refactor second.
 3. One responsibility at a time.
 4. Preserve database/RPC contracts.
@@ -602,50 +314,53 @@ This is a **target dependency direction**, not a claim that the current code alr
 
 # Audit status
 
-## Completed / mapped
+## JavaScript modules audited
 
 ```text
-index/auth-access
-app/dashboard
-visit + visit modules
-patient
-patient-profile
-nutrition-support
-nutrition-support-patient
-diet
-quick calculator
-food
-about
-articles
-products
-finance
-profile
-notifications
-subscription plans
-subscription plans index
-admin
+✓ auth/access + index
+✓ dashboard
+✓ visit
+✓ visit-calculator
+✓ visit-diet-plan
+✓ visit-exchange-plan
+✓ patient
+✓ patient-profile
+✓ diet
+✓ quickcalc
+✓ food
+✓ nutrition support
+✓ nutrition-support-patient
+✓ about
+✓ article
+✓ products
+✓ finance
+✓ profile
+✓ notifications
+✓ subscription_plans
+✓ subscription_plans_index
+✓ admin
+✓ feedback
+✓ weight
+✓ theme
 ```
 
-## Still to inspect before final dependency map
+## Still required before the final architecture
 
 ```text
-feedback.js
-theme.js
-weight.js
-remaining HTML files
-remaining shared CSS/theme files
-core/shared configuration
-Supabase RPC/function/policy dependencies used by the frontend
+□ Enumerate every HTML/CSS/JS file from the repository tree
+□ Inspect remaining page modules such as authentication/password pages
+□ Audit every HTML script-loading order
+□ Audit all CSS and Tailwind/theme/page-style interactions
+□ Audit global window dependencies
+□ Inventory Supabase RPCs/functions used by the frontend
+□ Inventory relevant RLS policies/triggers and map them to services
+□ Build verified dependency graph
+□ Produce KEEP / MOVE / MERGE / DELETE / REVIEW table
+□ Produce staged refactoring plan
 ```
 
-## Next phase
+## Current status
 
-1. Finish the remaining file inventory.
-2. Audit CSS and shared theme files.
-3. Audit Supabase contracts used by the frontend.
-4. Build the final dependency graph.
-5. Mark every significant function as `KEEP`, `MOVE`, `MERGE`, `DELETE`, or `REVIEW`.
-6. Produce the staged refactoring plan.
-7. Only then begin code movement.
+**AUDIT ONLY. Application source code has not been refactored.**
 
-**Current status: AUDIT ONLY — application source code has not been refactored.**
+The next step is the repository-wide inventory and CSS/backend-contract audit. Only after that should we start moving files toward `core / services / components / utils / pages`.
