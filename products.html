@@ -14,7 +14,9 @@ body{font-family:Cairo,sans-serif;background:#f6faf9}
 .glass{background:rgba(255,255,255,.94);border:1px solid #e7efed}
 .product-card{transition:.18s ease}.product-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,118,110,.08)}
 .admin-modal-backdrop{background:rgba(15,23,42,.62);backdrop-filter:blur(5px)}
-.admin-modal{max-height:92vh;overflow:hidden;display:flex;flex-direction:column}.admin-modal>form{min-height:0;overflow-y:auto;display:flex;flex-direction:column}.admin-modal>form>.mt-7.flex.flex-col-reverse{position:sticky;bottom:0;z-index:20;margin-top:auto;background:#fff}
+.admin-modal{height:92vh;max-height:92vh;overflow:hidden;display:flex;flex-direction:column}
+.admin-modal>form{min-height:0;max-height:calc(92vh - 76px);overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column}
+.admin-modal>form>.mt-7.flex.flex-col-reverse{position:sticky;bottom:0;z-index:20;flex-shrink:0;margin-top:1.75rem;background:#fff}
 .field-label{display:block;margin-bottom:.4rem;font-size:.75rem;font-weight:800;color:#64748b}
 .field-input{width:100%;border:1px solid #dbe4e1;border-radius:.85rem;background:#fff;padding:.72rem .8rem;font-size:.85rem;font-weight:600;outline:none}
 .field-input:focus{border-color:#178f84;box-shadow:0 0 0 3px rgba(23,143,132,.12)}
@@ -53,7 +55,7 @@ body{font-family:Cairo,sans-serif;background:#f6faf9}
 
 <div id="editorModal" class="admin-modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6">
 <div class="admin-modal w-full max-w-5xl rounded-3xl bg-white shadow-2xl">
-<div class="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-100 bg-white px-5 py-4 sm:px-7">
+<div class="sticky top-0 z-10 flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 bg-white px-5 py-4 sm:px-7">
 <div><h2 id="editorTitle" class="text-xl font-extrabold text-slate-800">إضافة صنف</h2><p id="editorSubtitle" class="mt-1 text-xs font-semibold text-slate-500">أدخل بيانات المنتج والتركيبة.</p></div>
 <button id="closeEditorBtn" type="button" class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200"><i class="fa-solid fa-xmark"></i></button>
 </div>
@@ -78,18 +80,13 @@ body{font-family:Cairo,sans-serif;background:#f6faf9}
 <div id="formulaFields" class="mt-7 border-t border-slate-100 pt-6">
 <div class="mb-4 flex items-center justify-between gap-3">
   <div>
-    <div class="flex items-center gap-2 text-sm font-extrabold text-brand-700">
-      <i class="fa-solid fa-flask"></i> بيانات التركيبات
-    </div>
+    <div class="flex items-center gap-2 text-sm font-extrabold text-brand-700"><i class="fa-solid fa-flask"></i> بيانات التركيبات</div>
     <div class="mt-1 text-xs font-semibold text-slate-400">يمكن للمنتج الواحد أن يحتوي على أكثر من تركيبة.</div>
   </div>
-  <button id="addFormulaBtn" type="button" class="flex items-center gap-2 rounded-xl bg-brand-50 px-3 py-2 text-xs font-extrabold text-brand-700 hover:bg-brand-100">
-    <i class="fa-solid fa-plus"></i> إضافة تركيبة
-  </button>
+  <button id="addFormulaBtn" type="button" class="flex items-center gap-2 rounded-xl bg-brand-50 px-3 py-2 text-xs font-extrabold text-brand-700 hover:bg-brand-100"><i class="fa-solid fa-plus"></i> إضافة تركيبة</button>
 </div>
 <div id="formulaProductInfo" class="mb-4 hidden rounded-2xl bg-slate-50 p-3 text-sm font-bold text-slate-600"></div>
 <div id="formulaList"></div>
-</div>
 </div>
 
 <div class="mt-7 flex flex-col-reverse gap-3 border-t border-slate-100 bg-white pt-5 sm:flex-row sm:justify-end">
